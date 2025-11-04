@@ -58,33 +58,58 @@ foreach ($services as $service) {
                     <p>Aucun service disponible pour le moment.</p>
                 </div>
             <?php else: ?>
-                <?php foreach ($servicesByCategory as $categorie => $servicesList): ?>
-                    <div class="category-section fade-in">
-                        <h3 class="category-title"><?php echo htmlspecialchars($categorie); ?></h3>
-                        <div class="services-grid">
-                            <?php foreach ($servicesList as $index => $service): ?>
-                                <div class="service-card slide-up" style="animation-delay: <?php echo $index * 0.1; ?>s;">
-                                    <div class="service-header">
-                                        <h4><?php echo htmlspecialchars($service['nom']); ?></h4>
-                                    </div>
-                                    <div class="service-body">
-                                        <p class="service-description">
-                                            <?php echo nl2br(htmlspecialchars($service['description'])); ?>
-                                        </p>
-                                        <div class="service-details">
-                                            <span class="detail-item">
-                                                <strong>Durée:</strong> <?php echo $service['duree_minute']; ?> minutes
-                                            </span>
-                                            <span class="detail-item">
-                                                <strong>Prix:</strong> <?php echo number_format($service['prix'], 2); ?> $CA
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
+                <div class="services-tabs">
+                    <div class="tabs-nav">
+                        <?php 
+                        $firstCategory = true;
+                        foreach ($servicesByCategory as $categorie => $servicesList): 
+                        ?>
+                            <button class="tab-btn <?php echo $firstCategory ? 'active' : ''; ?>" 
+                                    data-category="<?php echo htmlspecialchars($categorie); ?>">
+                                <?php echo htmlspecialchars($categorie); ?>
+                            </button>
+                        <?php 
+                        $firstCategory = false;
+                        endforeach; 
+                        ?>
                     </div>
-                <?php endforeach; ?>
+
+                    <div class="tabs-content">
+                        <?php 
+                        $firstCategory = true;
+                        foreach ($servicesByCategory as $categorie => $servicesList): 
+                        ?>
+                            <div class="tab-panel <?php echo $firstCategory ? 'active' : ''; ?>" 
+                                 data-category="<?php echo htmlspecialchars($categorie); ?>">
+                                <div class="services-grid">
+                                    <?php foreach ($servicesList as $index => $service): ?>
+                                        <div class="service-card slide-up" style="animation-delay: <?php echo $index * 0.1; ?>s;">
+                                            <div class="service-header">
+                                                <h4><?php echo htmlspecialchars($service['nom']); ?></h4>
+                                            </div>
+                                            <div class="service-body">
+                                                <p class="service-description">
+                                                    <?php echo nl2br(htmlspecialchars($service['description'])); ?>
+                                                </p>
+                                                <div class="service-details">
+                                                    <span class="detail-item">
+                                                        <strong>Durée:</strong> <?php echo $service['duree_minute']; ?> minutes
+                                                    </span>
+                                                    <span class="detail-item">
+                                                        <strong>Prix:</strong> <?php echo number_format($service['prix'], 2); ?> $CA
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        <?php 
+                        $firstCategory = false;
+                        endforeach; 
+                        ?>
+                    </div>
+                </div>
             <?php endif; ?>
         </section>
     </main>
