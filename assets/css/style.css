@@ -399,6 +399,32 @@ main {
   line-height: 1.3;
 }
 
+.service-tuteur {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--border-light);
+  font-size: 0.9375rem;
+}
+
+.tuteur-label {
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.tuteur-name {
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.tuteur-rating {
+  color: var(--accent-color);
+  font-weight: 600;
+  margin-left: auto;
+}
+
 .service-body {
   color: var(--text-color);
   flex: 1;
