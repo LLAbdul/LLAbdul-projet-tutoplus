@@ -39,6 +39,22 @@ CREATE TABLE IF NOT EXISTS services (
     INDEX idx_tuteur (tuteur_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table des services de tutorat';
 
+-- Table des étudiants (hérite de Utilisateur selon UML)
+CREATE TABLE IF NOT EXISTS etudiants (
+    id CHAR(36) PRIMARY KEY COMMENT 'UUID de l\'étudiant',
+    numero_etudiant VARCHAR(50) NOT NULL UNIQUE COMMENT 'Numéro d\'étudiant',
+    nom VARCHAR(255) NOT NULL COMMENT 'Nom de l\'étudiant',
+    prenom VARCHAR(255) NOT NULL COMMENT 'Prénom de l\'étudiant',
+    email VARCHAR(255) NOT NULL UNIQUE COMMENT 'Email de l\'étudiant',
+    telephone VARCHAR(20) COMMENT 'Téléphone de l\'étudiant',
+    niveau VARCHAR(50) COMMENT 'Niveau d\'études (ex: DEC, AEC)',
+    specialite VARCHAR(100) COMMENT 'Spécialité de l\'étudiant',
+    annee_etude INT COMMENT 'Année d\'études',
+    actif BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'Indique si l\'étudiant est actif',
+    date_creation DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date de création',
+    derniere_connexion DATETIME COMMENT 'Dernière connexion'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table des étudiants';
+
 -- Table des disponibilités (créneaux horaires)
 CREATE TABLE IF NOT EXISTS disponibilites (
     id CHAR(36) PRIMARY KEY COMMENT 'UUID de la disponibilité',
@@ -69,6 +85,14 @@ INSERT INTO tuteurs (id, numero_employe, nom, prenom, email, telephone, departem
 (UUID(), 'T004', 'Gagnon', 'Sophie', 'sophie.gagnon@college.qc.ca', '514-456-7890', 'Langues', 'Français,Littérature', 20.00, 4.6, 80, TRUE),
 (UUID(), 'T005', 'Roy', 'Luc', 'luc.roy@college.qc.ca', '514-567-8901', 'Langues', 'Anglais,Communication', 20.00, 4.4, 110, TRUE),
 (UUID(), 'T006', 'Lavoie', 'Anne', 'anne.lavoie@college.qc.ca', '514-678-9012', 'Général', 'Méthodologie,Organisation', 22.00, 4.3, 65, TRUE);
+
+-- Insertion de données de test pour les étudiants
+INSERT INTO etudiants (id, numero_etudiant, nom, prenom, email, telephone, niveau, specialite, annee_etude, actif) VALUES
+(UUID(), 'E001', 'Tremblay', 'Alex', 'alex.tremblay@college.qc.ca', '514-111-2222', 'DEC', 'Sciences de la nature', 1, TRUE),
+(UUID(), 'E002', 'Gagnon', 'Sarah', 'sarah.gagnon@college.qc.ca', '514-222-3333', 'DEC', 'Sciences informatiques', 2, TRUE),
+(UUID(), 'E003', 'Roy', 'Marc', 'marc.roy@college.qc.ca', '514-333-4444', 'DEC', 'Sciences de la nature', 1, TRUE),
+(UUID(), 'E004', 'Lavoie', 'Julie', 'julie.lavoie@college.qc.ca', '514-444-5555', 'AEC', 'Programmation', 1, TRUE),
+(UUID(), 'E005', 'Fortin', 'Thomas', 'thomas.fortin@college.qc.ca', '514-555-6666', 'DEC', 'Sciences humaines', 2, TRUE);
 
 -- Insertion de données de test pour les services (avec tuteurs associés)
 -- Note: Les UUIDs des tuteurs doivent être récupérés après l'insertion des tuteurs
