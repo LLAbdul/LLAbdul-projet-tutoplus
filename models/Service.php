@@ -11,15 +11,20 @@ class Service {
     }
     
     
-    // Récupère tous les services actifs
+    // Récupère tous les services actifs avec leur tuteur associé
 
     public function getAllActiveServices() {
         try {
             $stmt = $this->pdo->prepare("
-                SELECT id, nom, description, categorie, duree_minute, prix 
-                FROM services 
-                WHERE actif = TRUE 
-                ORDER BY categorie, nom
+                SELECT s.id, s.nom, s.description, s.categorie, s.duree_minute, s.prix,
+                       s.tuteur_id,
+                       t.nom as tuteur_nom, t.prenom as tuteur_prenom,
+                       t.numero_employe, t.departement, t.specialites,
+                       t.tarif_horaire, t.evaluation, t.nb_seances
+                FROM services s
+                INNER JOIN tuteurs t ON s.tuteur_id = t.id
+                WHERE s.actif = TRUE AND t.actif = TRUE
+                ORDER BY s.categorie, s.nom
             ");
             $stmt->execute();
             return $stmt->fetchAll();
@@ -30,14 +35,19 @@ class Service {
     }
     
     
-    // Récupère un service par son ID
+    // Récupère un service par son ID avec son tuteur associé
      
     public function getServiceById($id) {
         try {
             $stmt = $this->pdo->prepare("
-                SELECT id, nom, description, categorie, duree_minute, prix 
-                FROM services 
-                WHERE id = :id AND actif = TRUE
+                SELECT s.id, s.nom, s.description, s.categorie, s.duree_minute, s.prix,
+                       s.tuteur_id,
+                       t.nom as tuteur_nom, t.prenom as tuteur_prenom,
+                       t.numero_employe, t.departement, t.specialites,
+                       t.tarif_horaire, t.evaluation, t.nb_seances
+                FROM services s
+                INNER JOIN tuteurs t ON s.tuteur_id = t.id
+                WHERE s.id = :id AND s.actif = TRUE AND t.actif = TRUE
             ");
             $stmt->bindParam(':id', $id, PDO::PARAM_STR);
             $stmt->execute();
@@ -49,15 +59,20 @@ class Service {
     }
     
     
-    // Récupère les services par catégorie
+    // Récupère les services par catégorie avec leur tuteur associé
      
     public function getServicesByCategory($categorie) {
         try {
             $stmt = $this->pdo->prepare("
-                SELECT id, nom, description, categorie, duree_minute, prix 
-                FROM services 
-                WHERE categorie = :categorie AND actif = TRUE 
-                ORDER BY nom
+                SELECT s.id, s.nom, s.description, s.categorie, s.duree_minute, s.prix,
+                       s.tuteur_id,
+                       t.nom as tuteur_nom, t.prenom as tuteur_prenom,
+                       t.numero_employe, t.departement, t.specialites,
+                       t.tarif_horaire, t.evaluation, t.nb_seances
+                FROM services s
+                INNER JOIN tuteurs t ON s.tuteur_id = t.id
+                WHERE s.categorie = :categorie AND s.actif = TRUE AND t.actif = TRUE 
+                ORDER BY s.nom
             ");
             $stmt->bindParam(':categorie', $categorie, PDO::PARAM_STR);
             $stmt->execute();
