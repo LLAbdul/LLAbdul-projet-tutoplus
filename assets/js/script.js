@@ -42,19 +42,43 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(card);
     });
 
-    // Animation pour les sections de catégories
-    const categorySections = document.querySelectorAll('.category-section');
-    const categoryObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('fade-in');
-                categoryObserver.unobserve(entry.target);
+    // Système d'onglets pour les catégories de services
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const category = button.getAttribute('data-category');
+
+            // Retirer active de tous les boutons et panels
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanels.forEach(panel => panel.classList.remove('active'));
+
+            // Ajouter active au bouton et panel sélectionnés
+            button.classList.add('active');
+            const targetPanel = document.querySelector(`.tab-panel[data-category="${category}"]`);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+                
+                // Réinitialiser les animations des cartes
+                const cards = targetPanel.querySelectorAll('.service-card');
+                cards.forEach((card, index) => {
+                    card.style.animationDelay = `${index * 0.1}s`;
+                    if (!card.classList.contains('slide-up')) {
+                        card.classList.add('slide-up');
+                    }
+                });
             }
         });
-    }, observerOptions);
-
-    categorySections.forEach(section => {
-        categoryObserver.observe(section);
     });
+
+    // Observer les cartes de services dans les panels actifs
+    const activePanel = document.querySelector('.tab-panel.active');
+    if (activePanel) {
+        const activeCards = activePanel.querySelectorAll('.service-card');
+        activeCards.forEach(card => {
+            observer.observe(card);
+        });
+    }
 });
 
