@@ -1,0 +1,101 @@
+<?php
+/**
+ * Page d'accueil - Liste des services offerts
+ * TutoPlus - Système de tutorat
+ */
+
+require_once 'config/database.php';
+require_once 'models/Service.php';
+
+// Connexion à la base de données
+$pdo = getDBConnection();
+
+// Récupération des services
+$serviceModel = new Service($pdo);
+$services = $serviceModel->getAllActiveServices();
+
+// Grouper les services par catégorie
+$servicesByCategory = [];
+foreach ($services as $service) {
+    $categorie = $service['categorie'];
+    if (!isset($servicesByCategory[$categorie])) {
+        $servicesByCategory[$categorie] = [];
+    }
+    $servicesByCategory[$categorie][] = $service;
+}
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TutoPlus - Services de Tutorat</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><span class="logo-text">Tuto</span><span class="logo-accent">Plus</span></h1>
+            <p class="subtitle">Système de tutorat pour votre école</p>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h2 class="hero-title">Services de tutorat pour votre réussite</h2>
+                <p class="hero-description">Plateforme complète de tutorat : accompagnement personnalisé, suivi de progression, outils pédagogiques et interface moderne. Disponible en ligne et en présentiel.</p>
+                <a href="#services" class="hero-cta">Découvrir nos services</a>
+            </div>
+            <div class="hero-background"></div>
+        </section>
+
+        <section id="services" class="services-section container">
+            <h2>Nos Services de Tutorat</h2>
+            
+            <?php if (empty($services)): ?>
+                <div class="no-services">
+                    <p>Aucun service disponible pour le moment.</p>
+                </div>
+            <?php else: ?>
+                <?php foreach ($servicesByCategory as $categorie => $servicesList): ?>
+                    <div class="category-section fade-in">
+                        <h3 class="category-title"><?php echo htmlspecialchars($categorie); ?></h3>
+                        <div class="services-grid">
+                            <?php foreach ($servicesList as $index => $service): ?>
+                                <div class="service-card slide-up" style="animation-delay: <?php echo $index * 0.1; ?>s;">
+                                    <div class="service-header">
+                                        <h4><?php echo htmlspecialchars($service['nom']); ?></h4>
+                                    </div>
+                                    <div class="service-body">
+                                        <p class="service-description">
+                                            <?php echo nl2br(htmlspecialchars($service['description'])); ?>
+                                        </p>
+                                        <div class="service-details">
+                                            <span class="detail-item">
+                                                <strong>Durée:</strong> <?php echo $service['duree_minute']; ?> minutes
+                                            </span>
+                                            <span class="detail-item">
+                                                <strong>Prix:</strong> <?php echo number_format($service['prix'], 2); ?> $CA
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; <?php echo date('Y'); ?> TutoPlus - Tous droits réservés</p>
+        </div>
+    </footer>
+
+    <script src="assets/js/script.js"></script>
+</body>
+</html>
+
