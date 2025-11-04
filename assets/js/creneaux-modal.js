@@ -375,7 +375,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btnNext.addEventListener('click', function() {
             if (selectedCreneau && !this.disabled) {
                 const creneauId = selectedCreneau.querySelector('.time-slot-radio').value;
-                alert(`Créneau sélectionné : ${creneauId}\n\nCette fonctionnalité sera implémentée dans la prochaine étape.`);
+                alert(`Créneau sélectionné : ${creneauId}\n\nCette fonctionnalité sera implémentée dans une prochaine étape.`);
             }
         });
     }
