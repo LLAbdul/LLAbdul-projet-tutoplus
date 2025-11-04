@@ -4,6 +4,8 @@
  * TutoPlus - Système de tutorat
  */
 
+session_start();
+
 require_once 'config/database.php';
 require_once 'models/Service.php';
 require_once 'models/Tuteur.php';
@@ -37,8 +39,25 @@ foreach ($services as $service) {
 <body>
     <header>
         <div class="container">
-            <h1><span class="logo-text">Tuto</span><span class="logo-accent">Plus</span></h1>
-            <p class="subtitle">Système de tutorat pour votre école</p>
+            <div class="header-content">
+                <div class="header-left">
+                    <a href="index.php" class="logo-link">
+                        <h1><span class="logo-text">Tuto</span><span class="logo-accent">Plus</span></h1>
+                    </a>
+                    <p class="subtitle">Système de tutorat pour votre école</p>
+                </div>
+                <div class="header-right">
+                    <?php if (isset($_SESSION['etudiant_id'])): ?>
+                        <div class="user-info">
+                            <span class="user-name"><?php echo htmlspecialchars($_SESSION['etudiant_prenom'] . ' ' . $_SESSION['etudiant_nom']); ?></span>
+                            <span class="user-number"><?php echo htmlspecialchars($_SESSION['etudiant_numero']); ?></span>
+                        </div>
+                        <a href="logout.php" class="btn-logout">Déconnexion</a>
+                    <?php else: ?>
+                        <a href="login.php" class="btn-login-link">Connexion</a>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
     </header>
 
