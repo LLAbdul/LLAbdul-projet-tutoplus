@@ -39,6 +39,28 @@ CREATE TABLE IF NOT EXISTS services (
     INDEX idx_tuteur (tuteur_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table des services de tutorat';
 
+-- Table des disponibilités (créneaux horaires)
+CREATE TABLE IF NOT EXISTS disponibilites (
+    id CHAR(36) PRIMARY KEY COMMENT 'UUID de la disponibilité',
+    tuteur_id CHAR(36) NOT NULL COMMENT 'UUID du tuteur propriétaire',
+    service_id CHAR(36) COMMENT 'UUID du service associé (optionnel)',
+    date_debut DATETIME NOT NULL COMMENT 'Date et heure de début du créneau',
+    date_fin DATETIME NOT NULL COMMENT 'Date et heure de fin du créneau',
+    statut ENUM('DISPONIBLE', 'RESERVE', 'BLOQUE') NOT NULL DEFAULT 'DISPONIBLE' COMMENT 'Statut du créneau',
+    prix DECIMAL(10, 2) COMMENT 'Prix spécifique pour ce créneau (peut hériter du service)',
+    notes TEXT COMMENT 'Notes additionnelles sur le créneau',
+    date_creation DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date de création',
+    date_modification DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Date de modification',
+    FOREIGN KEY (tuteur_id) REFERENCES tuteurs(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    INDEX idx_tuteur (tuteur_id),
+    INDEX idx_service (service_id),
+    INDEX idx_date_debut (date_debut),
+    INDEX idx_statut (statut),
+    CHECK (date_fin > date_debut),
+    CHECK (TIMESTAMPDIFF(MINUTE, date_debut, date_fin) >= 30)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table des disponibilités et créneaux horaires';
+
 -- Insertion de données de test pour les tuteurs
 INSERT INTO tuteurs (id, numero_employe, nom, prenom, email, telephone, departement, specialites, tarif_horaire, evaluation, nb_seances, actif) VALUES
 (UUID(), 'T001', 'Dupont', 'Jean', 'jean.dupont@college.qc.ca', '514-123-4567', 'Mathématiques', 'Algèbre,Calcul différentiel,Géométrie', 25.00, 4.5, 120, TRUE),
@@ -122,4 +144,182 @@ SELECT
     22.00,
     TRUE
 WHERE EXISTS (SELECT 1 FROM tuteurs WHERE departement = 'Général' AND actif = TRUE);
+
+-- Insertion de données de test pour les disponibilités (créneaux horaires)
+-- Créneaux pour les prochains jours (aujourd'hui + 1 à 7 jours)
+-- Chaque service a plusieurs créneaux disponibles
+
+-- Créneaux pour le service Mathématiques
+INSERT INTO disponibilites (id, tuteur_id, service_id, date_debut, date_fin, statut, prix, notes)
+SELECT 
+    UUID(),
+    s.tuteur_id,
+    s.id,
+    DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 9 HOUR,
+    DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 10 HOUR,
+    'DISPONIBLE',
+    s.prix,
+    'Créneau disponible en matinée'
+FROM services s
+WHERE s.categorie = 'Mathématiques' AND s.actif = TRUE
+LIMIT 1;
+
+INSERT INTO disponibilites (id, tuteur_id, service_id, date_debut, date_fin, statut, prix, notes)
+SELECT 
+    UUID(),
+    s.tuteur_id,
+    s.id,
+    DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 14 HOUR,
+    DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 15 HOUR,
+    'DISPONIBLE',
+    s.prix,
+    'Créneau disponible en après-midi'
+FROM services s
+WHERE s.categorie = 'Mathématiques' AND s.actif = TRUE
+LIMIT 1;
+
+INSERT INTO disponibilites (id, tuteur_id, service_id, date_debut, date_fin, statut, prix, notes)
+SELECT 
+    UUID(),
+    s.tuteur_id,
+    s.id,
+    DATE_ADD(CURDATE(), INTERVAL 3 DAY) + INTERVAL 10 HOUR,
+    DATE_ADD(CURDATE(), INTERVAL 3 DAY) + INTERVAL 11 HOUR,
+    'DISPONIBLE',
+    s.prix,
+    NULL
+FROM services s
+WHERE s.categorie = 'Mathématiques' AND s.actif = TRUE
+LIMIT 1;
+
+-- Créneaux pour le service Sciences
+INSERT INTO disponibilites (id, tuteur_id, service_id, date_debut, date_fin, statut, prix, notes)
+SELECT 
+    UUID(),
+    s.tuteur_id,
+    s.id,
+    DATE_ADD(CURDATE(), INTERVAL 2 DAY) + INTERVAL 13 HOUR,
+    DATE_ADD(CURDATE(), INTERVAL 2 DAY) + INTERVAL 14 HOUR,
+    'DISPONIBLE',
+    s.prix,
+    'Créneau disponible'
+FROM services s
+WHERE s.categorie = 'Sciences' AND s.actif = TRUE
+LIMIT 1;
+
+INSERT INTO disponibilites (id, tuteur_id, service_id, date_debut, date_fin, statut, prix, notes)
+SELECT 
+    UUID(),
+    s.tuteur_id,
+    s.id,
+    DATE_ADD(CURDATE(), INTERVAL 4 DAY) + INTERVAL 15 HOUR,
+    DATE_ADD(CURDATE(), INTERVAL 4 DAY) + INTERVAL 16 HOUR,
+    'DISPONIBLE',
+    s.prix,
+    NULL
+FROM services s
+WHERE s.categorie = 'Sciences' AND s.actif = TRUE
+LIMIT 1;
+
+-- Créneaux pour le service Informatique
+INSERT INTO disponibilites (id, tuteur_id, service_id, date_debut, date_fin, statut, prix, notes)
+SELECT 
+    UUID(),
+    s.tuteur_id,
+    s.id,
+    DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 10 HOUR,
+    DATE_ADD(CURDATE(), INTERVAL 1 DAY) + INTERVAL 11 HOUR + INTERVAL 30 MINUTE,
+    'DISPONIBLE',
+    s.prix,
+    'Session de 90 minutes'
+FROM services s
+WHERE s.categorie = 'Informatique' AND s.actif = TRUE
+LIMIT 1;
+
+INSERT INTO disponibilites (id, tuteur_id, service_id, date_debut, date_fin, statut, prix, notes)
+SELECT 
+    UUID(),
+    s.tuteur_id,
+    s.id,
+    DATE_ADD(CURDATE(), INTERVAL 5 DAY) + INTERVAL 14 HOUR,
+    DATE_ADD(CURDATE(), INTERVAL 5 DAY) + INTERVAL 15 HOUR + INTERVAL 30 MINUTE,
+    'DISPONIBLE',
+    s.prix,
+    NULL
+FROM services s
+WHERE s.categorie = 'Informatique' AND s.actif = TRUE
+LIMIT 1;
+
+-- Créneaux pour le service Français
+INSERT INTO disponibilites (id, tuteur_id, service_id, date_debut, date_fin, statut, prix, notes)
+SELECT 
+    UUID(),
+    s.tuteur_id,
+    s.id,
+    DATE_ADD(CURDATE(), INTERVAL 2 DAY) + INTERVAL 11 HOUR,
+    DATE_ADD(CURDATE(), INTERVAL 2 DAY) + INTERVAL 12 HOUR,
+    'DISPONIBLE',
+    s.prix,
+    NULL
+FROM services s
+WHERE s.categorie = 'Langues' AND s.nom LIKE '%Français%' AND s.actif = TRUE
+LIMIT 1;
+
+INSERT INTO disponibilites (id, tuteur_id, service_id, date_debut, date_fin, statut, prix, notes)
+SELECT 
+    UUID(),
+    s.tuteur_id,
+    s.id,
+    DATE_ADD(CURDATE(), INTERVAL 6 DAY) + INTERVAL 9 HOUR,
+    DATE_ADD(CURDATE(), INTERVAL 6 DAY) + INTERVAL 10 HOUR,
+    'RESERVE',
+    s.prix,
+    'Créneau réservé'
+FROM services s
+WHERE s.categorie = 'Langues' AND s.nom LIKE '%Français%' AND s.actif = TRUE
+LIMIT 1;
+
+-- Créneaux pour le service Anglais
+INSERT INTO disponibilites (id, tuteur_id, service_id, date_debut, date_fin, statut, prix, notes)
+SELECT 
+    UUID(),
+    s.tuteur_id,
+    s.id,
+    DATE_ADD(CURDATE(), INTERVAL 3 DAY) + INTERVAL 13 HOUR,
+    DATE_ADD(CURDATE(), INTERVAL 3 DAY) + INTERVAL 14 HOUR,
+    'DISPONIBLE',
+    s.prix,
+    NULL
+FROM services s
+WHERE s.categorie = 'Langues' AND s.nom LIKE '%Anglais%' AND s.actif = TRUE
+LIMIT 1;
+
+-- Créneaux pour le service Aide aux devoirs
+INSERT INTO disponibilites (id, tuteur_id, service_id, date_debut, date_fin, statut, prix, notes)
+SELECT 
+    UUID(),
+    s.tuteur_id,
+    s.id,
+    DATE_ADD(CURDATE(), INTERVAL 4 DAY) + INTERVAL 10 HOUR,
+    DATE_ADD(CURDATE(), INTERVAL 4 DAY) + INTERVAL 11 HOUR,
+    'DISPONIBLE',
+    s.prix,
+    NULL
+FROM services s
+WHERE s.categorie = 'Général' AND s.actif = TRUE
+LIMIT 1;
+
+INSERT INTO disponibilites (id, tuteur_id, service_id, date_debut, date_fin, statut, prix, notes)
+SELECT 
+    UUID(),
+    s.tuteur_id,
+    s.id,
+    DATE_ADD(CURDATE(), INTERVAL 7 DAY) + INTERVAL 15 HOUR,
+    DATE_ADD(CURDATE(), INTERVAL 7 DAY) + INTERVAL 16 HOUR,
+    'DISPONIBLE',
+    s.prix,
+    NULL
+FROM services s
+WHERE s.categorie = 'Général' AND s.actif = TRUE
+LIMIT 1;
 
