@@ -32,6 +32,7 @@ foreach ($services as $service) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TutoPlus - Services de Tutorat</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/creneaux-modal.css">
 </head>
 <body>
     <header>
@@ -109,8 +110,15 @@ foreach ($services as $service) {
                                                         <strong>Prix:</strong> <?php echo number_format($service['prix'], 2); ?> $CA
                                                     </span>
                                                     <?php if (isset($service['departement'])): ?>
-                                                        <span class="detail-item">
-                                                            <strong>Département:</strong> <?php echo htmlspecialchars($service['departement']); ?>
+                                                        <span class="detail-item detail-item-with-action">
+                                                            <span class="detail-content">
+                                                                <strong>Département:</strong> <?php echo htmlspecialchars($service['departement']); ?>
+                                                            </span>
+                                                            <button class="btn-plus-creneaux" 
+                                                                    data-service-id="<?php echo htmlspecialchars($service['id']); ?>"
+                                                                    aria-label="Voir les créneaux">
+                                                                <span class="btn-plus-icon">+</span>
+                                                            </button>
                                                         </span>
                                                     <?php endif; ?>
                                                 </div>
@@ -135,7 +143,21 @@ foreach ($services as $service) {
         </div>
     </footer>
 
+    <!-- Modal pour les créneaux -->
+    <div id="creneauxModal" class="creneaux-modal">
+        <div class="creneaux-modal-overlay"></div>
+        <div class="creneaux-modal-content">
+            <div class="creneaux-modal-header">
+                <h2 class="creneaux-modal-title">Sélectionner un créneau</h2>
+                <button class="creneaux-modal-close" aria-label="Fermer">&times;</button>
+            </div>
+            <div class="creneaux-modal-body" id="creneauxModalBody">
+            </div>
+        </div>
+    </div>
+
     <script src="assets/js/script.js"></script>
+    <script src="assets/js/creneaux-modal.js"></script>
 </body>
 </html>
 
