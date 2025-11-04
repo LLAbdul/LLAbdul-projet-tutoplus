@@ -6,6 +6,7 @@
 
 require_once 'config/database.php';
 require_once 'models/Service.php';
+require_once 'models/Tuteur.php';
 
 // Connexion à la base de données
 $pdo = getDBConnection();
@@ -86,6 +87,15 @@ foreach ($services as $service) {
                                         <div class="service-card slide-up" style="animation-delay: <?php echo $index * 0.1; ?>s;">
                                             <div class="service-header">
                                                 <h4><?php echo htmlspecialchars($service['nom']); ?></h4>
+                                                <?php if (isset($service['tuteur_nom']) && isset($service['tuteur_prenom'])): ?>
+                                                    <div class="service-tuteur">
+                                                        <span class="tuteur-label">Tuteur:</span>
+                                                        <span class="tuteur-name"><?php echo htmlspecialchars($service['tuteur_prenom'] . ' ' . $service['tuteur_nom']); ?></span>
+                                                        <?php if (isset($service['evaluation']) && $service['evaluation'] > 0): ?>
+                                                            <span class="tuteur-rating">★ <?php echo number_format($service['evaluation'], 1); ?></span>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="service-body">
                                                 <p class="service-description">
@@ -98,6 +108,11 @@ foreach ($services as $service) {
                                                     <span class="detail-item">
                                                         <strong>Prix:</strong> <?php echo number_format($service['prix'], 2); ?> $CA
                                                     </span>
+                                                    <?php if (isset($service['departement'])): ?>
+                                                        <span class="detail-item">
+                                                            <strong>Département:</strong> <?php echo htmlspecialchars($service['departement']); ?>
+                                                        </span>
+                                                    <?php endif; ?>
                                                 </div>
                                             </div>
                                         </div>
