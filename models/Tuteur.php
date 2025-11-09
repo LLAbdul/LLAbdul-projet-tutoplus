@@ -26,6 +26,25 @@ class Tuteur {
         }
     }
     
+    // Récupère un tuteur par son numéro d'employé (pour la connexion)
+    public function getTuteurByNumero($numeroEmploye) {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT id, numero_employe, nom, prenom, email, telephone, 
+                       departement, specialites, tarif_horaire, evaluation, 
+                       nb_seances, actif
+                FROM tuteurs 
+                WHERE numero_employe = :numero_employe AND actif = TRUE
+            ");
+            $stmt->bindParam(':numero_employe', $numeroEmploye, PDO::PARAM_STR);
+            $stmt->execute();
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            error_log("Erreur lors de la récupération du tuteur par numéro : " . $e->getMessage());
+            return null;
+        }
+    }
+    
     // Récupère tous les tuteurs actifs
     public function getAllActiveTuteurs() {
         try {
