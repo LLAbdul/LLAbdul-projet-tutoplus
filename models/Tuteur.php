@@ -45,6 +45,23 @@ class Tuteur {
         }
     }
     
+    // Met à jour la dernière connexion
+    public function updateDerniereConnexion($id) {
+        try {
+            $stmt = $this->pdo->prepare("
+                UPDATE tuteurs 
+                SET derniere_connexion = NOW() 
+                WHERE id = :id
+            ");
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmt->execute();
+            return true;
+        } catch (PDOException $e) {
+            error_log("Erreur lors de la mise à jour de la dernière connexion : " . $e->getMessage());
+            return false;
+        }
+    }
+    
     // Récupère tous les tuteurs actifs
     public function getAllActiveTuteurs() {
         try {
