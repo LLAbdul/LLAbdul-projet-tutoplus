@@ -244,6 +244,9 @@ function submitDisponibilite() {
     .then(response => response.json())
     .then(result => {
         if (result.success) {
+            // Afficher message de succès
+            const message = id ? 'Disponibilité modifiée avec succès' : 'Disponibilité créée avec succès';
+            showNotification(message, 'success');
             // Recharger les événements du calendrier
             window.calendar.refetchEvents();
             closeModal();
@@ -272,7 +275,7 @@ function updateDisponibilite(event) {
     if (diffMinutes < 30) {
         // Annuler le changement si la durée est inférieure à 30 minutes
         event.revert();
-        alert('La durée minimum doit être de 30 minutes');
+        showNotification('La durée minimum doit être de 30 minutes', 'error');
         return;
     }
     
@@ -300,13 +303,15 @@ function updateDisponibilite(event) {
         if (!result.success) {
             // Annuler le changement en cas d'erreur
             event.revert();
-            alert(result.error || 'Erreur lors de la modification de la disponibilité');
+            showNotification(result.error || 'Erreur lors de la modification de la disponibilité', 'error');
+        } else {
+            showNotification('Disponibilité modifiée avec succès', 'success');
         }
     })
     .catch(error => {
         console.error('Erreur:', error);
         event.revert();
-        alert('Une erreur est survenue. Veuillez réessayer.');
+        showNotification('Une erreur est survenue. Veuillez réessayer.', 'error');
     });
 }
 
@@ -344,16 +349,44 @@ function deleteDisponibilite(id) {
     .then(response => response.json())
     .then(result => {
         if (result.success) {
+            // Afficher message de succès
+            showNotification('Disponibilité supprimée avec succès', 'success');
             // Recharger les événements du calendrier
             window.calendar.refetchEvents();
             closeModal();
         } else {
-            alert(result.error || 'Erreur lors de la suppression de la disponibilité');
+            showNotification(result.error || 'Erreur lors de la suppression de la disponibilité', 'error');
         }
     })
     .catch(error => {
         console.error('Erreur:', error);
-        alert('Une erreur est survenue. Veuillez réessayer.');
+        showNotification('Une erreur est survenue. Veuillez réessayer.', 'error');
     });
+}
+
+// Fonction pour afficher une notification
+function showNotification(message, type = 'info') {
+    const container = document.getElementById('notification-container');
+    if (!container) return;
+    
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    
+    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+    notification.innerHTML = `
+        <span class="notification-icon">${icon}</span>
+        <span class="notification-message">${message}</span>
+        <button type="button" class="notification-close" onclick="this.parentElement.remove()">&times;</button>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Supprimer automatiquement après 5 secondes
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideInRight 0.3s reverse';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 5000);
 }
 

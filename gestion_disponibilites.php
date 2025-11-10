@@ -66,6 +66,8 @@ $tuteur = $tuteurModel->getTuteurById($_SESSION['tuteur_id']);
                     <p class="page-subtitle">Gérez vos créneaux de tutorat</p>
                 </div>
                 
+                <div id="notification-container" class="notification-container"></div>
+                
                 <div class="calendrier-container">
                     <div id="calendrier-disponibilites"></div>
                 </div>
