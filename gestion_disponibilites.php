@@ -111,8 +111,13 @@ $tuteur = $tuteurModel->getTuteurById($_SESSION['tuteur_id']);
                     <div id="modal-error" class="error-message" style="display: none;"></div>
                     
                     <div class="modal-actions">
-                        <button type="button" class="btn-secondary" id="modal-cancel">Annuler</button>
-                        <button type="submit" class="btn-primary" id="modal-submit">Créer</button>
+                        <div class="modal-actions-left">
+                            <button type="button" class="btn-danger" id="modal-delete" style="display: none;">Supprimer</button>
+                        </div>
+                        <div class="modal-actions-right">
+                            <button type="button" class="btn-secondary" id="modal-cancel">Annuler</button>
+                            <button type="submit" class="btn-primary" id="modal-submit">Créer</button>
+                        </div>
                     </div>
                 </form>
             </div>

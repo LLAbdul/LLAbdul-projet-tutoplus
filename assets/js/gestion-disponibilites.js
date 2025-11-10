@@ -54,20 +54,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Gérer le clic sur un événement existant (modification)
         eventClick: function(info) {
-            // TODO: Ouvrir modal pour modifier/supprimer une disponibilité
-            console.log('Événement cliqué:', info);
+            openModalEdit(info.event);
         },
         
         // Gérer le déplacement d'un événement (modification de date/heure)
         eventDrop: function(info) {
-            // TODO: Mettre à jour la disponibilité
-            console.log('Événement déplacé:', info);
+            updateDisponibilite(info.event);
         },
         
         // Gérer le redimensionnement d'un événement (modification de durée)
         eventResize: function(info) {
-            // TODO: Mettre à jour la disponibilité
-            console.log('Événement redimensionné:', info);
+            updateDisponibilite(info.event);
         }
     });
     
@@ -77,8 +74,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Variables globales pour le modal et le calendrier
     window.calendar = calendar;
     window.openModalCreate = openModalCreate;
+    window.openModalEdit = openModalEdit;
     window.closeModal = closeModal;
     window.submitDisponibilite = submitDisponibilite;
+    window.updateDisponibilite = updateDisponibilite;
+    window.deleteDisponibilite = deleteDisponibilite;
     
     // Initialiser les événements du modal
     initModal();
@@ -96,6 +96,7 @@ function openModalCreate(start, end) {
     document.getElementById('disponibilite-id').value = '';
     title.textContent = 'Créer une disponibilité';
     submitBtn.textContent = 'Créer';
+    document.getElementById('modal-delete').style.display = 'none';
     
     // Formater les dates pour datetime-local (format: YYYY-MM-DDTHH:mm)
     const startStr = formatDateTimeLocal(start);
@@ -148,11 +149,58 @@ function initModal() {
     });
 }
 
-// Fonction pour soumettre le formulaire (créer une disponibilité)
+// Fonction pour ouvrir le modal de modification
+function openModalEdit(event) {
+    const modal = document.getElementById('modal-disponibilite');
+    const form = document.getElementById('form-disponibilite');
+    const title = document.getElementById('modal-title');
+    const submitBtn = document.getElementById('modal-submit');
+    const deleteBtn = document.getElementById('modal-delete');
+    
+    // Récupérer les données de l'événement
+    const id = event.id;
+    const start = event.start;
+    const end = event.end || event.start;
+    const extendedProps = event.extendedProps || {};
+    const statut = extendedProps.statut || 'DISPONIBLE';
+    const notes = extendedProps.notes || '';
+    
+    // Pré-remplir le formulaire
+    form.reset();
+    document.getElementById('disponibilite-id').value = id;
+    title.textContent = 'Modifier une disponibilité';
+    submitBtn.textContent = 'Modifier';
+    
+    // Afficher le bouton de suppression si le créneau n'est pas réservé
+    if (statut !== 'RESERVE') {
+        deleteBtn.style.display = 'block';
+        deleteBtn.onclick = function() {
+            deleteDisponibilite(id);
+        };
+    } else {
+        deleteBtn.style.display = 'none';
+    }
+    
+    // Formater les dates pour datetime-local
+    const startStr = formatDateTimeLocal(start);
+    const endStr = formatDateTimeLocal(end);
+    
+    document.getElementById('date-debut').value = startStr;
+    document.getElementById('date-fin').value = endStr;
+    document.getElementById('statut').value = statut;
+    document.getElementById('notes').value = notes;
+    
+    // Afficher le modal
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// Fonction pour soumettre le formulaire (créer ou modifier une disponibilité)
 function submitDisponibilite() {
     const form = document.getElementById('form-disponibilite');
     const formData = new FormData(form);
     const errorDiv = document.getElementById('modal-error');
+    const id = formData.get('id');
     
     // Récupérer les valeurs du formulaire
     const dateDebut = formData.get('date_debut');
@@ -179,9 +227,15 @@ function submitDisponibilite() {
         notes: notes || null
     };
     
-    // Envoyer la requête POST
+    // Déterminer la méthode HTTP et l'URL
+    const method = id ? 'PUT' : 'POST';
+    if (id) {
+        data.id = id;
+    }
+    
+    // Envoyer la requête
     fetch('api/disponibilites.php', {
-        method: 'POST',
+        method: method,
         headers: {
             'Content-Type': 'application/json'
         },
@@ -194,7 +248,7 @@ function submitDisponibilite() {
             window.calendar.refetchEvents();
             closeModal();
         } else {
-            errorDiv.textContent = result.error || 'Erreur lors de la création de la disponibilité';
+            errorDiv.textContent = result.error || 'Erreur lors de la sauvegarde de la disponibilité';
             errorDiv.style.display = 'block';
         }
     })
@@ -205,9 +259,66 @@ function submitDisponibilite() {
     });
 }
 
+// Fonction pour mettre à jour une disponibilité après déplacement ou redimensionnement
+function updateDisponibilite(event) {
+    const id = event.id;
+    const start = event.start;
+    const end = event.end || event.start;
+    const extendedProps = event.extendedProps || {};
+    
+    // Validation côté client : durée minimum 30 minutes
+    const diffMinutes = (end - start) / (1000 * 60);
+    
+    if (diffMinutes < 30) {
+        // Annuler le changement si la durée est inférieure à 30 minutes
+        event.revert();
+        alert('La durée minimum doit être de 30 minutes');
+        return;
+    }
+    
+    // Préparer les données
+    const data = {
+        id: id,
+        date_debut: formatDateForAPI(start),
+        date_fin: formatDateForAPI(end),
+        statut: extendedProps.statut || null,
+        service_id: extendedProps.service_id || null,
+        prix: extendedProps.prix || null,
+        notes: extendedProps.notes || null
+    };
+    
+    // Envoyer la requête PUT
+    fetch('api/disponibilites.php', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (!result.success) {
+            // Annuler le changement en cas d'erreur
+            event.revert();
+            alert(result.error || 'Erreur lors de la modification de la disponibilité');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        event.revert();
+        alert('Une erreur est survenue. Veuillez réessayer.');
+    });
+}
+
 // Fonction pour formater une date pour l'API (format: YYYY-MM-DD HH:mm:ss)
 function formatDateTimeForAPI(dateTimeLocal) {
     const d = new Date(dateTimeLocal);
+    return formatDateForAPI(d);
+}
+
+// Fonction pour formater un objet Date pour l'API (format: YYYY-MM-DD HH:mm:ss)
+function formatDateForAPI(date) {
+    const d = date instanceof Date ? date : new Date(date);
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
@@ -215,5 +326,34 @@ function formatDateTimeForAPI(dateTimeLocal) {
     const minutes = String(d.getMinutes()).padStart(2, '0');
     const seconds = String(d.getSeconds()).padStart(2, '0');
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+// Fonction pour supprimer une disponibilité
+function deleteDisponibilite(id) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette disponibilité ?')) {
+        return;
+    }
+    
+    fetch('api/disponibilites.php', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: id })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            // Recharger les événements du calendrier
+            window.calendar.refetchEvents();
+            closeModal();
+        } else {
+            alert(result.error || 'Erreur lors de la suppression de la disponibilité');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Une erreur est survenue. Veuillez réessayer.');
+    });
 }
 
