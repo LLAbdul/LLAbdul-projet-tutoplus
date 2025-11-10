@@ -129,7 +129,7 @@ $services = $serviceModel->getAllActiveServices();
                     
                     <div class="form-group">
                         <label for="notes" class="form-label">Notes (optionnel)</label>
-                        <textarea id="notes" name="notes" class="form-input" rows="3"></textarea>
+                        <textarea id="notes" name="notes" class="form-input" rows="2"></textarea>
                     </div>
                     
                     <div id="modal-error" class="error-message" style="display: none;"></div>

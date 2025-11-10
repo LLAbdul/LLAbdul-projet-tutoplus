@@ -38,7 +38,7 @@
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(0, 0, 0, 0.08);
   width: 100%;
   max-width: 700px;
-  max-height: 90vh;
+  max-height: calc(100vh - 80px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -65,13 +65,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem 2rem;
+  padding: 1rem 1.75rem;
   border-bottom: 1px solid var(--border-light);
   background: var(--bg-white);
+  flex-shrink: 0;
 }
 
 .creneaux-modal-title {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-dark);
   margin: 0;
@@ -100,10 +101,12 @@
 }
 
 .creneaux-modal-body {
-  padding: 2rem 2.5rem;
+  padding: 1.25rem 1.75rem;
   overflow-y: auto;
   flex: 1;
   width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Conteneur principal */
@@ -555,8 +558,9 @@
 
 /* Styles pour le formulaire dans le modal - Material Design */
 .form-group {
-  margin-bottom: 1.75rem;
+  margin-bottom: 1rem;
   position: relative;
+  flex-shrink: 0;
 }
 
 .form-label {
@@ -564,17 +568,17 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-dark);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
   letter-spacing: 0.3px;
   text-transform: uppercase;
 }
 
 .form-input {
   width: 100%;
-  padding: 1.125rem 1.5rem;
+  padding: 0.8125rem 1.125rem;
   border: 2px solid var(--border-color);
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-family: var(--font-family);
   color: var(--text-dark);
   background: var(--bg-white);
@@ -658,7 +662,8 @@ select.form-input:focus {
 
 textarea.form-input {
   resize: vertical;
-  min-height: 100px;
+  min-height: 60px;
+  max-height: 90px;
   font-family: var(--font-family);
   line-height: 1.5;
 }
@@ -668,9 +673,10 @@ textarea.form-input {
   gap: 1rem;
   justify-content: space-between;
   align-items: center;
-  margin-top: 2.5rem;
-  padding-top: 2rem;
+  margin-top: 1rem;
+  padding-top: 1.25rem;
   border-top: 1px solid var(--border-light);
+  flex-shrink: 0;
 }
 
 .modal-actions-left {
