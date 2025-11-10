@@ -32,6 +32,21 @@ class Disponibilite {
     // Récupère toutes les disponibilités disponibles pour un service
     public function getDisponibilitesByServiceId($serviceId) {
         try {
+            // D'abord, récupérer le tuteur_id du service
+            $serviceStmt = $this->pdo->prepare("SELECT tuteur_id FROM services WHERE id = :service_id");
+            $serviceStmt->bindParam(':service_id', $serviceId, PDO::PARAM_STR);
+            $serviceStmt->execute();
+            $service = $serviceStmt->fetch();
+            
+            if (!$service) {
+                return [];
+            }
+            
+            $tuteurId = $service['tuteur_id'];
+            
+            // Récupérer les disponibilités :
+            // 1. Disponibilités spécifiques au service (d.service_id = :service_id)
+            // 2. OU disponibilités générales du tuteur du service (d.service_id IS NULL ET d.tuteur_id = tuteur_id_du_service)
             $stmt = $this->pdo->prepare("
                 SELECT d.id, d.tuteur_id, d.service_id, d.date_debut, d.date_fin, 
                        d.statut, d.prix, d.notes, d.date_creation, d.date_modification,
@@ -40,12 +55,16 @@ class Disponibilite {
                 FROM disponibilites d
                 LEFT JOIN services s ON d.service_id = s.id
                 LEFT JOIN tuteurs t ON d.tuteur_id = t.id
-                WHERE d.service_id = :service_id 
-                  AND d.statut = 'DISPONIBLE'
-                  AND d.date_debut >= NOW()
+                WHERE d.statut = 'DISPONIBLE'
+                  AND d.date_fin >= NOW()
+                  AND (
+                      d.service_id = :service_id
+                      OR (d.service_id IS NULL AND d.tuteur_id = :tuteur_id)
+                  )
                 ORDER BY d.date_debut ASC
             ");
             $stmt->bindParam(':service_id', $serviceId, PDO::PARAM_STR);
+            $stmt->bindParam(':tuteur_id', $tuteurId, PDO::PARAM_STR);
             $stmt->execute();
             return $stmt->fetchAll();
         } catch (PDOException $e) {
