@@ -117,5 +117,63 @@ class Disponibilite {
             return false;
         }
     }
+    
+    // Crée une nouvelle disponibilité
+    public function creerDisponibilite($tuteurId, $dateDebut, $dateFin, $statut = 'DISPONIBLE', $serviceId = null, $prix = null, $notes = null) {
+        try {
+            // Validation : durée minimum 30 minutes
+            $dateDebutObj = new DateTime($dateDebut);
+            $dateFinObj = new DateTime($dateFin);
+            $diff = $dateDebutObj->diff($dateFinObj);
+            $minutes = ($diff->days * 24 * 60) + ($diff->h * 60) + $diff->i;
+            
+            if ($minutes < 30) {
+                error_log("Erreur : La durée minimum doit être de 30 minutes");
+                return false;
+            }
+            
+            // Validation : date_fin > date_debut
+            if ($dateFinObj <= $dateDebutObj) {
+                error_log("Erreur : La date de fin doit être supérieure à la date de début");
+                return false;
+            }
+            
+            // Générer un UUID pour l'ID
+            $id = $this->generateUUID();
+            
+            $stmt = $this->pdo->prepare("
+                INSERT INTO disponibilites (id, tuteur_id, service_id, date_debut, date_fin, statut, prix, notes)
+                VALUES (:id, :tuteur_id, :service_id, :date_debut, :date_fin, :statut, :prix, :notes)
+            ");
+            
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmt->bindParam(':tuteur_id', $tuteurId, PDO::PARAM_STR);
+            $stmt->bindParam(':service_id', $serviceId, PDO::PARAM_STR);
+            $stmt->bindParam(':date_debut', $dateDebut, PDO::PARAM_STR);
+            $stmt->bindParam(':date_fin', $dateFin, PDO::PARAM_STR);
+            $stmt->bindParam(':statut', $statut, PDO::PARAM_STR);
+            $stmt->bindParam(':prix', $prix, PDO::PARAM_STR);
+            $stmt->bindParam(':notes', $notes, PDO::PARAM_STR);
+            
+            $stmt->execute();
+            
+            return $id;
+        } catch (PDOException $e) {
+            error_log("Erreur lors de la création de la disponibilité : " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    // Génère un UUID v4
+    private function generateUUID() {
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
+    }
 }
 
