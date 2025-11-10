@@ -105,6 +105,10 @@ function openModalCreate(start, end) {
     document.getElementById('date-debut').value = startStr;
     document.getElementById('date-fin').value = endStr;
     
+    // Définir le statut par défaut et gérer l'affichage des champs
+    document.getElementById('statut').value = 'DISPONIBLE';
+    toggleFieldsByStatut();
+    
     // Afficher le modal
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -113,9 +117,19 @@ function openModalCreate(start, end) {
 // Fonction pour fermer le modal
 function closeModal() {
     const modal = document.getElementById('modal-disponibilite');
+    const form = document.getElementById('form-disponibilite');
+    
     modal.classList.remove('active');
     document.body.style.overflow = '';
     document.getElementById('modal-error').style.display = 'none';
+    
+    // Réinitialiser le formulaire et réafficher tous les champs
+    form.reset();
+    document.getElementById('disponibilite-id').value = '';
+    const serviceGroup = document.getElementById('service-id').closest('.form-group');
+    const prixGroup = document.getElementById('prix').closest('.form-group');
+    serviceGroup.style.display = 'block';
+    prixGroup.style.display = 'block';
 }
 
 // Fonction pour formater une date en format datetime-local
@@ -129,6 +143,25 @@ function formatDateTimeLocal(date) {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
+// Fonction pour gérer l'affichage des champs selon le statut
+function toggleFieldsByStatut() {
+    const statut = document.getElementById('statut').value;
+    const serviceGroup = document.getElementById('service-id').closest('.form-group');
+    const prixGroup = document.getElementById('prix').closest('.form-group');
+    
+    if (statut === 'BLOQUE') {
+        // Cacher et désactiver les champs service et prix
+        serviceGroup.style.display = 'none';
+        prixGroup.style.display = 'none';
+        document.getElementById('service-id').value = '';
+        document.getElementById('prix').value = '';
+    } else {
+        // Afficher les champs service et prix
+        serviceGroup.style.display = 'block';
+        prixGroup.style.display = 'block';
+    }
+}
+
 // Fonction pour initialiser les événements du modal
 function initModal() {
     const modal = document.getElementById('modal-disponibilite');
@@ -136,11 +169,15 @@ function initModal() {
     const cancelBtn = document.getElementById('modal-cancel');
     const overlay = modal.querySelector('.creneaux-modal-overlay');
     const form = document.getElementById('form-disponibilite');
+    const statutSelect = document.getElementById('statut');
     
     // Fermer le modal
     closeBtn.addEventListener('click', closeModal);
     cancelBtn.addEventListener('click', closeModal);
     overlay.addEventListener('click', closeModal);
+    
+    // Gérer l'affichage des champs selon le statut
+    statutSelect.addEventListener('change', toggleFieldsByStatut);
     
     // Soumettre le formulaire
     form.addEventListener('submit', function(e) {
@@ -193,6 +230,9 @@ function openModalEdit(event) {
     document.getElementById('prix').value = prix;
     document.getElementById('statut').value = statut;
     document.getElementById('notes').value = notes;
+    
+    // Gérer l'affichage des champs selon le statut
+    toggleFieldsByStatut();
     
     // Afficher le modal
     modal.classList.add('active');

@@ -34,9 +34,19 @@ try {
             // Formater les disponibilités pour FullCalendar
             $events = [];
             foreach ($disponibilites as $dispo) {
+                // Déterminer le titre selon le statut
+                $title = '';
+                if ($dispo['statut'] === 'RESERVE') {
+                    $title = 'Réservé';
+                } elseif ($dispo['statut'] === 'BLOQUE') {
+                    $title = 'Bloqué';
+                } else {
+                    $title = $dispo['service_nom'] ?? 'Disponible';
+                }
+                
                 $events[] = [
                     'id' => $dispo['id'],
-                    'title' => $dispo['statut'] === 'RESERVE' ? 'Réservé' : ($dispo['service_nom'] ?? 'Disponible'),
+                    'title' => $title,
                     'start' => $dispo['date_debut'],
                     'end' => $dispo['date_fin'],
                     'color' => $dispo['statut'] === 'RESERVE' ? '#dc3545' : ($dispo['statut'] === 'BLOQUE' ? '#6c757d' : '#28a745'),
