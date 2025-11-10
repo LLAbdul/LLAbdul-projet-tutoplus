@@ -164,6 +164,70 @@ class Disponibilite {
         }
     }
     
+    // Modifie une disponibilité existante
+    public function modifierDisponibilite($id, $dateDebut, $dateFin, $statut = null, $serviceId = null, $prix = null, $notes = null) {
+        try {
+            // Validation : durée minimum 30 minutes
+            $dateDebutObj = new DateTime($dateDebut);
+            $dateFinObj = new DateTime($dateFin);
+            $diff = $dateDebutObj->diff($dateFinObj);
+            $minutes = ($diff->days * 24 * 60) + ($diff->h * 60) + $diff->i;
+            
+            if ($minutes < 30) {
+                error_log("Erreur : La durée minimum doit être de 30 minutes");
+                return false;
+            }
+            
+            // Validation : date_fin > date_debut
+            if ($dateFinObj <= $dateDebutObj) {
+                error_log("Erreur : La date de fin doit être supérieure à la date de début");
+                return false;
+            }
+            
+            // Construire la requête UPDATE dynamiquement
+            $updates = [];
+            $params = [':id' => $id, ':date_debut' => $dateDebut, ':date_fin' => $dateFin];
+            
+            $updates[] = "date_debut = :date_debut";
+            $updates[] = "date_fin = :date_fin";
+            
+            if ($statut !== null) {
+                $updates[] = "statut = :statut";
+                $params[':statut'] = $statut;
+            }
+            
+            if ($serviceId !== null) {
+                $updates[] = "service_id = :service_id";
+                $params[':service_id'] = $serviceId;
+            }
+            
+            if ($prix !== null) {
+                $updates[] = "prix = :prix";
+                $params[':prix'] = $prix;
+            }
+            
+            if ($notes !== null) {
+                $updates[] = "notes = :notes";
+                $params[':notes'] = $notes;
+            }
+            
+            $sql = "UPDATE disponibilites SET " . implode(", ", $updates) . " WHERE id = :id";
+            
+            $stmt = $this->pdo->prepare($sql);
+            
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value, PDO::PARAM_STR);
+            }
+            
+            $stmt->execute();
+            
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            error_log("Erreur lors de la modification de la disponibilité : " . $e->getMessage());
+            return false;
+        }
+    }
+    
     // Génère un UUID v4
     private function generateUUID() {
         return sprintf(
