@@ -29,6 +29,7 @@ $tuteur = $tuteurModel->getTuteurById($_SESSION['tuteur_id']);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Disponibilités - TutoPlus</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/gestion-disponibilites.css">
 </head>
 <body>
     <header>
