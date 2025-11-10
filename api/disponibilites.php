@@ -53,6 +53,34 @@ try {
             echo json_encode($events);
             break;
             
+        case 'POST':
+            // Créer une nouvelle disponibilité
+            $data = json_decode(file_get_contents('php://input'), true);
+            
+            if (!isset($data['date_debut']) || !isset($data['date_fin'])) {
+                http_response_code(400);
+                echo json_encode(['error' => 'date_debut et date_fin sont requis']);
+                break;
+            }
+            
+            $dateDebut = $data['date_debut'];
+            $dateFin = $data['date_fin'];
+            $statut = $data['statut'] ?? 'DISPONIBLE';
+            $serviceId = $data['service_id'] ?? null;
+            $prix = $data['prix'] ?? null;
+            $notes = $data['notes'] ?? null;
+            
+            $id = $disponibiliteModel->creerDisponibilite($tuteurId, $dateDebut, $dateFin, $statut, $serviceId, $prix, $notes);
+            
+            if ($id) {
+                http_response_code(201);
+                echo json_encode(['success' => true, 'id' => $id, 'message' => 'Disponibilité créée avec succès']);
+            } else {
+                http_response_code(400);
+                echo json_encode(['error' => 'Erreur lors de la création de la disponibilité']);
+            }
+            break;
+            
         default:
             http_response_code(405);
             echo json_encode(['error' => 'Méthode non autorisée']);
