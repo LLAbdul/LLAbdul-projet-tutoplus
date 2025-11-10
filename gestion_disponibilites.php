@@ -80,6 +80,7 @@ $tuteur = $tuteurModel->getTuteurById($_SESSION['tuteur_id']);
     
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/fr-ca.js"></script>
+    <script src="assets/js/gestion-disponibilites.js"></script>
 </body>
 </html>
 
