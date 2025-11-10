@@ -163,6 +163,8 @@ function openModalEdit(event) {
     const end = event.end || event.start;
     const extendedProps = event.extendedProps || {};
     const statut = extendedProps.statut || 'DISPONIBLE';
+    const serviceId = extendedProps.service_id || '';
+    const prix = extendedProps.prix || '';
     const notes = extendedProps.notes || '';
     
     // Pré-remplir le formulaire
@@ -187,6 +189,8 @@ function openModalEdit(event) {
     
     document.getElementById('date-debut').value = startStr;
     document.getElementById('date-fin').value = endStr;
+    document.getElementById('service-id').value = serviceId;
+    document.getElementById('prix').value = prix;
     document.getElementById('statut').value = statut;
     document.getElementById('notes').value = notes;
     
@@ -205,6 +209,8 @@ function submitDisponibilite() {
     // Récupérer les valeurs du formulaire
     const dateDebut = formData.get('date_debut');
     const dateFin = formData.get('date_fin');
+    const serviceId = formData.get('service_id');
+    const prix = formData.get('prix');
     const statut = formData.get('statut');
     const notes = formData.get('notes');
     
@@ -223,6 +229,8 @@ function submitDisponibilite() {
     const data = {
         date_debut: formatDateTimeForAPI(dateDebut),
         date_fin: formatDateTimeForAPI(dateFin),
+        service_id: serviceId || null,
+        prix: prix ? parseFloat(prix) : null,
         statut: statut,
         notes: notes || null
     };
