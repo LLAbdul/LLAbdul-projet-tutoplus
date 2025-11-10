@@ -81,6 +81,44 @@ try {
             }
             break;
             
+        case 'PUT':
+            // Modifier une disponibilité existante
+            $data = json_decode(file_get_contents('php://input'), true);
+            
+            if (!isset($data['id']) || !isset($data['date_debut']) || !isset($data['date_fin'])) {
+                http_response_code(400);
+                echo json_encode(['error' => 'id, date_debut et date_fin sont requis']);
+                break;
+            }
+            
+            $id = $data['id'];
+            
+            // Vérifier que la disponibilité appartient au tuteur
+            $disponibilite = $disponibiliteModel->getDisponibiliteById($id);
+            if (!$disponibilite || $disponibilite['tuteur_id'] !== $tuteurId) {
+                http_response_code(403);
+                echo json_encode(['error' => 'Disponibilité non trouvée ou non autorisée']);
+                break;
+            }
+            
+            $dateDebut = $data['date_debut'];
+            $dateFin = $data['date_fin'];
+            $statut = $data['statut'] ?? null;
+            $serviceId = $data['service_id'] ?? null;
+            $prix = $data['prix'] ?? null;
+            $notes = $data['notes'] ?? null;
+            
+            $success = $disponibiliteModel->modifierDisponibilite($id, $dateDebut, $dateFin, $statut, $serviceId, $prix, $notes);
+            
+            if ($success) {
+                http_response_code(200);
+                echo json_encode(['success' => true, 'message' => 'Disponibilité modifiée avec succès']);
+            } else {
+                http_response_code(400);
+                echo json_encode(['error' => 'Erreur lors de la modification de la disponibilité']);
+            }
+            break;
+            
         default:
             http_response_code(405);
             echo json_encode(['error' => 'Méthode non autorisée']);
