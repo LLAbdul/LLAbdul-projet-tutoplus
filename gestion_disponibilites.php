@@ -14,6 +14,7 @@ if (!isset($_SESSION['tuteur_id'])) {
 
 require_once 'config/database.php';
 require_once 'models/Tuteur.php';
+require_once 'models/Service.php';
 
 // Connexion à la base de données
 $pdo = getDBConnection();
@@ -21,6 +22,10 @@ $pdo = getDBConnection();
 // Récupération des informations du tuteur
 $tuteurModel = new Tuteur($pdo);
 $tuteur = $tuteurModel->getTuteurById($_SESSION['tuteur_id']);
+
+// Récupération des services pour le formulaire
+$serviceModel = new Service($pdo);
+$services = $serviceModel->getAllActiveServices();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -28,9 +33,9 @@ $tuteur = $tuteurModel->getTuteurById($_SESSION['tuteur_id']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Disponibilités - TutoPlus</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/gestion-disponibilites.css">
-    <link rel="stylesheet" href="assets/css/creneaux-modal.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="assets/css/gestion-disponibilites.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="assets/css/creneaux-modal.css?v=<?php echo time(); ?>">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css" rel="stylesheet">
 </head>
 <body>
@@ -95,6 +100,23 @@ $tuteur = $tuteurModel->getTuteurById($_SESSION['tuteur_id']);
                     <div class="form-group">
                         <label for="date-fin" class="form-label">Date et heure de fin</label>
                         <input type="datetime-local" id="date-fin" name="date_fin" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="service-id" class="form-label">Service (optionnel)</label>
+                        <select id="service-id" name="service_id" class="form-input">
+                            <option value="">Aucun service spécifique</option>
+                            <?php foreach ($services as $service): ?>
+                                <option value="<?php echo htmlspecialchars($service['id']); ?>">
+                                    <?php echo htmlspecialchars($service['nom'] . ' - ' . $service['categorie']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="prix" class="form-label">Prix (optionnel)</label>
+                        <input type="number" id="prix" name="prix" class="form-input" min="0" step="0.01" placeholder="0.00">
                     </div>
                     
                     <div class="form-group">
