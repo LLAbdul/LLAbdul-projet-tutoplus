@@ -228,6 +228,34 @@ class Disponibilite {
         }
     }
     
+    // Supprime une disponibilité (ne peut pas supprimer si réservée)
+    public function supprimerDisponibilite($id) {
+        try {
+            // Vérifier que la disponibilité existe et n'est pas réservée
+            $disponibilite = $this->getDisponibiliteById($id);
+            
+            if (!$disponibilite) {
+                error_log("Erreur : La disponibilité n'existe pas");
+                return false;
+            }
+            
+            if ($disponibilite['statut'] === 'RESERVE') {
+                error_log("Erreur : Impossible de supprimer un créneau réservé");
+                return false;
+            }
+            
+            // Supprimer la disponibilité
+            $stmt = $this->pdo->prepare("DELETE FROM disponibilites WHERE id = :id");
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmt->execute();
+            
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            error_log("Erreur lors de la suppression de la disponibilité : " . $e->getMessage());
+            return false;
+        }
+    }
+    
     // Génère un UUID v4
     private function generateUUID() {
         return sprintf(
