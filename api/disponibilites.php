@@ -119,6 +119,40 @@ try {
             }
             break;
             
+        case 'DELETE':
+            // Supprimer une disponibilité
+            $data = json_decode(file_get_contents('php://input'), true);
+            $id = $data['id'] ?? $_GET['id'] ?? null;
+            
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode(['error' => 'id est requis']);
+                break;
+            }
+            
+            // Vérifier que la disponibilité appartient au tuteur
+            $disponibilite = $disponibiliteModel->getDisponibiliteById($id);
+            if (!$disponibilite || $disponibilite['tuteur_id'] !== $tuteurId) {
+                http_response_code(403);
+                echo json_encode(['error' => 'Disponibilité non trouvée ou non autorisée']);
+                break;
+            }
+            
+            $success = $disponibiliteModel->supprimerDisponibilite($id);
+            
+            if ($success) {
+                http_response_code(200);
+                echo json_encode(['success' => true, 'message' => 'Disponibilité supprimée avec succès']);
+            } else {
+                http_response_code(400);
+                $message = 'Erreur lors de la suppression de la disponibilité';
+                if ($disponibilite && $disponibilite['statut'] === 'RESERVE') {
+                    $message = 'Impossible de supprimer un créneau réservé';
+                }
+                echo json_encode(['error' => $message]);
+            }
+            break;
+            
         default:
             http_response_code(405);
             echo json_encode(['error' => 'Méthode non autorisée']);
