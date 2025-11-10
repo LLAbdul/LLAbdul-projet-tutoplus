@@ -136,15 +136,17 @@ foreach ($services as $service) {
                                                         <strong>Prix:</strong> <?php echo number_format($service['prix'], 2); ?> $CA
                                                     </span>
                                                     <?php if (isset($service['departement'])): ?>
-                                                        <span class="detail-item detail-item-with-action">
+                                                        <span class="detail-item <?php echo !isset($_SESSION['tuteur_id']) ? 'detail-item-with-action' : ''; ?>">
                                                             <span class="detail-content">
                                                                 <strong>Département:</strong> <?php echo htmlspecialchars($service['departement']); ?>
                                                             </span>
-                                                            <button class="btn-plus-creneaux" 
-                                                                    data-service-id="<?php echo htmlspecialchars($service['id']); ?>"
-                                                                    aria-label="Voir les créneaux">
-                                                                <span class="btn-plus-icon">+</span>
-                                                            </button>
+                                                            <?php if (!isset($_SESSION['tuteur_id'])): ?>
+                                                                <button class="btn-plus-creneaux" 
+                                                                        data-service-id="<?php echo htmlspecialchars($service['id']); ?>"
+                                                                        aria-label="Voir les créneaux">
+                                                                    <span class="btn-plus-icon">+</span>
+                                                                </button>
+                                                            <?php endif; ?>
                                                         </span>
                                                     <?php endif; ?>
                                                 </div>
