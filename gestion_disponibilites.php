@@ -47,6 +47,13 @@ $serviceParDefaut = !empty($services) ? $services[0] : null;
             <div class="header-content">
                 <div class="header-left">
                     <a href="index.php" class="logo-link">
+                        <img src="https://www.collegeahuntsic.qc.ca/assets/logo-ahuntsic@2x-d26df4e07b2c21fcf37f518dd0ddba254ead36b6184274af4a4f6ca3b47bc838.png" 
+                             alt="Collège Ahuntsic" 
+                             class="college-logo">
+                    </a>
+                </div>
+                <div class="header-center">
+                    <a href="index.php" class="header-title-link">
                         <h1><span class="logo-text">Tuto</span><span class="logo-accent">Plus</span></h1>
                     </a>
                     <p class="subtitle">Système de tutorat pour votre école</p>
@@ -155,7 +162,12 @@ $serviceParDefaut = !empty($services) ? $services[0] : null;
 
     <footer>
         <div class="container">
-            <p>&copy; <?php echo date('Y'); ?> TutoPlus - Tous droits réservés</p>
+            <div class="footer-content">
+                <p>&copy; <?php echo date('Y'); ?> TutoPlus - Tous droits réservés</p>
+                <img src="https://www.collegeahuntsic.qc.ca/assets/logo-ahuntsic@2x-d26df4e07b2c21fcf37f518dd0ddba254ead36b6184274af4a4f6ca3b47bc838.png" 
+                     alt="Collège Ahuntsic" 
+                     class="footer-logo">
+            </div>
         </div>
     </footer>
     
