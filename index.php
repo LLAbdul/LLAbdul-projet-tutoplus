@@ -53,6 +53,13 @@ foreach ($services as $service) {
                             <span class="user-number"><?php echo htmlspecialchars($_SESSION['etudiant_numero']); ?></span>
                         </div>
                         <a href="logout.php" class="btn-logout">Déconnexion</a>
+                    <?php elseif (isset($_SESSION['tuteur_id'])): ?>
+                        <div class="user-info">
+                            <span class="user-name"><?php echo htmlspecialchars($_SESSION['tuteur_prenom'] . ' ' . $_SESSION['tuteur_nom']); ?></span>
+                            <span class="user-number"><?php echo htmlspecialchars($_SESSION['tuteur_numero']); ?></span>
+                        </div>
+                        <a href="gestion_disponibilites.php" class="btn-login-link" style="margin-right: 1rem;">Mes Disponibilités</a>
+                        <a href="logout.php" class="btn-logout">Déconnexion</a>
                     <?php else: ?>
                         <a href="login.php" class="btn-login-link">Connexion</a>
                     <?php endif; ?>
