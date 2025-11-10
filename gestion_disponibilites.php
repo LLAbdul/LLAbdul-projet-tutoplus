@@ -30,6 +30,7 @@ $tuteur = $tuteurModel->getTuteurById($_SESSION['tuteur_id']);
     <title>Gestion des Disponibilités - TutoPlus</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/gestion-disponibilites.css">
+    <link rel="stylesheet" href="assets/css/creneaux-modal.css">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css" rel="stylesheet">
 </head>
 <body>
@@ -71,6 +72,52 @@ $tuteur = $tuteurModel->getTuteurById($_SESSION['tuteur_id']);
             </div>
         </section>
     </main>
+
+    <!-- Modal pour créer/modifier une disponibilité -->
+    <div id="modal-disponibilite" class="creneaux-modal">
+        <div class="creneaux-modal-overlay"></div>
+        <div class="creneaux-modal-content">
+            <div class="creneaux-modal-header">
+                <h3 class="creneaux-modal-title" id="modal-title">Créer une disponibilité</h3>
+                <button type="button" class="creneaux-modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="creneaux-modal-body">
+                <form id="form-disponibilite">
+                    <input type="hidden" id="disponibilite-id" name="id">
+                    
+                    <div class="form-group">
+                        <label for="date-debut" class="form-label">Date et heure de début</label>
+                        <input type="datetime-local" id="date-debut" name="date_debut" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="date-fin" class="form-label">Date et heure de fin</label>
+                        <input type="datetime-local" id="date-fin" name="date_fin" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="statut" class="form-label">Statut</label>
+                        <select id="statut" name="statut" class="form-input">
+                            <option value="DISPONIBLE">Disponible</option>
+                            <option value="BLOQUE">Bloqué</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notes" class="form-label">Notes (optionnel)</label>
+                        <textarea id="notes" name="notes" class="form-input" rows="3"></textarea>
+                    </div>
+                    
+                    <div id="modal-error" class="error-message" style="display: none;"></div>
+                    
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" id="modal-cancel">Annuler</button>
+                        <button type="submit" class="btn-primary" id="modal-submit">Créer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <footer>
         <div class="container">
