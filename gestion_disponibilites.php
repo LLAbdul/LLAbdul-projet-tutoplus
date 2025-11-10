@@ -23,9 +23,12 @@ $pdo = getDBConnection();
 $tuteurModel = new Tuteur($pdo);
 $tuteur = $tuteurModel->getTuteurById($_SESSION['tuteur_id']);
 
-// Récupération des services pour le formulaire
+// Récupération des services du tuteur pour le formulaire
 $serviceModel = new Service($pdo);
-$services = $serviceModel->getAllActiveServices();
+$services = $serviceModel->getServicesByTuteurId($_SESSION['tuteur_id']);
+
+// Déterminer le service par défaut (premier service du tuteur)
+$serviceParDefaut = !empty($services) ? $services[0] : null;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -107,7 +110,9 @@ $services = $serviceModel->getAllActiveServices();
                         <select id="service-id" name="service_id" class="form-input">
                             <option value="">Aucun service spécifique</option>
                             <?php foreach ($services as $service): ?>
-                                <option value="<?php echo htmlspecialchars($service['id']); ?>">
+                                <option value="<?php echo htmlspecialchars($service['id']); ?>" 
+                                        data-prix="<?php echo htmlspecialchars($service['prix']); ?>"
+                                        <?php echo ($serviceParDefaut && $service['id'] === $serviceParDefaut['id']) ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($service['nom'] . ' - ' . $service['categorie']); ?>
                                 </option>
                             <?php endforeach; ?>
@@ -116,7 +121,7 @@ $services = $serviceModel->getAllActiveServices();
                     
                     <div class="form-group">
                         <label for="prix" class="form-label">Prix (optionnel)</label>
-                        <input type="number" id="prix" name="prix" class="form-input" min="0" step="0.01" placeholder="0.00">
+                        <input type="number" id="prix" name="prix" class="form-input" min="0" step="0.01" placeholder="0.00" value="<?php echo $serviceParDefaut ? number_format($serviceParDefaut['prix'], 2, '.', '') : ''; ?>">
                     </div>
                     
                     <div class="form-group">
