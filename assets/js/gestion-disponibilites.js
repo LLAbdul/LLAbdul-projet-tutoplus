@@ -109,6 +109,9 @@ function openModalCreate(start, end) {
     document.getElementById('statut').value = 'DISPONIBLE';
     toggleFieldsByStatut();
     
+    // Pré-remplir le service et le prix par défaut
+    updatePrixFromService();
+    
     // Afficher le modal
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -159,6 +162,35 @@ function toggleFieldsByStatut() {
         // Afficher les champs service et prix
         serviceGroup.style.display = 'block';
         prixGroup.style.display = 'block';
+        // Si le service est vide, réinitialiser avec le service par défaut
+        const serviceSelect = document.getElementById('service-id');
+        if (!serviceSelect.value) {
+            // Sélectionner le premier service (service par défaut)
+            const firstOption = serviceSelect.options[1]; // Index 0 est "Aucun service spécifique"
+            if (firstOption) {
+                serviceSelect.value = firstOption.value;
+                updatePrixFromService();
+            }
+        } else {
+            // Mettre à jour le prix selon le service sélectionné
+            updatePrixFromService();
+        }
+    }
+}
+
+// Fonction pour mettre à jour le prix selon le service sélectionné
+function updatePrixFromService() {
+    const serviceSelect = document.getElementById('service-id');
+    const prixInput = document.getElementById('prix');
+    const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+    
+    if (selectedOption && selectedOption.value) {
+        const prix = selectedOption.getAttribute('data-prix');
+        if (prix) {
+            prixInput.value = parseFloat(prix).toFixed(2);
+        }
+    } else {
+        prixInput.value = '';
     }
 }
 
@@ -170,6 +202,7 @@ function initModal() {
     const overlay = modal.querySelector('.creneaux-modal-overlay');
     const form = document.getElementById('form-disponibilite');
     const statutSelect = document.getElementById('statut');
+    const serviceSelect = document.getElementById('service-id');
     
     // Fermer le modal
     closeBtn.addEventListener('click', closeModal);
@@ -178,6 +211,9 @@ function initModal() {
     
     // Gérer l'affichage des champs selon le statut
     statutSelect.addEventListener('change', toggleFieldsByStatut);
+    
+    // Mettre à jour le prix quand le service change
+    serviceSelect.addEventListener('change', updatePrixFromService);
     
     // Soumettre le formulaire
     form.addEventListener('submit', function(e) {
