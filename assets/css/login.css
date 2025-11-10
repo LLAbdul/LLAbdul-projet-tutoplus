@@ -22,6 +22,40 @@
   border: 1px solid var(--border-light);
 }
 
+.login-type-switch {
+  display: flex;
+  gap: 0;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--border-light);
+  position: relative;
+}
+
+.switch-btn {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  text-align: center;
+}
+
+.switch-btn:hover {
+  color: var(--text-dark);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.switch-btn.active {
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
+  background: transparent;
+}
+
 .login-title {
   font-size: 2rem;
   font-weight: 700;

@@ -6,11 +6,18 @@
 
 session_start();
 
-// Si déjà connecté, rediriger vers l'accueil
+// Si déjà connecté, rediriger selon le type d'utilisateur
 if (isset($_SESSION['etudiant_id'])) {
     header('Location: index.php');
     exit;
 }
+if (isset($_SESSION['tuteur_id'])) {
+    header('Location: gestion_disponibilites.php');
+    exit;
+}
+
+// Déterminer le type de connexion (par défaut: étudiant)
+$loginType = isset($_GET['type']) && $_GET['type'] === 'tuteur' ? 'tuteur' : 'etudiant';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -35,8 +42,19 @@ if (isset($_SESSION['etudiant_id'])) {
         <section class="login-section">
             <div class="login-container">
                 <div class="login-card">
-                    <h2 class="login-title">Connexion</h2>
-                    <p class="login-subtitle">Entrez votre numéro d'étudiant pour vous connecter</p>
+                    <div class="login-type-switch">
+                        <button type="button" class="switch-btn <?php echo $loginType === 'etudiant' ? 'active' : ''; ?>" data-type="etudiant">
+                            Étudiant
+                        </button>
+                        <button type="button" class="switch-btn <?php echo $loginType === 'tuteur' ? 'active' : ''; ?>" data-type="tuteur">
+                            Tuteur
+                        </button>
+                    </div>
+                    
+                    <h2 class="login-title" id="login-title"><?php echo $loginType === 'tuteur' ? 'Connexion Tuteur' : 'Connexion'; ?></h2>
+                    <p class="login-subtitle" id="login-subtitle">
+                        <?php echo $loginType === 'tuteur' ? 'Entrez votre numéro d\'employé pour vous connecter' : 'Entrez votre numéro d\'étudiant pour vous connecter'; ?>
+                    </p>
                     
                     <?php if (isset($_SESSION['error'])): ?>
                         <div class="login-error">
@@ -44,15 +62,18 @@ if (isset($_SESSION['etudiant_id'])) {
                         </div>
                     <?php endif; ?>
                     
-                    <form action="login_process.php" method="POST" class="login-form">
+                    <form action="<?php echo $loginType === 'tuteur' ? 'login_tuteur_process.php' : 'login_process.php'; ?>" method="POST" class="login-form" id="login-form">
+                        <input type="hidden" name="login_type" value="<?php echo $loginType; ?>">
                         <div class="form-group">
-                            <label for="numero_etudiant" class="form-label">Numéro d'étudiant</label>
+                            <label for="numero_input" class="form-label" id="numero-label">
+                                <?php echo $loginType === 'tuteur' ? 'Numéro d\'employé' : 'Numéro d\'étudiant'; ?>
+                            </label>
                             <input 
                                 type="text" 
-                                id="numero_etudiant" 
-                                name="numero_etudiant" 
+                                id="numero_input" 
+                                name="<?php echo $loginType === 'tuteur' ? 'numero_employe' : 'numero_etudiant'; ?>" 
                                 class="form-input" 
-                                placeholder="Ex: E001"
+                                placeholder="<?php echo $loginType === 'tuteur' ? 'Ex: T001' : 'Ex: E001'; ?>"
                                 required
                                 autofocus
                                 autocomplete="off"
@@ -63,9 +84,13 @@ if (isset($_SESSION['etudiant_id'])) {
                     </form>
                     
                     <div class="login-info">
-                        <p class="info-text">
+                        <p class="info-text" id="login-info">
                             <strong>Connexion simulée :</strong> Aucune validation Omnivox réelle. 
-                            Utilisez un numéro d'étudiant de test (ex: E001, E002, E003, E004, E005).
+                            <?php if ($loginType === 'tuteur'): ?>
+                                Utilisez un numéro d'employé de test (ex: T001, T002, T003, T004, T005, T006).
+                            <?php else: ?>
+                                Utilisez un numéro d'étudiant de test (ex: E001, E002, E003, E004, E005).
+                            <?php endif; ?>
                         </p>
                     </div>
                 </div>
@@ -78,6 +103,8 @@ if (isset($_SESSION['etudiant_id'])) {
             <p>&copy; <?php echo date('Y'); ?> TutoPlus - Tous droits réservés</p>
         </div>
     </footer>
+    
+    <script src="assets/js/login.js"></script>
 </body>
 </html>
 
