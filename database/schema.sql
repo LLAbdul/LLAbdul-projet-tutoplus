@@ -136,26 +136,26 @@ WHERE EXISTS (SELECT 1 FROM tuteurs WHERE departement = 'Informatique' AND actif
 INSERT INTO services (id, tuteur_id, nom, description, categorie, duree_minute, prix, actif)
 SELECT 
     UUID(),
-    (SELECT id FROM tuteurs WHERE departement = 'Langues' AND specialites LIKE '%Français%' AND actif = TRUE LIMIT 1),
+    (SELECT id FROM tuteurs WHERE numero_employe = 'T004' AND actif = TRUE LIMIT 1),
     'Tutorat en Français',
     'Soutien en français : grammaire, orthographe, rédaction et compréhension de textes.',
     'Langues',
     60,
     20.00,
     TRUE
-WHERE EXISTS (SELECT 1 FROM tuteurs WHERE departement = 'Langues' AND specialites LIKE '%Français%' AND actif = TRUE);
+WHERE EXISTS (SELECT 1 FROM tuteurs WHERE numero_employe = 'T004' AND actif = TRUE);
 
 INSERT INTO services (id, tuteur_id, nom, description, categorie, duree_minute, prix, actif)
 SELECT 
     UUID(),
-    (SELECT id FROM tuteurs WHERE departement = 'Langues' AND specialites LIKE '%Anglais%' AND actif = TRUE LIMIT 1),
+    (SELECT id FROM tuteurs WHERE numero_employe = 'T005' AND actif = TRUE LIMIT 1),
     'Tutorat en Anglais',
     'Amélioration de l''anglais : conversation, grammaire, vocabulaire et préparation aux examens.',
     'Langues',
     60,
     20.00,
     TRUE
-WHERE EXISTS (SELECT 1 FROM tuteurs WHERE departement = 'Langues' AND specialites LIKE '%Anglais%' AND actif = TRUE);
+WHERE EXISTS (SELECT 1 FROM tuteurs WHERE numero_employe = 'T005' AND actif = TRUE);
 
 INSERT INTO services (id, tuteur_id, nom, description, categorie, duree_minute, prix, actif)
 SELECT 
