@@ -30,6 +30,7 @@ $tuteur = $tuteurModel->getTuteurById($_SESSION['tuteur_id']);
     <title>Gestion des Disponibilités - TutoPlus</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/gestion-disponibilites.css">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -76,6 +77,9 @@ $tuteur = $tuteurModel->getTuteurById($_SESSION['tuteur_id']);
             <p>&copy; <?php echo date('Y'); ?> TutoPlus - Tous droits réservés</p>
         </div>
     </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/fr-ca.js"></script>
 </body>
 </html>
 
