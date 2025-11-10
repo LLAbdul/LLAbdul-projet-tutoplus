@@ -64,7 +64,6 @@ class Disponibilite {
                 FROM disponibilites d
                 LEFT JOIN services s ON d.service_id = s.id
                 WHERE d.tuteur_id = :tuteur_id
-                  AND d.date_debut >= NOW()
                 ORDER BY d.date_debut ASC
             ");
             $stmt->bindParam(':tuteur_id', $tuteurId, PDO::PARAM_STR);
