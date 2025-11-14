@@ -425,6 +425,11 @@ async function reserverCreneau(creneauId) {
             };
             
             fillConfirmationData(confirmationData);
+            
+            // Fermer le modal des créneaux
+            closeModal();
+            
+            // Ouvrir le modal de confirmation
             openConfirmationModal();
         }
         
