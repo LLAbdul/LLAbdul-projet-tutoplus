@@ -8,6 +8,11 @@ function openConfirmationModal() {
     if (modal) {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
+        
+        // Auto-fermeture après 5 secondes
+        setTimeout(() => {
+            closeConfirmationModal();
+        }, 5000);
     }
 }
 
