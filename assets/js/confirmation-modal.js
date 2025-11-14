@@ -78,9 +78,23 @@ function fillConfirmationData(data) {
     return : Date formatée (ex: "15 janvier 2025")
  */
 function formatDateForConfirmation(dateString) {
-    const date = new Date(dateString);
-    const options = { day: 'numeric', month: 'long', year: 'numeric' };
-    return date.toLocaleDateString('fr-FR', options);
+    if (!dateString) return '';
+    
+    try {
+        const date = new Date(dateString);
+        
+        // Vérifier que la date est valide
+        if (isNaN(date.getTime())) {
+            console.error('Date invalide:', dateString);
+            return dateString; // Retourner la date originale si invalide
+        }
+        
+        const options = { day: 'numeric', month: 'long', year: 'numeric' };
+        return date.toLocaleDateString('fr-FR', options);
+    } catch (error) {
+        console.error('Erreur lors du formatage de la date:', error);
+        return dateString; // Retourner la date originale en cas d'erreur
+    }
 }
 
 /*
