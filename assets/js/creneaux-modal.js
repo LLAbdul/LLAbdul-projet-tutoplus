@@ -435,7 +435,17 @@ async function reserverCreneau(creneauId) {
         
     } catch (error) {
         console.error('Erreur lors de la réservation:', error);
-        alert('Erreur: ' + error.message);
+        // Afficher l'erreur à l'utilisateur
+        showReservationError(error.message);
     }
+}
+
+/*
+    Affiche un message d'erreur pour la réservation
+    message : Message d'erreur à afficher
+*/
+function showReservationError(message) {
+    // TODO: Implémenter un système de notification
+    alert('Erreur: ' + message);
 }
 
