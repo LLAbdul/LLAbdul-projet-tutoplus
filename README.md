@@ -19,15 +19,18 @@ LLAbdul-projet-tutoplus/
 │   │   ├── style.css                    # Styles CSS principaux
 │   │   ├── login.css                    # Styles pour la page de connexion
 │   │   ├── creneaux-modal.css           # Styles pour le modal des créneaux
+│   │   ├── confirmation-modal.css       # Styles pour le modal de confirmation
 │   │   └── gestion-disponibilites.css   # Styles pour la gestion des disponibilités
 │   └── js/
 │       ├── script.js                    # Scripts JavaScript principaux
 │       ├── login.js                     # Scripts pour la connexion
 │       ├── creneaux-modal.js            # Scripts pour le modal des créneaux
+│       ├── confirmation-modal.js        # Scripts pour le modal de confirmation
 │       └── gestion-disponibilites.js    # Scripts pour la gestion des disponibilités
 ├── api/
 │   ├── creneaux.php                     # API pour récupérer les créneaux disponibles
-│   └── disponibilites.php               # API pour gérer les disponibilités (CRUD)
+│   ├── disponibilites.php               # API pour gérer les disponibilités (CRUD)
+│   └── reservations.php                 # API pour créer des réservations
 ├── config/
 │   └── database.php                     # Configuration de la base de données
 ├── database/
@@ -105,12 +108,26 @@ Ouvrir `index.php` dans votre navigateur :
   - Tuteur associé
   - Département
 
-#### US-002 : Demande de Rendez-vous (Affichage)
+#### US-002 : Demande de Rendez-vous
 
 - Consultation des créneaux horaires disponibles pour chaque service
 - Affichage dans un modal avec calendrier
 - Groupement des créneaux par date
+- Réservation de créneaux disponibles
+- Option de notification (activation pour rappel 1 jour avant)
 - Connexion simulée (sans validation Omnivox réelle)
+
+#### US-003 : Confirmation de Rendez-vous
+
+- Message de confirmation affiché après réservation réussie
+- Affichage des informations essentielles :
+  - Date et heure du rendez-vous
+  - Nom du tuteur
+  - Service réservé
+  - Option de notification (si activée)
+- Modal de confirmation avec design moderne
+- Message visible pendant au moins 5 secondes
+- Fermeture automatique ou manuelle
 
 ### Pour les Tuteurs
 
@@ -251,11 +268,12 @@ Le projet suit une architecture MVC simplifiée :
 
 Les endpoints API suivent les conventions REST :
 
-- `GET /api/creneaux.php?service_id={id}` : Récupérer les créneaux disponibles
+- `GET /api/creneaux.php?service_id={id}` : Récupérer les créneaux disponibles pour un service
 - `GET /api/disponibilites.php` : Récupérer les disponibilités du tuteur connecté
 - `POST /api/disponibilites.php` : Créer une disponibilité
 - `PUT /api/disponibilites.php` : Modifier une disponibilité
 - `DELETE /api/disponibilites.php` : Supprimer une disponibilité
+- `POST /api/reservations.php` : Créer une réservation (étudiants)
 
 ---
 
