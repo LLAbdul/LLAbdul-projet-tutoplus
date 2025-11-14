@@ -93,6 +93,19 @@ function fillConfirmationData(data) {
     } else {
         console.error('Élément confirmation-service non trouvé dans le DOM');
     }
+    
+    // Afficher l'information de notification si activée
+    const notificationRow = document.getElementById('confirmation-notification-row');
+    const notificationElement = document.getElementById('confirmation-notification');
+    
+    if (notificationRow && notificationElement) {
+        if (data.notificationEnabled === true) {
+            notificationRow.style.display = 'flex';
+            notificationElement.textContent = 'Vous serez notifié(e) 1 jour avant votre rendez-vous';
+        } else {
+            notificationRow.style.display = 'none';
+        }
+    }
 }
 
 /*
