@@ -247,6 +247,18 @@ foreach ($services as $service) {
                         </div>
                         <div class="info-value" id="confirmation-service">-</div>
                     </div>
+                    
+                    <div class="info-row" id="confirmation-notification-row" style="display: none;">
+                        <div class="info-label">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 2C5.58 2 2 5.58 2 10C2 14.42 5.58 18 10 18C14.42 18 18 14.42 18 10C18 5.58 14.42 2 10 2ZM10 16.5C6.41 16.5 3.5 13.59 3.5 10C3.5 6.41 6.41 3.5 10 3.5C13.59 3.5 16.5 6.41 16.5 10C16.5 13.59 13.59 16.5 10 16.5Z" fill="#6c757d"/>
+                                <path d="M10 5.5C9.59 5.5 9.25 5.84 9.25 6.25V10C9.25 10.41 9.59 10.75 10 10.75C10.41 10.75 10.75 10.41 10.75 10V6.25C10.75 5.84 10.41 5.5 10 5.5Z" fill="#6c757d"/>
+                                <path d="M10 12.5C9.59 12.5 9.25 12.84 9.25 13.25C9.25 13.66 9.59 14 10 14C10.41 14 10.75 13.66 10.75 13.25C10.75 12.84 10.41 12.5 10 12.5Z" fill="#6c757d"/>
+                            </svg>
+                            <span>Notification</span>
+                        </div>
+                        <div class="info-value" id="confirmation-notification">-</div>
+                    </div>
                 </div>
             </div>
             
