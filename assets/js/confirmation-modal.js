@@ -104,8 +104,25 @@ function formatDateForConfirmation(dateString) {
 */
 function formatTimeForConfirmation(timeString) {
     if (!timeString) return '';
-    const [hours, minutes] = timeString.split(':');
-    return `${hours}:${minutes}`;
+    
+    try {
+        const [hours, minutes] = timeString.split(':');
+        
+        // Vérifier que les heures et minutes sont valides
+        if (!hours || !minutes || isNaN(parseInt(hours)) || isNaN(parseInt(minutes))) {
+            console.error('Format d\'heure invalide:', timeString);
+            return timeString; // Retourner l'heure originale si invalide
+        }
+        
+        // Formater avec padding pour les heures/minutes < 10
+        const formattedHours = hours.padStart(2, '0');
+        const formattedMinutes = minutes.padStart(2, '0');
+        
+        return `${formattedHours}:${formattedMinutes}`;
+    } catch (error) {
+        console.error('Erreur lors du formatage de l\'heure:', error);
+        return timeString; // Retourner l'heure originale en cas d'erreur
+    }
 }
 
 // Gestion des événements pour le modal de confirmation
