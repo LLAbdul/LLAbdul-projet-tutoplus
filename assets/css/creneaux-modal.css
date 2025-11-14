@@ -37,8 +37,8 @@
   border-radius: 16px;
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(0, 0, 0, 0.08);
   width: 100%;
-  max-width: 700px;
-  max-height: calc(100vh - 80px);
+  max-width: 900px;
+  max-height: calc(100vh - 60px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -451,42 +451,67 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   margin-top: 2rem;
   padding-top: 2rem;
   border-top: 1px solid var(--border-light);
 }
 
 .btn-back {
+  padding: 0.9375rem 2rem;
+  background: transparent;
   color: var(--text-dark);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  min-width: 120px;
   text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s ease;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  display: inline-block;
+  text-align: center;
 }
 
 .btn-back:hover {
-  color: var(--accent-color);
   background: var(--bg-light);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.btn-back:active {
+  transform: translateY(0);
 }
 
 .btn-next {
-  padding: 0.75rem 2rem;
+  padding: 0.9375rem 2rem;
   background: var(--accent-color);
   color: var(--text-white);
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(204, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(204, 0, 0, 0.25);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  min-width: 120px;
 }
 
 .btn-next:hover:not(:disabled) {
   background: var(--accent-light);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(204, 0, 0, 0.3);
+  box-shadow: 0 6px 16px rgba(204, 0, 0, 0.35);
+}
+
+.btn-next:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(204, 0, 0, 0.25);
 }
 
 .btn-next:disabled {
@@ -495,6 +520,7 @@
   cursor: not-allowed;
   opacity: 0.5;
   box-shadow: none;
+  transform: none;
 }
 
 /* Responsive */
