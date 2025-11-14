@@ -375,7 +375,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btnNext.addEventListener('click', function() {
             if (selectedCreneau && !this.disabled) {
                 const creneauId = selectedCreneau.querySelector('.time-slot-radio').value;
-                alert(`Créneau sélectionné : ${creneauId}\n\nCette fonctionnalité sera implémentée dans une prochaine étape.`);
+                reserverCreneau(creneauId);
             }
         });
     }
@@ -385,4 +385,13 @@ document.addEventListener('DOMContentLoaded', function() {
         closeModal();
     };
 });
+
+/*
+    Réserve un créneau en appelant l'API
+    creneauId : ID du créneau à réserver
+*/
+function reserverCreneau(creneauId) {
+    // TODO: Implémenter l'appel à l'API
+    console.log('Réservation du créneau:', creneauId);
+}
 
