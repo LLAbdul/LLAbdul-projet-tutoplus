@@ -7,20 +7,23 @@ let confirmationAutoCloseTimeout = null;
  */
 function openConfirmationModal() {
     const modal = document.getElementById('confirmationModal');
-    if (modal) {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        
-        // Annuler l'auto-fermeture précédente si elle existe
-        if (confirmationAutoCloseTimeout) {
-            clearTimeout(confirmationAutoCloseTimeout);
-        }
-        
-        // Auto-fermeture après 5 secondes
-        confirmationAutoCloseTimeout = setTimeout(() => {
-            closeConfirmationModal();
-        }, 5000);
+    if (!modal) {
+        console.error('Modal de confirmation non trouvé dans le DOM');
+        return;
     }
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Annuler l'auto-fermeture précédente si elle existe
+    if (confirmationAutoCloseTimeout) {
+        clearTimeout(confirmationAutoCloseTimeout);
+    }
+    
+    // Auto-fermeture après 5 secondes
+    confirmationAutoCloseTimeout = setTimeout(() => {
+        closeConfirmationModal();
+    }, 5000);
 }
 
 /**
@@ -28,15 +31,17 @@ function openConfirmationModal() {
  */
 function closeConfirmationModal() {
     const modal = document.getElementById('confirmationModal');
-    if (modal) {
-        modal.classList.remove('active');
-        document.body.style.overflow = '';
-        
-        // Annuler l'auto-fermeture si elle est en cours
-        if (confirmationAutoCloseTimeout) {
-            clearTimeout(confirmationAutoCloseTimeout);
-            confirmationAutoCloseTimeout = null;
-        }
+    if (!modal) {
+        return;
+    }
+    
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    
+    // Annuler l'auto-fermeture si elle est en cours
+    if (confirmationAutoCloseTimeout) {
+        clearTimeout(confirmationAutoCloseTimeout);
+        confirmationAutoCloseTimeout = null;
     }
 }
 
