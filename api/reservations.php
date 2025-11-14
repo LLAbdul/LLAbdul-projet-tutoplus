@@ -55,6 +55,16 @@ try {
                 break;
             }
             
+            // Validation : vérifier que le créneau n'est pas dans le passé
+            $dateDebut = new DateTime($disponibilite['date_debut']);
+            $now = new DateTime();
+            
+            if ($dateDebut < $now) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Impossible de réserver un créneau dans le passé']);
+                break;
+            }
+            
             // TODO: Implémenter la logique de réservation
             // Pour l'instant, retourner une réponse de succès
             http_response_code(200);
