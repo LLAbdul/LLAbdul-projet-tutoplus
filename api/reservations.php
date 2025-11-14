@@ -29,7 +29,15 @@ try {
     switch ($method) {
         case 'POST':
             // Créer une réservation
-            $data = json_decode(file_get_contents('php://input'), true);
+            $input = file_get_contents('php://input');
+            $data = json_decode($input, true);
+            
+            // Vérifier que le JSON est valide
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Format JSON invalide dans la requête']);
+                break;
+            }
             
             if (!isset($data['disponibilite_id']) || empty($data['disponibilite_id'])) {
                 http_response_code(400);
