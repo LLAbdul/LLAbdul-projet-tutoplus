@@ -22,3 +22,25 @@ function closeConfirmationModal() {
     }
 }
 
+/*
+  Remplit les données de confirmation dans le modal 
+  data : Données de la réservation (date, heure, tuteur, service)
+*/
+function fillConfirmationData(data) {
+    const dateTimeElement = document.getElementById('confirmation-date-time');
+    const tuteurElement = document.getElementById('confirmation-tuteur');
+    const serviceElement = document.getElementById('confirmation-service');
+    
+    if (dateTimeElement && data.date && data.heure) {
+        dateTimeElement.textContent = `${data.date} ${data.heure}`;
+    }
+    
+    if (tuteurElement && data.tuteur) {
+        tuteurElement.textContent = data.tuteur;
+    }
+    
+    if (serviceElement && data.service) {
+        serviceElement.textContent = data.service;
+    }
+}
+
