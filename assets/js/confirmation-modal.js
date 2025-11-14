@@ -44,3 +44,14 @@ function fillConfirmationData(data) {
     }
 }
 
+/*
+    Formate une date pour l'affichage dans la confirmation
+    dateString : Date au format ISO (YYYY-MM-DD)
+    return : Date formatée (ex: "15 janvier 2025")
+ */
+function formatDateForConfirmation(dateString) {
+    const date = new Date(dateString);
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    return date.toLocaleDateString('fr-FR', options);
+}
+
