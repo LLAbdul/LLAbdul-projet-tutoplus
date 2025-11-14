@@ -413,6 +413,9 @@ async function reserverCreneau(creneauId) {
     }
     
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // Timeout de 10 secondes
+        
         const response = await fetch('api/reservations.php', {
             method: 'POST',
             headers: {
@@ -420,10 +423,18 @@ async function reserverCreneau(creneauId) {
             },
             body: JSON.stringify({
                 disponibilite_id: creneauId
-            })
+            }),
+            signal: controller.signal
         });
         
-        const data = await response.json();
+        clearTimeout(timeoutId);
+        
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            throw new Error('Erreur lors de la lecture de la réponse du serveur');
+        }
         
         if (!response.ok) {
             throw new Error(data.error || 'Erreur lors de la réservation');
@@ -456,8 +467,20 @@ async function reserverCreneau(creneauId) {
         
     } catch (error) {
         console.error('Erreur lors de la réservation:', error);
+        
+        // Gérer les différents types d'erreurs
+        let errorMessage = error.message;
+        
+        if (error.name === 'AbortError') {
+            errorMessage = 'La requête a pris trop de temps. Veuillez réessayer.';
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            errorMessage = 'Erreur de connexion. Vérifiez votre connexion internet et réessayez.';
+        } else if (!errorMessage || errorMessage === 'Error') {
+            errorMessage = 'Une erreur inattendue s\'est produite. Veuillez réessayer.';
+        }
+        
         // Afficher l'erreur à l'utilisateur
-        showReservationError(error.message);
+        showReservationError(errorMessage);
     } finally {
         // Réinitialiser le bouton
         if (btnNext) {
