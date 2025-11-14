@@ -373,10 +373,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         btnNext.addEventListener('click', function() {
-            if (selectedCreneau && !this.disabled) {
-                const creneauId = selectedCreneau.querySelector('.time-slot-radio').value;
-                reserverCreneau(creneauId);
+            if (!selectedCreneau) {
+                alert('Veuillez sélectionner un créneau avant de continuer');
+                return;
             }
+            
+            if (this.disabled) {
+                return;
+            }
+            
+            const creneauId = selectedCreneau.querySelector('.time-slot-radio').value;
+            if (!creneauId) {
+                alert('Erreur : Aucun créneau sélectionné');
+                return;
+            }
+            
+            reserverCreneau(creneauId);
         });
     }
 
