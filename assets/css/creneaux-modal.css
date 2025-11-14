@@ -72,6 +72,7 @@
 }
 
 .creneaux-modal-title {
+  font-family: var(--font-family);
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-dark);
@@ -153,6 +154,7 @@
 }
 
 .calendar-month-year {
+  font-family: var(--font-family);
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-dark);
@@ -236,6 +238,7 @@
 }
 
 .summary-title {
+  font-family: var(--font-family);
   font-size: 1.125rem;
   font-weight: 600;
   margin-bottom: 1.25rem;
@@ -253,6 +256,7 @@
 }
 
 .selected-date-time {
+  font-family: var(--font-family);
   font-size: 0.9375rem;
   font-weight: 500;
 }
@@ -353,6 +357,7 @@
 }
 
 .time-slots-title {
+  font-family: var(--font-family);
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-dark);
@@ -370,6 +375,7 @@
 }
 
 .date-group-title {
+  font-family: var(--font-family);
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--text-dark);
@@ -424,6 +430,7 @@
 }
 
 .time-slot-text {
+  font-family: var(--font-family);
   font-size: 0.9375rem;
   font-weight: 500;
   color: var(--text-dark);
@@ -463,12 +470,11 @@
   color: var(--text-dark);
   border: 2px solid var(--border-color);
   border-radius: 8px;
-  font-size: 0.875rem;
+  font-family: var(--font-family);
+  font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
   min-width: 120px;
   text-decoration: none;
   display: inline-block;
@@ -493,13 +499,12 @@
   color: var(--text-white);
   border: none;
   border-radius: 8px;
-  font-size: 0.875rem;
+  font-family: var(--font-family);
+  font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 12px rgba(204, 0, 0, 0.25);
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
   min-width: 120px;
 }
 
