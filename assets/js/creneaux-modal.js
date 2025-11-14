@@ -445,7 +445,35 @@ async function reserverCreneau(creneauId) {
     message : Message d'erreur à afficher
 */
 function showReservationError(message) {
-    // TODO: Implémenter un système de notification
-    alert('Erreur: ' + message);
+    // Créer ou récupérer le conteneur de notifications
+    let container = document.getElementById('notification-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'notification-container';
+        container.className = 'notification-container';
+        container.style.cssText = 'position: fixed; top: 100px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 1rem; max-width: 400px;';
+        document.body.appendChild(container);
+    }
+    
+    // Créer la notification d'erreur
+    const notification = document.createElement('div');
+    notification.className = 'notification notification-error';
+    notification.style.cssText = 'padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: flex; align-items: center; gap: 1rem; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; animation: slideInRight 0.3s ease;';
+    
+    notification.innerHTML = `
+        <span style="font-size: 1.5rem; flex-shrink: 0;">✕</span>
+        <span style="flex: 1; font-size: 0.9375rem; font-weight: 500;">${message}</span>
+        <button type="button" onclick="this.parentElement.remove()" style="background: transparent; border: none; color: inherit; font-size: 1.25rem; cursor: pointer; padding: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; opacity: 0.7;">&times;</button>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Supprimer automatiquement après 5 secondes
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideInRight 0.3s reverse';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 5000);
 }
 
