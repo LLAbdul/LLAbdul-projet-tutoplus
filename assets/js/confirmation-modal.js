@@ -36,16 +36,26 @@ function fillConfirmationData(data) {
     const tuteurElement = document.getElementById('confirmation-tuteur');
     const serviceElement = document.getElementById('confirmation-service');
     
-    if (dateTimeElement && data.date && data.heure) {
-        dateTimeElement.textContent = `${data.date} ${data.heure}`;
+    // Formater et afficher la date et l'heure
+    if (dateTimeElement) {
+        if (data.date && data.heure) {
+            dateTimeElement.textContent = `${data.date} de ${data.heure}`;
+        } else if (data.dateTime) {
+            // Format alternatif si dateTime est fourni directement
+            dateTimeElement.textContent = data.dateTime;
+        } else {
+            dateTimeElement.textContent = '-';
+        }
     }
     
-    if (tuteurElement && data.tuteur) {
-        tuteurElement.textContent = data.tuteur;
+    // Afficher le tuteur
+    if (tuteurElement) {
+        tuteurElement.textContent = data.tuteur || '-';
     }
     
-    if (serviceElement && data.service) {
-        serviceElement.textContent = data.service;
+    // Afficher le service
+    if (serviceElement) {
+        serviceElement.textContent = data.service || '-';
     }
 }
 
