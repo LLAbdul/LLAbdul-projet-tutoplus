@@ -411,10 +411,11 @@ async function reserverCreneau(creneauId) {
     }
     
     const btnNext = document.getElementById('btnNext');
-    const originalText = btnNext ? btnNext.textContent : '';
+    let originalText = '';
     
     // Afficher l'indicateur de chargement
     if (btnNext) {
+        originalText = btnNext.textContent || 'Étape suivante';
         btnNext.disabled = true;
         btnNext.textContent = 'Réservation en cours...';
     }
@@ -502,10 +503,10 @@ async function reserverCreneau(creneauId) {
         // Afficher l'erreur à l'utilisateur
         showReservationError(errorMessage);
     } finally {
-        // Réinitialiser le bouton
-        if (btnNext) {
+        // Réinitialiser le bouton seulement si on n'a pas fermé le modal
+        if (btnNext && btnNext.parentElement) {
             btnNext.disabled = false;
-            btnNext.textContent = originalText;
+            btnNext.textContent = originalText || 'Étape suivante';
         }
     }
 }
