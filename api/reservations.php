@@ -39,6 +39,22 @@ try {
             
             $disponibiliteId = $data['disponibilite_id'];
             
+            // Validation : vérifier que le créneau existe
+            $disponibilite = $disponibiliteModel->getDisponibiliteById($disponibiliteId);
+            
+            if (!$disponibilite) {
+                http_response_code(404);
+                echo json_encode(['error' => 'Créneau non trouvé']);
+                break;
+            }
+            
+            // Validation : vérifier que le créneau est disponible
+            if ($disponibilite['statut'] !== 'DISPONIBLE') {
+                http_response_code(400);
+                echo json_encode(['error' => 'Ce créneau n\'est plus disponible']);
+                break;
+            }
+            
             // TODO: Implémenter la logique de réservation
             // Pour l'instant, retourner une réponse de succès
             http_response_code(200);
