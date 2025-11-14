@@ -35,6 +35,7 @@ foreach ($services as $service) {
     <title>TutoPlus - Services de Tutorat</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/creneaux-modal.css">
+    <link rel="stylesheet" href="assets/css/confirmation-modal.css">
 </head>
 <body>
     <header>
@@ -192,6 +193,65 @@ foreach ($services as $service) {
                 <button class="creneaux-modal-close" aria-label="Fermer">&times;</button>
             </div>
             <div class="creneaux-modal-body" id="creneauxModalBody">
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation de réservation -->
+    <div id="confirmationModal" class="confirmation-modal">
+        <div class="confirmation-modal-overlay"></div>
+        <div class="confirmation-modal-content">
+            <div class="confirmation-header">
+                <div class="confirmation-icon">
+                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="32" cy="32" r="32" fill="#d4edda"/>
+                        <path d="M20 32L28 40L44 24" stroke="#155724" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h2 class="confirmation-title">Réservation confirmée !</h2>
+                <p class="confirmation-subtitle">Votre rendez-vous a été réservé avec succès</p>
+            </div>
+            
+            <div class="confirmation-body">
+                <div class="confirmation-info-card">
+                    <div class="info-row">
+                        <div class="info-label">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 2C5.58 2 2 5.58 2 10C2 14.42 5.58 18 10 18C14.42 18 18 14.42 18 10C18 5.58 14.42 2 10 2ZM10 16.5C6.41 16.5 3.5 13.59 3.5 10C3.5 6.41 6.41 3.5 10 3.5C13.59 3.5 16.5 6.41 16.5 10C16.5 13.59 13.59 16.5 10 16.5Z" fill="#6c757d"/>
+                                <path d="M10 5.5C9.59 5.5 9.25 5.84 9.25 6.25V10C9.25 10.41 9.59 10.75 10 10.75C10.41 10.75 10.75 10.41 10.75 10V6.25C10.75 5.84 10.41 5.5 10 5.5Z" fill="#6c757d"/>
+                                <path d="M10 12.5C9.59 12.5 9.25 12.84 9.25 13.25C9.25 13.66 9.59 14 10 14C10.41 14 10.75 13.66 10.75 13.25C10.75 12.84 10.41 12.5 10 12.5Z" fill="#6c757d"/>
+                            </svg>
+                            <span>Date et heure</span>
+                        </div>
+                        <div class="info-value" id="confirmation-date-time">-</div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="info-label">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 10C11.38 10 12.5 8.88 12.5 7.5C12.5 6.12 11.38 5 10 5C8.62 5 7.5 6.12 7.5 7.5C7.5 8.88 8.62 10 10 10ZM10 11.25C8.28 11.25 5 12.09 5 13.75V15H15V13.75C15 12.09 11.72 11.25 10 11.25Z" fill="#6c757d"/>
+                            </svg>
+                            <span>Tuteur</span>
+                        </div>
+                        <div class="info-value" id="confirmation-tuteur">-</div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="info-label">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 2L2 7L10 12L18 7L10 2Z" fill="#6c757d"/>
+                                <path d="M2 13L10 18L18 13" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M2 10L10 15L18 10" stroke="#6c757d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>Service</span>
+                        </div>
+                        <div class="info-value" id="confirmation-service">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="confirmation-footer">
+                <button class="btn-confirmation-close" id="btnConfirmationClose">Fermer</button>
             </div>
         </div>
     </div>
