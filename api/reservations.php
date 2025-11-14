@@ -44,14 +44,17 @@ try {
             
             if (!$disponibilite) {
                 http_response_code(404);
-                echo json_encode(['error' => 'Créneau non trouvé']);
+                echo json_encode(['error' => 'Le créneau sélectionné n\'existe pas ou a été supprimé']);
                 break;
             }
             
             // Validation : vérifier que le créneau est disponible
             if ($disponibilite['statut'] !== 'DISPONIBLE') {
+                $statutMessage = $disponibilite['statut'] === 'RESERVE' 
+                    ? 'Ce créneau a déjà été réservé par un autre étudiant' 
+                    : 'Ce créneau n\'est plus disponible';
                 http_response_code(400);
-                echo json_encode(['error' => 'Ce créneau n\'est plus disponible']);
+                echo json_encode(['error' => $statutMessage]);
                 break;
             }
             
@@ -61,7 +64,7 @@ try {
             
             if ($dateDebut < $now) {
                 http_response_code(400);
-                echo json_encode(['error' => 'Impossible de réserver un créneau dans le passé']);
+                echo json_encode(['error' => 'Impossible de réserver un créneau qui est déjà passé']);
                 break;
             }
             
