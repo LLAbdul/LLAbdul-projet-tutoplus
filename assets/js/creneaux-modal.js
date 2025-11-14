@@ -391,6 +391,15 @@ document.addEventListener('DOMContentLoaded', function() {
     creneauId : ID du créneau à réserver
 */
 async function reserverCreneau(creneauId) {
+    const btnNext = document.getElementById('btnNext');
+    const originalText = btnNext ? btnNext.textContent : '';
+    
+    // Afficher l'indicateur de chargement
+    if (btnNext) {
+        btnNext.disabled = true;
+        btnNext.textContent = 'Réservation en cours...';
+    }
+    
     try {
         const response = await fetch('api/reservations.php', {
             method: 'POST',
@@ -437,6 +446,12 @@ async function reserverCreneau(creneauId) {
         console.error('Erreur lors de la réservation:', error);
         // Afficher l'erreur à l'utilisateur
         showReservationError(error.message);
+    } finally {
+        // Réinitialiser le bouton
+        if (btnNext) {
+            btnNext.disabled = false;
+            btnNext.textContent = originalText;
+        }
     }
 }
 
