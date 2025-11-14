@@ -443,8 +443,19 @@ async function reserverCreneau(creneauId) {
         // Afficher la confirmation avec les données
         if (data.disponibilite) {
             const dispo = data.disponibilite;
+            
+            // Vérifier que les données essentielles sont présentes
+            if (!dispo.date_debut || !dispo.date_fin) {
+                throw new Error('Données de réservation incomplètes');
+            }
+            
             const dateDebut = new Date(dispo.date_debut);
             const dateFin = new Date(dispo.date_fin);
+            
+            // Vérifier que les dates sont valides
+            if (isNaN(dateDebut.getTime()) || isNaN(dateFin.getTime())) {
+                throw new Error('Format de date invalide');
+            }
             
             const heureDebut = dateDebut.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false });
             const heureFin = dateFin.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -452,7 +463,7 @@ async function reserverCreneau(creneauId) {
             const confirmationData = {
                 date: formatDateForConfirmation(dispo.date_debut.split(' ')[0]),
                 heure: `${heureDebut} - ${heureFin}`,
-                tuteur: `${dispo.tuteur_prenom} ${dispo.tuteur_nom}`,
+                tuteur: `${dispo.tuteur_prenom || ''} ${dispo.tuteur_nom || ''}`.trim() || 'Tuteur non spécifié',
                 service: dispo.service_nom || 'Service général'
             };
             
@@ -463,6 +474,8 @@ async function reserverCreneau(creneauId) {
             
             // Ouvrir le modal de confirmation
             openConfirmationModal();
+        } else {
+            throw new Error('Données de réservation manquantes dans la réponse');
         }
         
     } catch (error) {
