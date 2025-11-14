@@ -82,12 +82,21 @@ try {
                 break;
             }
             
+            // Récupérer les informations complètes de la disponibilité après modification
+            $disponibiliteComplete = $disponibiliteModel->getDisponibiliteById($disponibiliteId);
+            
+            if (!$disponibiliteComplete) {
+                http_response_code(500);
+                echo json_encode(['error' => 'Erreur lors de la récupération des données de réservation']);
+                break;
+            }
+            
             http_response_code(200);
             echo json_encode([
                 'success' => true,
                 'message' => 'Réservation créée avec succès',
                 'disponibilite_id' => $disponibiliteId,
-                'disponibilite' => $disponibilite
+                'disponibilite' => $disponibiliteComplete
             ]);
             break;
             
