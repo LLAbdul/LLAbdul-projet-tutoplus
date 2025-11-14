@@ -65,13 +65,26 @@ try {
                 break;
             }
             
-            // TODO: Implémenter la logique de réservation
-            // Pour l'instant, retourner une réponse de succès
+            // Changer le statut du créneau à RESERVE
+            $result = $disponibiliteModel->modifierDisponibilite(
+                $disponibiliteId,
+                $disponibilite['date_debut'], // date_debut (inchangé)
+                $disponibilite['date_fin'], // date_fin (inchangé)
+                'RESERVE' // statut
+            );
+            
+            if (!$result) {
+                http_response_code(500);
+                echo json_encode(['error' => 'Erreur lors de la réservation du créneau']);
+                break;
+            }
+            
             http_response_code(200);
             echo json_encode([
                 'success' => true,
                 'message' => 'Réservation créée avec succès',
-                'disponibilite_id' => $disponibiliteId
+                'disponibilite_id' => $disponibiliteId,
+                'disponibilite' => $disponibilite
             ]);
             break;
             
