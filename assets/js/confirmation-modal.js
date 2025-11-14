@@ -50,6 +50,11 @@ function closeConfirmationModal() {
   data : Données de la réservation (date, heure, tuteur, service)
 */
 function fillConfirmationData(data) {
+    if (!data) {
+        console.error('Aucune donnée fournie pour la confirmation');
+        return;
+    }
+    
     const dateTimeElement = document.getElementById('confirmation-date-time');
     const tuteurElement = document.getElementById('confirmation-tuteur');
     const serviceElement = document.getElementById('confirmation-service');
@@ -63,17 +68,30 @@ function fillConfirmationData(data) {
             dateTimeElement.textContent = data.dateTime;
         } else {
             dateTimeElement.textContent = '-';
+            console.warn('Date ou heure manquante dans les données de confirmation');
         }
+    } else {
+        console.error('Élément confirmation-date-time non trouvé dans le DOM');
     }
     
     // Afficher le tuteur
     if (tuteurElement) {
         tuteurElement.textContent = data.tuteur || '-';
+        if (!data.tuteur) {
+            console.warn('Nom du tuteur manquant dans les données de confirmation');
+        }
+    } else {
+        console.error('Élément confirmation-tuteur non trouvé dans le DOM');
     }
     
     // Afficher le service
     if (serviceElement) {
         serviceElement.textContent = data.service || '-';
+        if (!data.service) {
+            console.warn('Nom du service manquant dans les données de confirmation');
+        }
+    } else {
+        console.error('Élément confirmation-service non trouvé dans le DOM');
     }
 }
 
