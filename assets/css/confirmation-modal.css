@@ -1,5 +1,6 @@
 /* Styles pour le modal de confirmation de réservation */
 
+/* Structure de base du modal */
 .confirmation-modal {
   display: none;
   position: fixed;
@@ -234,4 +235,3 @@
     padding: 1rem;
   }
 }
-
