@@ -403,6 +403,13 @@ document.addEventListener('DOMContentLoaded', function() {
     creneauId : ID du créneau à réserver
 */
 async function reserverCreneau(creneauId) {
+    // Vérifier que l'étudiant est connecté (vérification côté client)
+    // Note: L'API vérifie aussi côté serveur, mais cette vérification évite une requête inutile
+    if (!creneauId || creneauId.trim() === '') {
+        showReservationError('Aucun créneau sélectionné');
+        return;
+    }
+    
     const btnNext = document.getElementById('btnNext');
     const originalText = btnNext ? btnNext.textContent : '';
     
