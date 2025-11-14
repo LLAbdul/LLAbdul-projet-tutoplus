@@ -55,3 +55,14 @@ function formatDateForConfirmation(dateString) {
     return date.toLocaleDateString('fr-FR', options);
 }
 
+/*
+    Formate une heure pour l'affichage dans la confirmation
+    timeString : Heure au format HH:mm
+    return : Heure formatée (ex: "14:30")
+*/
+function formatTimeForConfirmation(timeString) {
+    if (!timeString) return '';
+    const [hours, minutes] = timeString.split(':');
+    return `${hours}:${minutes}`;
+}
+
