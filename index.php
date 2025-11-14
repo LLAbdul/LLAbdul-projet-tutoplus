@@ -257,6 +257,7 @@ foreach ($services as $service) {
     </div>
 
     <script src="assets/js/script.js"></script>
+    <script src="assets/js/confirmation-modal.js"></script>
     <script src="assets/js/creneaux-modal.js"></script>
 </body>
 </html>

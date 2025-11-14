@@ -408,8 +408,25 @@ async function reserverCreneau(creneauId) {
             throw new Error(data.error || 'Erreur lors de la réservation');
         }
         
-        // TODO: Afficher la confirmation
-        console.log('Réservation réussie:', data);
+        // Afficher la confirmation avec les données
+        if (data.disponibilite) {
+            const dispo = data.disponibilite;
+            const dateDebut = new Date(dispo.date_debut);
+            const dateFin = new Date(dispo.date_fin);
+            
+            const heureDebut = dateDebut.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false });
+            const heureFin = dateFin.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false });
+            
+            const confirmationData = {
+                date: formatDateForConfirmation(dispo.date_debut.split(' ')[0]),
+                heure: `${heureDebut} - ${heureFin}`,
+                tuteur: `${dispo.tuteur_prenom} ${dispo.tuteur_nom}`,
+                service: dispo.service_nom || 'Service général'
+            };
+            
+            fillConfirmationData(confirmationData);
+            openConfirmationModal();
+        }
         
     } catch (error) {
         console.error('Erreur lors de la réservation:', error);
