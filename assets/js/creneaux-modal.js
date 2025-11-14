@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalClose = document.querySelector('.creneaux-modal-close');
     const modalOverlay = document.querySelector('.creneaux-modal-overlay');
     const btnPlusCreneaux = document.querySelectorAll('.btn-plus-creneaux');
+    
+    // Variable pour stocker le serviceId actuel
+    let currentServiceId = null;
 
     // Ouvrir le modal
     btnPlusCreneaux.forEach(btn => {
@@ -20,6 +23,9 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.classList.remove('active');
         document.body.style.overflow = '';
     }
+    
+    // Rendre closeModal accessible globalement
+    window.closeCreneauxModal = closeModal;
 
     modalClose.addEventListener('click', closeModal);
     modalOverlay.addEventListener('click', closeModal);
@@ -33,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Ouvrir le modal et charger les créneaux
     async function openModal(serviceId) {
+        currentServiceId = serviceId; // Stocker le serviceId actuel
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
         modalBody.innerHTML = '<div style="text-align: center; padding: 3rem;">Chargement...</div>';
@@ -52,6 +59,25 @@ document.addEventListener('DOMContentLoaded', function() {
             modalBody.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--accent-color);">Erreur lors du chargement des créneaux</div>';
         }
     }
+    
+    // Fonction pour rafraîchir les créneaux (accessible globalement)
+    window.refreshCreneaux = async function() {
+        if (currentServiceId && modal.classList.contains('active')) {
+            try {
+                const response = await fetch(`api/creneaux.php?service_id=${currentServiceId}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    console.error('Erreur lors du rafraîchissement:', data.error);
+                    return;
+                }
+
+                renderCreneaux(data.service, data.creneaux);
+            } catch (error) {
+                console.error('Erreur lors du rafraîchissement des créneaux:', error);
+            }
+        }
+    };
 
     // Rendre les créneaux dans le modal
     function renderCreneaux(service, creneauxParDate) {
@@ -392,10 +418,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Fonction globale pour fermer le modal
-    window.closeCreneauxModal = function() {
-        closeModal();
-    };
 });
 
 /*
@@ -424,13 +446,18 @@ async function reserverCreneau(creneauId) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // Timeout de 10 secondes
         
+        // Récupérer l'état du switch de notification
+        const notificationToggle = document.getElementById('notificationToggle');
+        const notificationEnabled = notificationToggle ? notificationToggle.checked : false;
+        
         const response = await fetch('api/reservations.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                disponibilite_id: creneauId
+                disponibilite_id: creneauId,
+                notification_enabled: notificationEnabled
             }),
             signal: controller.signal
         });
@@ -472,13 +499,21 @@ async function reserverCreneau(creneauId) {
                 date: formatDateForConfirmation(dispo.date_debut.split(' ')[0]),
                 heure: `${heureDebut} - ${heureFin}`,
                 tuteur: `${dispo.tuteur_prenom || ''} ${dispo.tuteur_nom || ''}`.trim() || 'Tuteur non spécifié',
-                service: dispo.service_nom || 'Service général'
+                service: dispo.service_nom || 'Service général',
+                notificationEnabled: notificationEnabled
             };
             
             fillConfirmationData(confirmationData);
             
+            // Rafraîchir la liste des créneaux pour retirer le créneau réservé
+            if (typeof window.refreshCreneaux === 'function') {
+                await window.refreshCreneaux();
+            }
+            
             // Fermer le modal des créneaux
-            closeModal();
+            if (typeof window.closeCreneauxModal === 'function') {
+                window.closeCreneauxModal();
+            }
             
             // Ouvrir le modal de confirmation
             openConfirmationModal();
@@ -503,10 +538,16 @@ async function reserverCreneau(creneauId) {
         // Afficher l'erreur à l'utilisateur
         showReservationError(errorMessage);
     } finally {
-        // Réinitialiser le bouton seulement si on n'a pas fermé le modal
-        if (btnNext && btnNext.parentElement) {
-            btnNext.disabled = false;
-            btnNext.textContent = originalText || 'Étape suivante';
+        // Réinitialiser le bouton seulement si la réservation a échoué
+        // Si la réservation a réussi, le modal sera fermé donc pas besoin de réinitialiser
+        const btnNextStillExists = document.getElementById('btnNext');
+        if (btnNextStillExists && btnNextStillExists.parentElement) {
+            // Vérifier si le modal est toujours ouvert (réservation échouée)
+            const modal = document.getElementById('creneauxModal');
+            if (modal && modal.classList.contains('active')) {
+                btnNextStillExists.disabled = false;
+                btnNextStillExists.textContent = originalText || 'Étape suivante';
+            }
         }
     }
 }
