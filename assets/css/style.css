@@ -88,8 +88,19 @@ header {
   gap: 0.25rem;
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
   width: auto;
+  max-width: calc(100% - 400px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.header-center a {
+  pointer-events: auto;
+  text-decoration: none;
 }
 
 .header-right {
@@ -97,6 +108,9 @@ header {
   align-items: center;
   gap: 1rem;
   justify-content: flex-end;
+  flex-shrink: 0;
+  margin-left: auto;
+  z-index: 1;
 }
 
 .user-info {
@@ -104,6 +118,12 @@ header {
   flex-direction: column;
   align-items: flex-end;
   gap: 0.25rem;
+}
+
+@media (max-width: 768px) {
+  .user-info {
+    align-items: flex-start;
+  }
 }
 
 .user-name {
@@ -180,8 +200,15 @@ header {
   height: 55px;
   width: auto;
   max-width: 220px;
+  min-width: 120px;
+  -o-object-fit: contain;
   object-fit: contain;
   display: block;
+  -webkit-image-rendering: -webkit-optimize-contrast;
+  -ms-interpolation-mode: nearest-neighbor;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
 }
 
 .header-title-link {
@@ -196,11 +223,12 @@ header {
 }
 
 header h1 {
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: 700;
   margin: 0;
   letter-spacing: -0.02em;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 header .logo-text {
@@ -212,10 +240,14 @@ header .logo-accent {
 }
 
 .header-center .subtitle {
-  font-size: 0.875rem;
+  font-size: clamp(0.75rem, 2vw, 0.875rem);
   color: var(--text-light);
   font-weight: 400;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 main {
@@ -661,31 +693,87 @@ footer .container {
   justify-content: space-between;
   align-items: center;
   gap: 2rem;
+  flex-wrap: wrap;
 }
 
 footer p {
   font-size: 0.9375rem;
   margin: 0;
   color: rgba(255, 255, 255, 0.8);
+  flex: 1;
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  footer p {
+    text-align: center;
+  }
 }
 
 .footer-logo {
   height: 40px;
   width: auto;
   max-width: 180px;
+  min-width: 100px;
+  -o-object-fit: contain;
   object-fit: contain;
   display: block;
   opacity: 0.9;
   background: rgba(255, 255, 255, 0.15);
   padding: 0.5rem 1rem;
   border-radius: 8px;
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
+  -webkit-image-rendering: -webkit-optimize-contrast;
+  -ms-interpolation-mode: nearest-neighbor;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+  -webkit-flex-shrink: 0;
+  flex-shrink: 0;
 }
 
 /* Responsive Design - Style moderne */
-@media (max-width: 768px) {
-  header {
-    padding: 1.25rem 0;
+@media (min-width: 1400px) {
+  .header-center {
+    max-width: 500px;
+  }
+
+  .college-logo {
+    height: 60px;
+    max-width: 240px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .header-center {
+    max-width: calc(100% - 380px);
+  }
+}
+
+@media (max-width: 1024px) {
+  .header-center {
+    max-width: calc(100% - 350px);
+  }
+
+  .college-logo {
+    height: 50px;
+    max-width: 200px;
+  }
+
+  header h1 {
+    font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .header-content {
+    gap: 1rem;
+  }
+
+  .college-logo {
+    height: 50px;
+    max-width: 180px;
   }
 
   header h1 {
@@ -693,36 +781,73 @@ footer p {
   }
 
   .header-center .subtitle {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 768px) {
+  header {
+    padding: 1.25rem 0;
   }
 
   .header-content {
-    grid-template-columns: auto 1fr;
+    flex-direction: row;
+    justify-content: space-between;
     gap: 1rem;
-    position: relative;
+    min-height: 70px;
+  }
+
+  .header-left {
+    order: 1;
   }
 
   .header-center {
     order: 3;
-    grid-column: 1 / -1;
-    width: 100%;
     position: static;
+    -webkit-transform: none;
+    -ms-transform: none;
     transform: none;
     left: auto;
+    top: auto;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 0.5rem;
+    pointer-events: auto;
+  }
+
+  .header-right {
+    order: 2;
+    margin-left: 0;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+  }
+
+  .header-center .subtitle {
+    font-size: 0.8125rem;
   }
 
   .college-logo {
     height: 45px;
+    max-width: 180px;
   }
 
   .footer-content {
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+    text-align: center;
+  }
+
+  footer p {
+    text-align: center;
   }
 
   .footer-logo {
     height: 35px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .services-grid {
@@ -783,20 +908,52 @@ footer p {
     padding: 1rem 0;
   }
 
+  .header-content {
+    min-height: 60px;
+    gap: 0.75rem;
+  }
+
   header h1 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   .header-center .subtitle {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
+    display: none; /* Masquer le sous-titre sur très petits écrans */
   }
 
   .college-logo {
     height: 40px;
+    max-width: 150px;
+    min-width: 100px;
   }
 
   .footer-logo {
     height: 30px;
+    max-width: 150px;
+  }
+
+  .header-right {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-login-link,
+  .btn-logout {
+    padding: 0.4rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .user-info {
+    font-size: 0.875rem;
+  }
+
+  .user-name {
+    font-size: 0.875rem;
+  }
+
+  .user-number {
+    font-size: 0.75rem;
   }
 
   main {

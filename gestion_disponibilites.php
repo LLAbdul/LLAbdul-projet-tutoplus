@@ -61,12 +61,10 @@ $serviceParDefaut = !empty($services) ? $services[0] : null;
                 <div class="header-right">
                     <?php if (isset($_SESSION['tuteur_id'])): ?>
                         <div class="user-info">
-                            <div class="user-details">
-                                <span class="user-name"><?php echo htmlspecialchars($_SESSION['tuteur_prenom'] . ' ' . $_SESSION['tuteur_nom']); ?></span>
-                                <span class="user-number"><?php echo htmlspecialchars($_SESSION['tuteur_numero']); ?></span>
-                            </div>
-                            <a href="logout.php" class="btn-logout">Déconnexion</a>
+                            <span class="user-name"><?php echo htmlspecialchars($_SESSION['tuteur_prenom'] . ' ' . $_SESSION['tuteur_nom']); ?></span>
+                            <span class="user-number"><?php echo htmlspecialchars($_SESSION['tuteur_numero']); ?></span>
                         </div>
+                        <a href="logout.php" class="btn-logout">Déconnexion</a>
                     <?php endif; ?>
                 </div>
             </div>
