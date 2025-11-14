@@ -390,8 +390,30 @@ document.addEventListener('DOMContentLoaded', function() {
     Réserve un créneau en appelant l'API
     creneauId : ID du créneau à réserver
 */
-function reserverCreneau(creneauId) {
-    // TODO: Implémenter l'appel à l'API
-    console.log('Réservation du créneau:', creneauId);
+async function reserverCreneau(creneauId) {
+    try {
+        const response = await fetch('api/reservations.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                disponibilite_id: creneauId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Erreur lors de la réservation');
+        }
+        
+        // TODO: Afficher la confirmation
+        console.log('Réservation réussie:', data);
+        
+    } catch (error) {
+        console.error('Erreur lors de la réservation:', error);
+        alert('Erreur: ' + error.message);
+    }
 }
 
