@@ -11,3 +11,14 @@ function openConfirmationModal() {
     }
 }
 
+/**
+ * Ferme le modal de confirmation
+ */
+function closeConfirmationModal() {
+    const modal = document.getElementById('confirmationModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
