@@ -66,3 +66,27 @@ function formatTimeForConfirmation(timeString) {
     return `${hours}:${minutes}`;
 }
 
+// Gestion des événements pour le modal de confirmation
+document.addEventListener('DOMContentLoaded', function() {
+    const btnClose = document.getElementById('btnConfirmationClose');
+    const modal = document.getElementById('confirmationModal');
+    const overlay = modal ? modal.querySelector('.confirmation-modal-overlay') : null;
+    
+    // Fermer avec le bouton
+    if (btnClose) {
+        btnClose.addEventListener('click', closeConfirmationModal);
+    }
+    
+    // Fermer avec l'overlay
+    if (overlay) {
+        overlay.addEventListener('click', closeConfirmationModal);
+    }
+    
+    // Fermer avec la touche Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal && modal.classList.contains('active')) {
+            closeConfirmationModal();
+        }
+    });
+});
+
