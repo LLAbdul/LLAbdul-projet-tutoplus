@@ -1,5 +1,7 @@
 // Script pour gérer le modal de confirmation de réservation
 
+let confirmationAutoCloseTimeout = null;
+
 /**
  * Ouvre le modal de confirmation
  */
@@ -9,8 +11,13 @@ function openConfirmationModal() {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
         
+        // Annuler l'auto-fermeture précédente si elle existe
+        if (confirmationAutoCloseTimeout) {
+            clearTimeout(confirmationAutoCloseTimeout);
+        }
+        
         // Auto-fermeture après 5 secondes
-        setTimeout(() => {
+        confirmationAutoCloseTimeout = setTimeout(() => {
             closeConfirmationModal();
         }, 5000);
     }
@@ -24,6 +31,12 @@ function closeConfirmationModal() {
     if (modal) {
         modal.classList.remove('active');
         document.body.style.overflow = '';
+        
+        // Annuler l'auto-fermeture si elle est en cours
+        if (confirmationAutoCloseTimeout) {
+            clearTimeout(confirmationAutoCloseTimeout);
+            confirmationAutoCloseTimeout = null;
+        }
     }
 }
 
@@ -103,5 +116,25 @@ document.addEventListener('DOMContentLoaded', function() {
             closeConfirmationModal();
         }
     });
+    
+    // Annuler l'auto-fermeture si l'utilisateur interagit avec le modal
+    if (modal) {
+        modal.addEventListener('mouseenter', function() {
+            if (confirmationAutoCloseTimeout) {
+                clearTimeout(confirmationAutoCloseTimeout);
+                confirmationAutoCloseTimeout = null;
+            }
+        });
+        
+        modal.addEventListener('click', function(e) {
+            // Si l'utilisateur clique dans le modal (pas sur l'overlay), annuler l'auto-fermeture
+            if (e.target.closest('.confirmation-modal-content')) {
+                if (confirmationAutoCloseTimeout) {
+                    clearTimeout(confirmationAutoCloseTimeout);
+                    confirmationAutoCloseTimeout = null;
+                }
+            }
+        });
+    }
 });
 
