@@ -54,9 +54,9 @@ body {
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 var(--spacing);
+  padding: 0 3rem;
 }
 
 header {
@@ -74,16 +74,20 @@ header {
 }
 
 .header-content {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
-  gap: 2rem;
+  justify-content: space-between;
   position: relative;
+  min-height: 70px;
+  width: 100%;
 }
 
 .header-left {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
+  z-index: 2;
+  margin-right: auto;
 }
 
 .header-center {
@@ -100,7 +104,8 @@ header {
   -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
   width: auto;
-  max-width: calc(100% - 400px);
+  max-width: calc(100% - 500px);
+  min-width: 200px;
   z-index: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -117,8 +122,9 @@ header {
   gap: 1rem;
   justify-content: flex-end;
   flex-shrink: 0;
+  z-index: 2;
+  min-width: 0;
   margin-left: auto;
-  z-index: 1;
 }
 
 .user-info {
@@ -126,6 +132,28 @@ header {
   flex-direction: column;
   align-items: flex-end;
   gap: 0.25rem;
+  flex-shrink: 0;
+  max-width: 200px;
+  text-align: right;
+}
+
+.user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.user-number {
+  font-size: 0.8125rem;
+  color: var(--text-light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 @media (max-width: 768px) {
@@ -134,26 +162,17 @@ header {
   }
 }
 
-.user-name {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--text-dark);
-}
-
-.user-number {
-  font-size: 0.875rem;
-  color: var(--text-light);
-}
-
 .btn-login-link,
 .btn-logout {
   padding: 0.5rem 1.25rem;
   border-radius: 6px;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
   transition: all 0.2s ease;
   display: inline-block;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .btn-login-link {
@@ -758,7 +777,11 @@ footer p {
 /* Responsive Design - Style moderne */
 @media (min-width: 1400px) {
   .header-center {
-    max-width: 500px;
+    max-width: calc(100% - 550px);
+  }
+
+  .user-info {
+    max-width: 220px;
   }
 
   .college-logo {
@@ -769,7 +792,11 @@ footer p {
 
 @media (max-width: 1200px) {
   .header-center {
-    max-width: calc(100% - 380px);
+    max-width: calc(100% - 450px);
+  }
+
+  .user-info {
+    max-width: 180px;
   }
 }
 
@@ -790,12 +817,17 @@ footer p {
 
 @media (min-width: 769px) and (max-width: 1024px) {
   .header-content {
-    gap: 1rem;
+    gap: 2rem;
+  }
+
+  .container {
+    padding: 0 1.5rem;
   }
 
   .college-logo {
     height: 50px;
     max-width: 180px;
+    margin-right: 0.75rem;
   }
 
   header h1 {
@@ -814,11 +846,23 @@ footer p {
     box-shadow: none;
   }
 
+  .container {
+    padding: 0 1rem;
+  }
+
   .header-content {
     flex-direction: row;
     justify-content: space-between;
     gap: 1rem;
     min-height: 70px;
+  }
+
+  .college-logo {
+    margin-right: 0.5rem;
+  }
+
+  .user-info {
+    margin-right: 0.25rem;
   }
 
   .header-left {
@@ -842,6 +886,11 @@ footer p {
   .header-right {
     order: 2;
     margin-left: 0;
+    gap: 0.5rem;
+  }
+
+  .user-info {
+    max-width: 150px;
   }
 
   header h1 {
