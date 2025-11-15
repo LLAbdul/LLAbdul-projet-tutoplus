@@ -215,10 +215,11 @@ foreach ($services as $service) {
             </div>
             <div class="contact-modal-body">
                 <form id="contactForm" class="contact-form">
-                    <input type="hidden" id="contact-tuteur-id" name="tuteur_id">
                     <div class="form-group">
-                        <label for="contact-tuteur-name" class="form-label">Tuteur</label>
-                        <input type="text" id="contact-tuteur-name" class="form-input" readonly>
+                        <label for="contact-tuteur-select" class="form-label">Tuteur <span class="required">*</span></label>
+                        <select id="contact-tuteur-select" name="tuteur_id" class="form-select" required>
+                            <option value="">Sélectionnez un tuteur</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="contact-sujet" class="form-label">Sujet <span class="required">*</span></label>

@@ -12,30 +12,32 @@ function openContactModal(tuteurId, tuteurNom) {
         return;
     }
     
-    // Réinitialiser le formulaire d'abord
-    resetContactForm();
-    
-    // Remplir les champs du tuteur APRÈS la réinitialisation
-    const tuteurIdInput = document.getElementById('contact-tuteur-id');
-    const tuteurNameInput = document.getElementById('contact-tuteur-name');
-    
-    if (tuteurIdInput) {
-        tuteurIdInput.value = tuteurId || '';
-    }
-    
-    if (tuteurNameInput) {
-        tuteurNameInput.value = tuteurNom || '';
-    }
-    
-    // Afficher le modal
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    
-    // Focus sur le champ sujet
-    const sujetInput = document.getElementById('contact-sujet');
-    if (sujetInput) {
-        setTimeout(() => sujetInput.focus(), 100);
-    }
+    // Charger la liste des tuteurs si ce n'est pas déjà fait
+    loadTuteursList(tuteurId).then(() => {
+        // Réinitialiser le formulaire d'abord
+        resetContactForm();
+        
+        // Sélectionner le tuteur si fourni
+        const tuteurSelect = document.getElementById('contact-tuteur-select');
+        if (tuteurSelect && tuteurId) {
+            tuteurSelect.value = tuteurId;
+        }
+        
+        // Afficher le modal
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Focus sur le champ sujet
+        const sujetInput = document.getElementById('contact-sujet');
+        if (sujetInput) {
+            setTimeout(() => sujetInput.focus(), 100);
+        }
+    }).catch(error => {
+        console.error('Erreur lors du chargement des tuteurs:', error);
+        // Afficher le modal quand même
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
 }
 
 /**
@@ -57,13 +59,62 @@ function closeContactModal() {
 }
 
 /**
- * Réinitialise le formulaire de contact (sauf le champ tuteur qui est en readonly)
+ * Charge la liste des tuteurs depuis l'API
+ * tuteurIdPreselectionne : ID du tuteur à présélectionner (optionnel)
+ */
+async function loadTuteursList(tuteurIdPreselectionne = null) {
+    const tuteurSelect = document.getElementById('contact-tuteur-select');
+    if (!tuteurSelect) {
+        return;
+    }
+    
+    // Si la liste est déjà chargée, ne pas recharger
+    if (tuteurSelect.options.length > 1) {
+        if (tuteurIdPreselectionne) {
+            tuteurSelect.value = tuteurIdPreselectionne;
+        }
+        return;
+    }
+    
+    try {
+        const response = await fetch('api/tuteurs.php');
+        const tuteurs = await response.json();
+        
+        if (!response.ok) {
+            throw new Error('Erreur lors du chargement des tuteurs');
+        }
+        
+        // Vider le select (garder l'option par défaut)
+        tuteurSelect.innerHTML = '<option value="">Sélectionnez un tuteur</option>';
+        
+        // Ajouter les tuteurs
+        tuteurs.forEach(tuteur => {
+            const option = document.createElement('option');
+            option.value = tuteur.id;
+            option.textContent = tuteur.nom_complet + (tuteur.departement ? ` (${tuteur.departement})` : '');
+            tuteurSelect.appendChild(option);
+        });
+        
+        // Présélectionner le tuteur si fourni
+        if (tuteurIdPreselectionne) {
+            tuteurSelect.value = tuteurIdPreselectionne;
+        }
+    } catch (error) {
+        console.error('Erreur lors du chargement des tuteurs:', error);
+        // Afficher un message d'erreur dans le select
+        tuteurSelect.innerHTML = '<option value="">Erreur lors du chargement des tuteurs</option>';
+    }
+}
+
+/**
+ * Réinitialise le formulaire de contact
  */
 function resetContactForm() {
-    // Réinitialiser uniquement les champs modifiables (pas le tuteur)
+    // Réinitialiser les champs modifiables
     const sujetInput = document.getElementById('contact-sujet');
     const contenuInput = document.getElementById('contact-contenu');
     const prioriteSelect = document.getElementById('contact-priorite');
+    const tuteurSelect = document.getElementById('contact-tuteur-select');
     
     if (sujetInput) {
         sujetInput.value = '';
@@ -75,6 +126,10 @@ function resetContactForm() {
     
     if (prioriteSelect) {
         prioriteSelect.value = '';
+    }
+    
+    if (tuteurSelect) {
+        tuteurSelect.value = '';
     }
     
     // Réinitialiser le compteur de caractères
@@ -231,14 +286,15 @@ async function submitContactForm() {
     }
     
     // Récupérer les données du formulaire
-    const tuteurId = document.getElementById('contact-tuteur-id')?.value;
+    const tuteurId = document.getElementById('contact-tuteur-select')?.value;
     const sujet = document.getElementById('contact-sujet')?.value.trim();
     const contenu = document.getElementById('contact-contenu')?.value.trim();
     const priorite = document.getElementById('contact-priorite')?.value || null;
     
     // Validation côté client
     if (!tuteurId) {
-        showContactError('Erreur : ID du tuteur manquant');
+        showContactError('Veuillez sélectionner un tuteur');
+        document.getElementById('contact-tuteur-select')?.focus();
         return;
     }
     
