@@ -46,6 +46,8 @@ require_once 'config/database.php';
                             <span class="user-name"><?php echo htmlspecialchars($_SESSION['etudiant_prenom'] . ' ' . $_SESSION['etudiant_nom']); ?></span>
                             <span class="user-number"><?php echo htmlspecialchars($_SESSION['etudiant_numero']); ?></span>
                         </div>
+                        <a href="index.php" class="btn-login-link">Services</a>
+                        <a href="historique.php" class="btn-login-link">Mes Séances</a>
                         <a href="logout.php" class="btn-logout">Déconnexion</a>
                     <?php endif; ?>
                 </div>
