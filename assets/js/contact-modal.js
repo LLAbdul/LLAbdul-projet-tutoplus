@@ -130,6 +130,85 @@ function hideContactError() {
 }
 
 /**
+ * Affiche une notification de succès (toast)
+ * message : Message à afficher
+ */
+function showSuccessNotification(message) {
+    // Créer le conteneur de notification s'il n'existe pas
+    let notificationContainer = document.getElementById('toast-notification-container');
+    if (!notificationContainer) {
+        notificationContainer = document.createElement('div');
+        notificationContainer.id = 'toast-notification-container';
+        notificationContainer.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        `;
+        document.body.appendChild(notificationContainer);
+    }
+    
+    // Créer la notification
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 300px;
+        max-width: 500px;
+        animation: slideInRight 0.3s ease-out;
+    `;
+    
+    notification.innerHTML = `
+        <span style="font-size: 1.25rem; line-height: 1;">✓</span>
+        <span style="flex: 1; font-weight: 500;">${escapeHtml(message)}</span>
+        <button type="button" onclick="this.parentElement.remove()" style="
+            background: none;
+            border: none;
+            color: #155724;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        ">&times;</button>
+    `;
+    
+    notificationContainer.appendChild(notification);
+    
+    // Supprimer automatiquement après 5 secondes
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideInRight 0.3s reverse';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 5000);
+}
+
+/**
+ * Échappe les caractères HTML pour éviter les injections XSS
+ * text : Texte à échapper
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+/**
  * Envoie le message de contact via l'API
  */
 async function submitContactForm() {
@@ -211,8 +290,8 @@ async function submitContactForm() {
             throw new Error(result.error || 'Erreur lors de l\'envoi du message');
         }
         
-        // Succès : afficher un message et fermer le modal
-        alert('Message envoyé avec succès !');
+        // Succès : afficher une notification et fermer le modal
+        showSuccessNotification('Message envoyé avec succès !');
         closeContactModal();
         
     } catch (error) {
