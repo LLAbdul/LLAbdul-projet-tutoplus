@@ -264,7 +264,8 @@ foreach ($services as $service) {
             </div>
             
             <div class="confirmation-footer">
-                <button class="btn-confirmation-close" id="btnConfirmationClose">Fermer</button>
+                <button class="btn-confirmation-secondary" id="btnConfirmationClose">Fermer</button>
+                <a href="historique.php" class="btn-confirmation-primary" id="btnConfirmationViewSessions">Voir mes séances</a>
             </div>
         </div>
     </div>
