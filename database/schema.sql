@@ -104,6 +104,35 @@ CREATE TABLE IF NOT EXISTS demandes (
     INDEX idx_date_creation (date_creation)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table des demandes de rendez-vous';
 
+-- Table des rendez-vous confirmés
+CREATE TABLE IF NOT EXISTS rendez_vous (
+    id CHAR(36) PRIMARY KEY COMMENT 'UUID du rendez-vous',
+    demande_id CHAR(36) COMMENT 'UUID de la demande associée (optionnel)',
+    etudiant_id CHAR(36) NOT NULL COMMENT 'UUID de l\'étudiant',
+    tuteur_id CHAR(36) NOT NULL COMMENT 'UUID du tuteur',
+    service_id CHAR(36) NOT NULL COMMENT 'UUID du service',
+    disponibilite_id CHAR(36) NOT NULL COMMENT 'UUID de la disponibilité réservée',
+    date_heure DATETIME NOT NULL COMMENT 'Date et heure du rendez-vous',
+    statut ENUM('A_VENIR', 'EN_COURS', 'TERMINE', 'ANNULE', 'REPORTE') NOT NULL DEFAULT 'A_VENIR' COMMENT 'Statut du rendez-vous',
+    duree INT NOT NULL COMMENT 'Durée en minutes',
+    lieu VARCHAR(255) COMMENT 'Lieu du rendez-vous',
+    notes TEXT COMMENT 'Notes sur le rendez-vous',
+    prix DECIMAL(10, 2) NOT NULL COMMENT 'Prix du rendez-vous',
+    date_creation DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date de création',
+    FOREIGN KEY (demande_id) REFERENCES demandes(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (etudiant_id) REFERENCES etudiants(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (tuteur_id) REFERENCES tuteurs(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (disponibilite_id) REFERENCES disponibilites(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    INDEX idx_demande (demande_id),
+    INDEX idx_etudiant (etudiant_id),
+    INDEX idx_tuteur (tuteur_id),
+    INDEX idx_service (service_id),
+    INDEX idx_disponibilite (disponibilite_id),
+    INDEX idx_date_heure (date_heure),
+    INDEX idx_statut (statut)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table des rendez-vous confirmés';
+
 -- Insertion de données de test pour les tuteurs
 INSERT INTO tuteurs (id, numero_employe, nom, prenom, email, telephone, departement, specialites, tarif_horaire, evaluation, nb_seances, actif) VALUES
 (UUID(), 'T001', 'Dupont', 'Jean', 'jean.dupont@college.qc.ca', '514-123-4567', 'Mathématiques', 'Algèbre,Calcul différentiel,Géométrie', 25.00, 4.5, 120, TRUE),
