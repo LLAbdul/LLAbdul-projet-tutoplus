@@ -33,15 +33,26 @@ class ReservationService {
     // $priorite : Priorité de la demande (optionnel)
     // Retourne : UUID de la demande créée ou false en cas d'erreur
     public function creerDemande($etudiantId, $serviceId, $tuteurId, $disponibiliteId = null, $motif = null, $priorite = null) {
-        // Vérifier que la disponibilité existe et est disponible si fournie
-        if ($disponibiliteId !== null) {
-            if (!$this->verifierDisponibilite($disponibiliteId)) {
-                error_log("Erreur : La disponibilité n'est pas disponible");
-                return false;
+        try {
+            // Vérifier que la disponibilité existe et est disponible si fournie
+            if ($disponibiliteId !== null) {
+                if (!$this->verifierDisponibilite($disponibiliteId)) {
+                    error_log("Erreur ReservationService : La disponibilité n'est pas disponible (ID: $disponibiliteId)");
+                    return false;
+                }
             }
+            
+            $result = $this->demandeModel->creerDemande($etudiantId, $serviceId, $tuteurId, $disponibiliteId, $motif, $priorite);
+            
+            if (!$result) {
+                error_log("Erreur ReservationService : creerDemande a retourné false - Etudiant: $etudiantId, Service: $serviceId, Tuteur: $tuteurId");
+            }
+            
+            return $result;
+        } catch (Exception $e) {
+            error_log("Erreur ReservationService::creerDemande : " . $e->getMessage());
+            return false;
         }
-        
-        return $this->demandeModel->creerDemande($etudiantId, $serviceId, $tuteurId, $disponibiliteId, $motif, $priorite);
     }
     
     // Confirme une demande et crée un rendez-vous
@@ -52,62 +63,72 @@ class ReservationService {
             // Récupérer la demande
             $demande = $this->demandeModel->getDemandeById($demandeId);
             if (!$demande) {
-                error_log("Erreur : La demande n'existe pas");
+                error_log("Erreur confirmerDemande : La demande n'existe pas (ID: $demandeId)");
                 return false;
             }
             
             // Vérifier que la demande est en attente
             if ($demande['statut'] !== 'EN_ATTENTE') {
-                error_log("Erreur : La demande n'est pas en attente (statut: " . $demande['statut'] . ")");
+                error_log("Erreur confirmerDemande : La demande n'est pas en attente (statut: " . ($demande['statut'] ?? 'N/A') . ")");
                 return false;
             }
             
-            // Si une disponibilité est associée, vérifier qu'elle est toujours disponible
-            if ($demande['disponibilite_id'] !== null) {
-                if (!$this->verifierDisponibilite($demande['disponibilite_id'])) {
-                    error_log("Erreur : La disponibilité n'est plus disponible");
-                    return false;
-                }
-                
-                // Réserver la disponibilité
-                $disponibilite = $this->disponibiliteModel->getDisponibiliteById($demande['disponibilite_id']);
-                $result = $this->disponibiliteModel->modifierDisponibilite(
-                    $demande['disponibilite_id'],
-                    $disponibilite['date_debut'],
-                    $disponibilite['date_fin'],
-                    'RESERVE',
-                    null, // serviceId
-                    null, // prix
-                    null, // notes
-                    $demande['etudiant_id'] // etudiant_id
-                );
-                
-                if (!$result) {
-                    error_log("Erreur : Impossible de réserver la disponibilité");
-                    return false;
-                }
+            // Vérifier qu'une disponibilité est associée (obligatoire pour créer un rendez-vous)
+            if ($demande['disponibilite_id'] === null) {
+                error_log("Erreur confirmerDemande : Aucune disponibilité associée à la demande");
+                return false;
+            }
+            
+            // Vérifier que la disponibilité est toujours disponible
+            if (!$this->verifierDisponibilite($demande['disponibilite_id'])) {
+                error_log("Erreur confirmerDemande : La disponibilité n'est plus disponible (ID: " . $demande['disponibilite_id'] . ")");
+                return false;
+            }
+            
+            // Réserver la disponibilité
+            $disponibilite = $this->disponibiliteModel->getDisponibiliteById($demande['disponibilite_id']);
+            if (!$disponibilite) {
+                error_log("Erreur confirmerDemande : Impossible de récupérer la disponibilité (ID: " . $demande['disponibilite_id'] . ")");
+                return false;
+            }
+            
+            $result = $this->disponibiliteModel->modifierDisponibilite(
+                $demande['disponibilite_id'],
+                $disponibilite['date_debut'],
+                $disponibilite['date_fin'],
+                'RESERVE',
+                null, // serviceId
+                null, // prix
+                null, // notes
+                $demande['etudiant_id'] // etudiant_id
+            );
+            
+            if (!$result) {
+                error_log("Erreur confirmerDemande : Impossible de réserver la disponibilité (ID: " . $demande['disponibilite_id'] . ")");
+                return false;
             }
             
             // Accepter la demande
             if (!$this->demandeModel->accepterDemande($demandeId)) {
-                error_log("Erreur : Impossible d'accepter la demande");
+                error_log("Erreur confirmerDemande : Impossible d'accepter la demande (ID: $demandeId)");
                 return false;
             }
             
             // Récupérer les informations du service pour calculer la durée et le prix
             $service = $this->serviceModel->getServiceById($demande['service_id']);
             if (!$service) {
-                error_log("Erreur : Le service n'existe pas");
+                error_log("Erreur confirmerDemande : Le service n'existe pas (ID: " . $demande['service_id'] . ")");
                 return false;
             }
             
             $duree = $service['duree_minute'];
             $prix = $this->calculerPrix($demande['service_id'], $duree);
             
-            // Récupérer la disponibilité pour obtenir la date_heure
-            $disponibilite = null;
-            if ($demande['disponibilite_id'] !== null) {
-                $disponibilite = $this->disponibiliteModel->getDisponibiliteById($demande['disponibilite_id']);
+            // Récupérer la disponibilité pour obtenir la date_heure (après réservation)
+            $disponibilite = $this->disponibiliteModel->getDisponibiliteById($demande['disponibilite_id']);
+            if (!$disponibilite) {
+                error_log("Erreur confirmerDemande : Impossible de récupérer la disponibilité après réservation");
+                return false;
             }
             
             // Créer le rendez-vous
@@ -116,16 +137,21 @@ class ReservationService {
                 $demande['etudiant_id'],
                 $demande['tuteur_id'],
                 $demande['service_id'],
-                $demande['disponibilite_id'] ?? null,
+                $demande['disponibilite_id'],
                 $duree,
                 null, // lieu
                 $demande['motif'], // notes
                 $prix
             );
             
+            if (!$rendezVousId) {
+                error_log("Erreur confirmerDemande : Impossible de créer le rendez-vous");
+                return false;
+            }
+            
             return $rendezVousId;
         } catch (Exception $e) {
-            error_log("Erreur lors de la confirmation de la demande : " . $e->getMessage());
+            error_log("Erreur confirmerDemande : " . $e->getMessage());
             return false;
         }
     }
