@@ -155,4 +155,63 @@ class MessageContact {
             return [];
         }
     }
+    
+    // Marque un message comme lu (méthode marquerLu() du diagramme UML)
+    public function marquerLu($id) {
+        try {
+            $stmt = $this->pdo->prepare("
+                UPDATE messages_contact 
+                SET lu = TRUE, statut = 'LU', date_modification = NOW()
+                WHERE id = :id
+            ");
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $result = $stmt->execute();
+            
+            if (!$result) {
+                error_log("Erreur lors du marquage du message comme lu");
+                return false;
+            }
+            
+            return true;
+        } catch (PDOException $e) {
+            error_log("Erreur PDO lors du marquage du message comme lu : " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    // Met à jour le statut d'un message (pour repondre() du diagramme UML)
+    public function mettreAJourStatut($id, $statut) {
+        try {
+            $stmt = $this->pdo->prepare("
+                UPDATE messages_contact 
+                SET statut = :statut, date_modification = NOW()
+                WHERE id = :id
+            ");
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmt->bindParam(':statut', $statut, PDO::PARAM_STR);
+            $result = $stmt->execute();
+            
+            if (!$result) {
+                error_log("Erreur lors de la mise à jour du statut du message");
+                return false;
+            }
+            
+            return true;
+        } catch (PDOException $e) {
+            error_log("Erreur PDO lors de la mise à jour du statut : " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    // Supprime un message
+    public function supprimerMessage($id) {
+        try {
+            $stmt = $this->pdo->prepare("DELETE FROM messages_contact WHERE id = :id");
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Erreur lors de la suppression du message : " . $e->getMessage());
+            return false;
+        }
+    }
 }
