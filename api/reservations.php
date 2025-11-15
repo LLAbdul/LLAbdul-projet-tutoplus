@@ -8,6 +8,7 @@ session_start();
 
 require_once '../config/database.php';
 require_once '../models/Disponibilite.php';
+require_once '../services/ReservationService.php';
 
 header('Content-Type: application/json');
 
@@ -24,11 +25,12 @@ $method = $_SERVER['REQUEST_METHOD'];
 try {
     $pdo = getDBConnection();
     $disponibiliteModel = new Disponibilite($pdo);
+    $reservationService = new ReservationService($pdo);
     
     // Gérer les différentes méthodes HTTP
     switch ($method) {
         case 'POST':
-            // Créer une réservation
+            // Créer une réservation via le service (Demande → RendezVous)
             $input = file_get_contents('php://input');
             $data = json_decode($input, true);
             
@@ -76,20 +78,37 @@ try {
                 break;
             }
             
-             // Changer le statut du créneau à RESERVE et stocker l'étudiant qui réserve
-            $result = $disponibiliteModel->modifierDisponibilite(
+            // Validation : vérifier que service_id et tuteur_id sont présents
+            if (!$disponibilite['service_id'] || !$disponibilite['tuteur_id']) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Le créneau doit être associé à un service et un tuteur']);
+                break;
+            }
+            
+            // Créer une demande
+            $motif = $data['motif'] ?? null;
+            $priorite = $data['priorite'] ?? null;
+            $demandeId = $reservationService->creerDemande(
+                $etudiantId,
+                $disponibilite['service_id'],
+                $disponibilite['tuteur_id'],
                 $disponibiliteId,
-                $disponibilite['date_debut'], // date_debut (inchangé)
-                $disponibilite['date_fin'], // date_fin (inchangé)
-                'RESERVE', // statut
-                null, // serviceId - on ne modifie pas (déjà défini dans la disponibilité)
-                null, // prix - on ne modifie pas (déjà défini dans la disponibilité)
-                $etudiantId // etudiant_id - on stocke qui a réservé
+                $motif,
+                $priorite
             );
             
-            if (!$result) {
+            if (!$demandeId) {
                 http_response_code(500);
-                echo json_encode(['error' => 'Erreur lors de la réservation du créneau']);
+                echo json_encode(['error' => 'Erreur lors de la création de la demande']);
+                break;
+            }
+            
+            // Confirmer la demande (crée automatiquement le rendez-vous et réserve la disponibilité)
+            $rendezVousId = $reservationService->confirmerDemande($demandeId);
+            
+            if (!$rendezVousId) {
+                http_response_code(500);
+                echo json_encode(['error' => 'Erreur lors de la confirmation de la réservation']);
                 break;
             }
             
@@ -107,6 +126,8 @@ try {
                 'success' => true,
                 'message' => 'Réservation créée avec succès',
                 'disponibilite_id' => $disponibiliteId,
+                'demande_id' => $demandeId,
+                'rendez_vous_id' => $rendezVousId,
                 'disponibilite' => $disponibiliteComplete
             ]);
             break;
