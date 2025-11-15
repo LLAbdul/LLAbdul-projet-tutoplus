@@ -1082,3 +1082,27 @@ footer p {
     font-size: 0.875rem;
   }
 }
+
+/* Styles globaux pour tous les select - supprimer les effets visuels indésirables du navigateur */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+select::-ms-expand {
+  display: none;
+}
+
+/* Supprimer les outlines et box-shadows par défaut du navigateur */
+select:focus:not(:focus-visible) {
+  outline: none;
+}
+
+select:active:not(:focus-visible) {
+  outline: none;
+}
+
+select:hover:not(:focus-visible) {
+  outline: none;
+}

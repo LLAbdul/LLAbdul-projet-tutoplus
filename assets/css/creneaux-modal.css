@@ -660,7 +660,7 @@ input[type="datetime-local"].form-input:focus::-webkit-calendar-picker-indicator
   filter: invert(0.5) sepia(1) saturate(5) hue-rotate(340deg);
 }
 
-/* Style pour select */
+/* Style pour select - supprimer les effets visuels indésirables */
 select.form-input {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -671,6 +671,8 @@ select.form-input {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+  outline: none;
+  box-shadow: none;
 }
 
 select.form-input::-ms-expand {
@@ -678,17 +680,28 @@ select.form-input::-ms-expand {
 }
 
 select.form-input:hover {
+  border-color: var(--text-light);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236c757d' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 12px 12px;
+  outline: none;
+  box-shadow: none;
+}
+
+select.form-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 4px rgba(204, 0, 0, 0.08);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23cc0000' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 1rem center;
   background-size: 12px 12px;
 }
 
-select.form-input:focus {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23cc0000' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 12px 12px;
+select.form-input:active {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(204, 0, 0, 0.08);
 }
 
 textarea.form-input {
