@@ -158,6 +158,15 @@ class Disponibilite {
                 return false;
             }
             
+            // Validation : vérifier que les dates sont dans la même journée
+            $startDay = $dateDebutObj->format('Y-m-d');
+            $endDay = $dateFinObj->format('Y-m-d');
+            
+            if ($startDay !== $endDay) {
+                error_log("Erreur : La disponibilité doit être dans la même journée (début: $startDay, fin: $endDay)");
+                return false;
+            }
+            
             // Générer un UUID pour l'ID
             $id = $this->generateUUID();
             
@@ -201,6 +210,15 @@ class Disponibilite {
             // Validation : date_fin > date_debut
             if ($dateFinObj <= $dateDebutObj) {
                 error_log("Erreur : La date de fin doit être supérieure à la date de début");
+                return false;
+            }
+            
+            // Validation : vérifier que les dates sont dans la même journée
+            $startDay = $dateDebutObj->format('Y-m-d');
+            $endDay = $dateFinObj->format('Y-m-d');
+            
+            if ($startDay !== $endDay) {
+                error_log("Erreur : La disponibilité doit être dans la même journée (début: $startDay, fin: $endDay)");
                 return false;
             }
             

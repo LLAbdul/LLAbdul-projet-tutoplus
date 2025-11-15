@@ -28,6 +28,13 @@ document.addEventListener('DOMContentLoaded', function() {
         allDaySlot: false,
         height: 'auto',
         
+        // Empêcher la sélection sur plusieurs jours
+        selectAllow: function(selectInfo) {
+            const startDay = selectInfo.start.toDateString();
+            const endDay = selectInfo.end.toDateString();
+            return startDay === endDay;
+        },
+        
         // Charger les disponibilités existantes
         events: function(fetchInfo, successCallback, failureCallback) {
             fetch('api/disponibilites.php')
@@ -48,6 +55,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Gérer la sélection d'une plage horaire (création de créneau)
         select: function(selectInfo) {
+            // La validation est déjà faite par selectAllow, mais on vérifie quand même par sécurité
+            const startDay = selectInfo.start.toDateString();
+            const endDay = selectInfo.end.toDateString();
+            
+            if (startDay !== endDay) {
+                calendar.unselect();
+                return;
+            }
+            
             openModalCreate(selectInfo.start, selectInfo.end);
             calendar.unselect();
         },
@@ -301,6 +317,16 @@ function submitDisponibilite() {
         return;
     }
     
+    // Validation : vérifier que les dates sont dans la même journée
+    const startDay = debut.toDateString();
+    const endDay = fin.toDateString();
+    
+    if (startDay !== endDay) {
+        errorDiv.textContent = 'Vous ne pouvez créer une disponibilité que dans la même journée';
+        errorDiv.style.display = 'block';
+        return;
+    }
+    
     // Préparer les données
     const data = {
         date_debut: formatDateTimeForAPI(dateDebut),
@@ -360,6 +386,17 @@ function updateDisponibilite(event) {
         // Annuler le changement si la durée est inférieure à 30 minutes
         event.revert();
         showNotification('La durée minimum doit être de 30 minutes', 'error');
+        return;
+    }
+    
+    // Validation : vérifier que les dates sont dans la même journée
+    const startDay = start.toDateString();
+    const endDay = end.toDateString();
+    
+    if (startDay !== endDay) {
+        // Annuler le changement si les dates sont sur plusieurs jours
+        event.revert();
+        showNotification('Vous ne pouvez créer une disponibilité que dans la même journée', 'error');
         return;
     }
     
