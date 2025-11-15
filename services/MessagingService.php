@@ -48,5 +48,25 @@ class MessagingService {
             return [];
         }
     }
+    
+    // Marque un message comme lu (méthode marquerCommeLu() du diagramme UML)
+    public function marquerCommeLu($messageId) {
+        try {
+            return $this->messageModel->marquerLu($messageId);
+        } catch (Exception $e) {
+            error_log("Erreur MessagingService::marquerCommeLu : " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    // Supprime un message (méthode supprimerMessage() du diagramme UML)
+    public function supprimerMessage($messageId) {
+        try {
+            return $this->messageModel->supprimerMessage($messageId);
+        } catch (Exception $e) {
+            error_log("Erreur MessagingService::supprimerMessage : " . $e->getMessage());
+            return false;
+        }
+    }
 }
 
