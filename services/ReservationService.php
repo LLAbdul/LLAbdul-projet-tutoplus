@@ -24,16 +24,14 @@ class ReservationService {
         $this->serviceModel = new Service($pdo);
     }
     
-    /**
-     * Crée une demande de rendez-vous
-     * @param string $etudiantId UUID de l'étudiant
-     * @param string $serviceId UUID du service
-     * @param string $tuteurId UUID du tuteur
-     * @param string|null $disponibiliteId UUID de la disponibilité (optionnel)
-     * @param string|null $motif Motif de la demande
-     * @param string|null $priorite Priorité de la demande
-     * @return string|false UUID de la demande créée ou false en cas d'erreur
-     */
+    // Crée une demande de rendez-vous
+    // $etudiantId : UUID de l'étudiant
+    // $serviceId : UUID du service
+    // $tuteurId : UUID du tuteur
+    // $disponibiliteId : UUID de la disponibilité (optionnel)
+    // $motif : Motif de la demande (optionnel)
+    // $priorite : Priorité de la demande (optionnel)
+    // Retourne : UUID de la demande créée ou false en cas d'erreur
     public function creerDemande($etudiantId, $serviceId, $tuteurId, $disponibiliteId = null, $motif = null, $priorite = null) {
         // Vérifier que la disponibilité existe et est disponible si fournie
         if ($disponibiliteId !== null) {
@@ -46,11 +44,9 @@ class ReservationService {
         return $this->demandeModel->creerDemande($etudiantId, $serviceId, $tuteurId, $disponibiliteId, $motif, $priorite);
     }
     
-    /**
-     * Confirme une demande et crée un rendez-vous
-     * @param string $demandeId UUID de la demande
-     * @return string|false UUID du rendez-vous créé ou false en cas d'erreur
-     */
+    // Confirme une demande et crée un rendez-vous
+    // $demandeId : UUID de la demande
+    // Retourne : UUID du rendez-vous créé ou false en cas d'erreur
     public function confirmerDemande($demandeId) {
         try {
             // Récupérer la demande
@@ -134,12 +130,10 @@ class ReservationService {
         }
     }
     
-    /**
-     * Annule une réservation (rendez-vous)
-     * @param string $rendezVousId UUID du rendez-vous
-     * @param string|null $raison Raison de l'annulation
-     * @return bool True si succès, false sinon
-     */
+    // Annule une réservation (rendez-vous)
+    // $rendezVousId : UUID du rendez-vous
+    // $raison : Raison de l'annulation (optionnel)
+    // Retourne : true si succès, false sinon
     public function annulerReservation($rendezVousId, $raison = null) {
         try {
             // Récupérer le rendez-vous
@@ -178,12 +172,10 @@ class ReservationService {
         }
     }
     
-    /**
-     * Reporte une réservation (rendez-vous)
-     * @param string $rendezVousId UUID du rendez-vous
-     * @param string $nouvelleDate Nouvelle date/heure (format DATETIME)
-     * @return bool True si succès, false sinon
-     */
+    // Reporte une réservation (rendez-vous)
+    // $rendezVousId : UUID du rendez-vous
+    // $nouvelleDate : Nouvelle date/heure (format DATETIME)
+    // Retourne : true si succès, false sinon
     public function reporterReservation($rendezVousId, $nouvelleDate) {
         try {
             // Récupérer le rendez-vous
@@ -201,21 +193,17 @@ class ReservationService {
         }
     }
     
-    /**
-     * Vérifie si une disponibilité est disponible
-     * @param string $disponibiliteId UUID de la disponibilité
-     * @return bool True si disponible, false sinon
-     */
+    // Vérifie si une disponibilité est disponible
+    // $disponibiliteId : UUID de la disponibilité
+    // Retourne : true si disponible, false sinon
     public function verifierDisponibilite($disponibiliteId) {
         return $this->disponibiliteModel->estDisponible($disponibiliteId);
     }
     
-    /**
-     * Calcule le prix d'un service pour une durée donnée
-     * @param string $serviceId UUID du service
-     * @param int $duree Durée en minutes
-     * @return float Prix calculé
-     */
+    // Calcule le prix d'un service pour une durée donnée
+    // $serviceId : UUID du service
+    // $duree : Durée en minutes
+    // Retourne : Prix calculé (float)
     public function calculerPrix($serviceId, $duree) {
         try {
             $service = $this->serviceModel->getServiceById($serviceId);
