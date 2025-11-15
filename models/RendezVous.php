@@ -30,7 +30,7 @@ class RendezVous {
             $etudiantStmt->bindParam(':etudiant_id', $etudiantId, PDO::PARAM_STR);
             $etudiantStmt->execute();
             if (!$etudiantStmt->fetch()) {
-                error_log("Erreur : L'étudiant spécifié n'existe pas ou n'est pas actif");
+                error_log("Erreur RendezVous::creerRendezVous : L'étudiant spécifié n'existe pas ou n'est pas actif (ID: $etudiantId)");
                 return false;
             }
             
@@ -39,7 +39,7 @@ class RendezVous {
             $tuteurStmt->bindParam(':tuteur_id', $tuteurId, PDO::PARAM_STR);
             $tuteurStmt->execute();
             if (!$tuteurStmt->fetch()) {
-                error_log("Erreur : Le tuteur spécifié n'existe pas ou n'est pas actif");
+                error_log("Erreur RendezVous::creerRendezVous : Le tuteur spécifié n'existe pas ou n'est pas actif (ID: $tuteurId)");
                 return false;
             }
             
@@ -48,7 +48,7 @@ class RendezVous {
             $serviceStmt->bindParam(':service_id', $serviceId, PDO::PARAM_STR);
             $serviceStmt->execute();
             if (!$serviceStmt->fetch()) {
-                error_log("Erreur : Le service spécifié n'existe pas ou n'est pas actif");
+                error_log("Erreur RendezVous::creerRendezVous : Le service spécifié n'existe pas ou n'est pas actif (ID: $serviceId)");
                 return false;
             }
             
@@ -58,11 +58,11 @@ class RendezVous {
             $dispoStmt->execute();
             $disponibilite = $dispoStmt->fetch();
             if (!$disponibilite) {
-                error_log("Erreur : La disponibilité spécifiée n'existe pas");
+                error_log("Erreur RendezVous::creerRendezVous : La disponibilité spécifiée n'existe pas (ID: $disponibiliteId)");
                 return false;
             }
             if ($disponibilite['statut'] !== 'RESERVE') {
-                error_log("Erreur : La disponibilité doit être réservée pour créer un rendez-vous");
+                error_log("Erreur RendezVous::creerRendezVous : La disponibilité doit être réservée pour créer un rendez-vous (Statut actuel: " . ($disponibilite['statut'] ?? 'NULL') . ")");
                 return false;
             }
             
@@ -72,7 +72,7 @@ class RendezVous {
                 $demandeStmt->bindParam(':demande_id', $demandeId, PDO::PARAM_STR);
                 $demandeStmt->execute();
                 if (!$demandeStmt->fetch()) {
-                    error_log("Erreur : La demande spécifiée n'existe pas");
+                    error_log("Erreur RendezVous::creerRendezVous : La demande spécifiée n'existe pas (ID: $demandeId)");
                     return false;
                 }
             }
@@ -99,11 +99,20 @@ class RendezVous {
             $stmt->bindParam(':notes', $notes, PDO::PARAM_STR);
             $stmt->bindParam(':prix', $prix, PDO::PARAM_STR);
             
-            $stmt->execute();
+            $result = $stmt->execute();
+            
+            if (!$result) {
+                $errorInfo = $stmt->errorInfo();
+                error_log("Erreur RendezVous::creerRendezVous : Échec de l'INSERT - " . ($errorInfo[2] ?? 'Erreur inconnue'));
+                return false;
+            }
             
             return $id;
         } catch (PDOException $e) {
-            error_log("Erreur lors de la création du rendez-vous : " . $e->getMessage());
+            error_log("Erreur RendezVous::creerRendezVous : " . $e->getMessage());
+            return false;
+        } catch (Exception $e) {
+            error_log("Erreur RendezVous::creerRendezVous : " . $e->getMessage());
             return false;
         }
     }
