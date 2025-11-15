@@ -1,0 +1,291 @@
+/* Styles pour le modal de contact tuteur */
+
+/* Structure de base du modal */
+.contact-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.contact-modal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+}
+
+.contact-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.contact-modal-content {
+  position: relative;
+  background: var(--bg-white);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 2001;
+  animation: slideUpFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUpFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.contact-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.contact-modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.contact-modal-close {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: var(--text-light);
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.contact-modal-close:hover {
+  background: var(--bg-light);
+  color: var(--text-dark);
+}
+
+.contact-modal-body {
+  padding: 2rem;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.form-label .required {
+  color: var(--accent-color);
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: var(--font-family);
+  color: var(--text-dark);
+  background: var(--bg-white);
+  transition: all 0.2s ease;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(204, 0, 0, 0.1);
+}
+
+.form-input[readonly] {
+  background: var(--bg-light);
+  cursor: not-allowed;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 120px;
+  font-family: var(--font-family);
+}
+
+.char-counter {
+  font-size: 0.875rem;
+  color: var(--text-light);
+  text-align: right;
+}
+
+.char-counter span {
+  font-weight: 600;
+}
+
+.error-message {
+  padding: 0.75rem 1rem;
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  color: #c33;
+  font-size: 0.9375rem;
+}
+
+.contact-modal-footer {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.btn-contact-cancel,
+.btn-contact-submit {
+  padding: 0.875rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-family);
+}
+
+.btn-contact-cancel {
+  background: transparent;
+  color: var(--text-dark);
+  border: 1px solid var(--border-color);
+}
+
+.btn-contact-cancel:hover {
+  background: var(--bg-light);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.btn-contact-submit {
+  background: var(--accent-color);
+  color: var(--text-white);
+  box-shadow: 0 2px 8px rgba(204, 0, 0, 0.2);
+}
+
+.btn-contact-submit:hover {
+  background: var(--accent-light);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(204, 0, 0, 0.3);
+}
+
+.btn-contact-submit:active {
+  transform: translateY(0);
+}
+
+.btn-contact-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Styles pour le bouton de contact dans les cartes de service */
+.btn-contact-tuteur {
+  background: var(--accent-color);
+  color: var(--text-white);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+}
+
+.btn-contact-tuteur:hover {
+  background: var(--accent-light);
+  transform: scale(1.1);
+}
+
+.btn-contact-icon {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .contact-modal-content {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .contact-modal-header {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .contact-modal-title {
+    font-size: 1.25rem;
+  }
+
+  .contact-modal-body {
+    padding: 1.5rem;
+  }
+
+  .contact-modal-footer {
+    flex-direction: column;
+  }
+
+  .btn-contact-cancel,
+  .btn-contact-submit {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-modal-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .contact-modal-body {
+    padding: 1.25rem;
+  }
+}
+
