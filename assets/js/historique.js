@@ -46,8 +46,12 @@ async function loadRendezVous() {
             return;
         }
         
-        // TODO: Afficher les rendez-vous (prochain commit)
-        console.log('Rendez-vous chargés:', data);
+        // Trier par date (plus récent en premier)
+        const sortedRendezVous = sortRendezVousByDate(data);
+        
+        // Afficher les rendez-vous
+        displayRendezVous(sortedRendezVous);
+        rendezVousList.style.display = 'flex';
         
     } catch (error) {
         console.error('Erreur lors du chargement des rendez-vous:', error);
@@ -180,4 +184,99 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Trie les rendez-vous par date (plus récent en premier)
+// rendezVous : Liste des rendez-vous
+// Retourne : Liste triée
+function sortRendezVousByDate(rendezVous) {
+    return [...rendezVous].sort((a, b) => {
+        const dateA = new Date(a.date_heure);
+        const dateB = new Date(b.date_heure);
+        return dateB - dateA; // Plus récent en premier
+    });
+}
+
+// Affiche les rendez-vous dans le DOM
+// rendezVous : Liste des rendez-vous à afficher
+function displayRendezVous(rendezVous) {
+    const rendezVousList = document.getElementById('rendezVousList');
+    rendezVousList.innerHTML = ''; // Vider la liste
+    
+    rendezVous.forEach(rv => {
+        const card = createRendezVousCard(rv);
+        rendezVousList.appendChild(card);
+    });
+}
+
+// Crée une carte HTML pour un rendez-vous
+// rv : Données du rendez-vous
+// Retourne : Élément HTML de la carte
+function createRendezVousCard(rv) {
+    const card = document.createElement('div');
+    card.className = 'rendez-vous-card';
+    
+    // Déterminer si le rendez-vous est passé ou à venir
+    const now = new Date();
+    const rvDate = new Date(rv.date_heure);
+    const isPast = rvDate < now;
+    
+    // Ajouter les classes CSS appropriées
+    if (rv.statut === 'ANNULE') {
+        card.classList.add('cancelled');
+    } else if (rv.statut === 'TERMINE') {
+        card.classList.add('completed');
+    } else if (isPast) {
+        card.classList.add('past');
+    } else {
+        card.classList.add('upcoming');
+    }
+    
+    // Formater la date et l'heure
+    const formattedDate = formatDateForHistorique(rv.date_heure);
+    const formattedTime = formatTimeForHistorique(rv.date_heure);
+    const formattedDuration = formatDuration(rv.duree);
+    
+    // Formater le statut
+    const statutLabel = formatStatut(rv.statut);
+    const statutClass = formatStatutClass(rv.statut);
+    
+    // Construire le HTML
+    card.innerHTML = `
+        <div class="rendez-vous-card-header">
+            <div class="rendez-vous-date-time">
+                <div class="rendez-vous-date">${formattedDate}</div>
+                <div class="rendez-vous-time">${formattedTime} (${formattedDuration})</div>
+            </div>
+            <span class="rendez-vous-statut ${statutClass}">${statutLabel}</span>
+        </div>
+        
+        <div class="rendez-vous-card-body">
+            <div class="rendez-vous-info">
+                <span class="rendez-vous-info-label">Tuteur</span>
+                <span class="rendez-vous-info-value">${escapeHtml(rv.tuteur_prenom || '')} ${escapeHtml(rv.tuteur_nom || '')}</span>
+            </div>
+            
+            <div class="rendez-vous-info">
+                <span class="rendez-vous-info-label">Service</span>
+                <span class="rendez-vous-info-value">${escapeHtml(rv.service_nom || 'Non spécifié')}</span>
+            </div>
+            
+            ${rv.prix ? `
+            <div class="rendez-vous-info">
+                <span class="rendez-vous-info-label">Prix</span>
+                <span class="rendez-vous-info-value">${formatPrice(rv.prix)}</span>
+            </div>
+            ` : ''}
+        </div>
+        
+        ${rv.notes ? `
+        <div class="rendez-vous-notes">
+            <div class="rendez-vous-notes-label">Notes</div>
+            <div class="rendez-vous-notes-content">${escapeHtml(rv.notes)}</div>
+        </div>
+        ` : ''}
+    `;
+    
+    return card;
 }
