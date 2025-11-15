@@ -83,7 +83,7 @@ require_once 'config/database.php';
                         </svg>
                     </div>
                     <h3>Aucune séance enregistrée</h3>
-                    <p>Vous n'avez pas encore de séances de tutorat. <a href="index.php">Réservez votre première séance</a></p>
+                    <p>Vous n'avez pas encore de séances de tutorat. <a href="index.php#services">Réservez votre première séance</a></p>
                 </div>
 
                 <!-- Liste des rendez-vous -->
