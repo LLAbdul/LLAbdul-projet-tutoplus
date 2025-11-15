@@ -183,7 +183,7 @@ class Disponibilite {
     }
     
     // Modifie une disponibilité existante
-    public function modifierDisponibilite($id, $dateDebut, $dateFin, $statut = null, $serviceId = null, $prix = null, $notes = null) {
+    public function modifierDisponibilite($id, $dateDebut, $dateFin, $statut = null, $serviceId = null, $prix = null, $notes = null, $etudiantId = null) {
         try {
             // Validation : durée minimum 30 minutes
             $dateDebutObj = new DateTime($dateDebut);
@@ -229,6 +229,23 @@ class Disponibilite {
                 $params[':notes'] = $notes;
             }
             
+            // Gérer etudiant_id : si fourni, on le met à jour, sinon on peut le mettre à NULL si statut change
+            if ($etudiantId !== null) {
+                // Validation : vérifier que l'étudiant existe
+                $etudiantStmt = $this->pdo->prepare("SELECT id FROM etudiants WHERE id = :etudiant_id");
+                $etudiantStmt->bindParam(':etudiant_id', $etudiantId, PDO::PARAM_STR);
+                $etudiantStmt->execute();
+                if (!$etudiantStmt->fetch()) {
+                    error_log("Erreur : L'étudiant spécifié n'existe pas");
+                    return false;
+                }
+                $updates[] = "etudiant_id = :etudiant_id";
+                $params[':etudiant_id'] = $etudiantId;
+            } elseif ($statut !== null && $statut !== 'RESERVE') {
+                // Si le statut change de RESERVE à autre chose, on réinitialise etudiant_id à NULL
+                $updates[] = "etudiant_id = NULL";
+            }
+            
             $sql = "UPDATE disponibilites SET " . implode(", ", $updates) . " WHERE id = :id";
             
             $stmt = $this->pdo->prepare($sql);
@@ -239,15 +256,15 @@ class Disponibilite {
             
             $stmt->execute();
             
-            return $stmt->rowCount() > 0;
-        } catch (PDOException $e) {
-            error_log("Erreur lors de la modification de la disponibilité : " . $e->getMessage());
-            return false;
-        }
+        return $stmt->rowCount() > 0;
+    } catch (PDOException $e) {
+        error_log("Erreur lors de la modification de la disponibilité : " . $e->getMessage());
+        return false;
     }
-    
-    // Supprime une disponibilité (ne peut pas supprimer si réservée)
-    public function supprimerDisponibilite($id) {
+}
+
+// Supprime une disponibilité (ne peut pas supprimer si réservée)
+public function supprimerDisponibilite($id) {
         try {
             // Vérifier que la disponibilité existe et n'est pas réservée
             $disponibilite = $this->getDisponibiliteById($id);
