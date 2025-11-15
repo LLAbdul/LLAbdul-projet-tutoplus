@@ -12,12 +12,14 @@ class Disponibilite {
         try {
             $stmt = $this->pdo->prepare("
                 SELECT d.id, d.tuteur_id, d.service_id, d.date_debut, d.date_fin, 
-                       d.statut, d.prix, d.notes, d.date_creation, d.date_modification,
+                       d.statut, d.etudiant_id, d.prix, d.notes, d.date_creation, d.date_modification,
                        s.nom as service_nom, s.categorie as service_categorie,
-                       t.nom as tuteur_nom, t.prenom as tuteur_prenom
+                       t.nom as tuteur_nom, t.prenom as tuteur_prenom,
+                       e.nom as etudiant_nom, e.prenom as etudiant_prenom
                 FROM disponibilites d
                 LEFT JOIN services s ON d.service_id = s.id
                 LEFT JOIN tuteurs t ON d.tuteur_id = t.id
+                LEFT JOIN etudiants e ON d.etudiant_id = e.id
                 WHERE d.id = :id
             ");
             $stmt->bindParam(':id', $id, PDO::PARAM_STR);
