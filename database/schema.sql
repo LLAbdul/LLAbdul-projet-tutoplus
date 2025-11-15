@@ -79,6 +79,30 @@ CREATE TABLE IF NOT EXISTS disponibilites (
     CHECK (date_fin > date_debut),
     CHECK (TIMESTAMPDIFF(MINUTE, date_debut, date_fin) >= 30)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table des disponibilités et créneaux horaires';
+-- Table des demandes de rendez-vous
+CREATE TABLE IF NOT EXISTS demandes (
+    id CHAR(36) PRIMARY KEY COMMENT 'UUID de la demande',
+    etudiant_id CHAR(36) NOT NULL COMMENT 'UUID de l\'étudiant demandeur',
+    service_id CHAR(36) NOT NULL COMMENT 'UUID du service demandé',
+    tuteur_id CHAR(36) NOT NULL COMMENT 'UUID du tuteur',
+    disponibilite_id CHAR(36) COMMENT 'UUID de la disponibilité associée (optionnel)',
+    date_heure_demande DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date et heure de la demande',
+    statut ENUM('EN_ATTENTE', 'ACCEPTEE', 'REFUSEE', 'EXPIRED') NOT NULL DEFAULT 'EN_ATTENTE' COMMENT 'Statut de la demande',
+    motif TEXT COMMENT 'Motif de la demande',
+    priorite VARCHAR(50) COMMENT 'Priorité de la demande',
+    date_creation DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date de création',
+    date_modification DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Date de modification',
+    FOREIGN KEY (etudiant_id) REFERENCES etudiants(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (tuteur_id) REFERENCES tuteurs(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (disponibilite_id) REFERENCES disponibilites(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    INDEX idx_etudiant (etudiant_id),
+    INDEX idx_service (service_id),
+    INDEX idx_tuteur (tuteur_id),
+    INDEX idx_disponibilite (disponibilite_id),
+    INDEX idx_statut (statut),
+    INDEX idx_date_creation (date_creation)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table des demandes de rendez-vous';
 
 -- Insertion de données de test pour les tuteurs
 INSERT INTO tuteurs (id, numero_employe, nom, prenom, email, telephone, departement, specialites, tarif_horaire, evaluation, nb_seances, actif) VALUES
