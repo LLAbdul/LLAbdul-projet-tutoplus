@@ -76,12 +76,15 @@ try {
                 break;
             }
             
-            // Changer le statut du créneau à RESERVE
+             // Changer le statut du créneau à RESERVE et stocker l'étudiant qui réserve
             $result = $disponibiliteModel->modifierDisponibilite(
                 $disponibiliteId,
                 $disponibilite['date_debut'], // date_debut (inchangé)
                 $disponibilite['date_fin'], // date_fin (inchangé)
-                'RESERVE' // statut
+                'RESERVE', // statut
+                null, // serviceId - on ne modifie pas (déjà défini dans la disponibilité)
+                null, // prix - on ne modifie pas (déjà défini dans la disponibilité)
+                $etudiantId // etudiant_id - on stocke qui a réservé
             );
             
             if (!$result) {
