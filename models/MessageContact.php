@@ -91,4 +91,68 @@ class MessageContact {
             return false;
         }
     }
+    
+    // Récupère un message par son ID
+    public function getMessageById($id) {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT m.id, m.etudiant_id, m.tuteur_id, m.sujet, m.contenu, m.date_envoi, 
+                       m.statut, m.priorite, m.lu, m.date_creation, m.date_modification,
+                       e.nom as etudiant_nom, e.prenom as etudiant_prenom, e.email as etudiant_email,
+                       t.nom as tuteur_nom, t.prenom as tuteur_prenom, t.email as tuteur_email
+                FROM messages_contact m
+                LEFT JOIN etudiants e ON m.etudiant_id = e.id
+                LEFT JOIN tuteurs t ON m.tuteur_id = t.id
+                WHERE m.id = :id
+            ");
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur lors de la récupération du message : " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    // Récupère tous les messages reçus par un tuteur
+    public function getMessagesByTuteur($tuteurId) {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT m.id, m.etudiant_id, m.tuteur_id, m.sujet, m.contenu, m.date_envoi, 
+                       m.statut, m.priorite, m.lu, m.date_creation,
+                       e.nom as etudiant_nom, e.prenom as etudiant_prenom, e.email as etudiant_email
+                FROM messages_contact m
+                LEFT JOIN etudiants e ON m.etudiant_id = e.id
+                WHERE m.tuteur_id = :tuteur_id
+                ORDER BY m.date_envoi DESC
+            ");
+            $stmt->bindParam(':tuteur_id', $tuteurId, PDO::PARAM_STR);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur lors de la récupération des messages du tuteur : " . $e->getMessage());
+            return [];
+        }
+    }
+    
+    // Récupère tous les messages envoyés par un étudiant
+    public function getMessagesByEtudiant($etudiantId) {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT m.id, m.etudiant_id, m.tuteur_id, m.sujet, m.contenu, m.date_envoi, 
+                       m.statut, m.priorite, m.lu, m.date_creation,
+                       t.nom as tuteur_nom, t.prenom as tuteur_prenom, t.email as tuteur_email
+                FROM messages_contact m
+                LEFT JOIN tuteurs t ON m.tuteur_id = t.id
+                WHERE m.etudiant_id = :etudiant_id
+                ORDER BY m.date_envoi DESC
+            ");
+            $stmt->bindParam(':etudiant_id', $etudiantId, PDO::PARAM_STR);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur lors de la récupération des messages de l'étudiant : " . $e->getMessage());
+            return [];
+        }
+    }
 }
