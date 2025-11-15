@@ -145,9 +145,11 @@
 }
 
 .form-textarea {
-  resize: vertical;
+  resize: none;
   min-height: 120px;
+  max-height: 120px;
   font-family: var(--font-family);
+  overflow-y: auto;
 }
 
 .char-counter {

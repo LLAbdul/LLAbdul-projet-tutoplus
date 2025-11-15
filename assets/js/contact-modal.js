@@ -12,20 +12,20 @@ function openContactModal(tuteurId, tuteurNom) {
         return;
     }
     
-    // Remplir les champs du formulaire
+    // Réinitialiser le formulaire d'abord
+    resetContactForm();
+    
+    // Remplir les champs du tuteur APRÈS la réinitialisation
     const tuteurIdInput = document.getElementById('contact-tuteur-id');
     const tuteurNameInput = document.getElementById('contact-tuteur-name');
     
     if (tuteurIdInput) {
-        tuteurIdInput.value = tuteurId;
+        tuteurIdInput.value = tuteurId || '';
     }
     
     if (tuteurNameInput) {
         tuteurNameInput.value = tuteurNom || '';
     }
-    
-    // Réinitialiser le formulaire
-    resetContactForm();
     
     // Afficher le modal
     modal.classList.add('active');
@@ -57,12 +57,24 @@ function closeContactModal() {
 }
 
 /**
- * Réinitialise le formulaire de contact
+ * Réinitialise le formulaire de contact (sauf le champ tuteur qui est en readonly)
  */
 function resetContactForm() {
-    const form = document.getElementById('contactForm');
-    if (form) {
-        form.reset();
+    // Réinitialiser uniquement les champs modifiables (pas le tuteur)
+    const sujetInput = document.getElementById('contact-sujet');
+    const contenuInput = document.getElementById('contact-contenu');
+    const prioriteSelect = document.getElementById('contact-priorite');
+    
+    if (sujetInput) {
+        sujetInput.value = '';
+    }
+    
+    if (contenuInput) {
+        contenuInput.value = '';
+    }
+    
+    if (prioriteSelect) {
+        prioriteSelect.value = '';
     }
     
     // Réinitialiser le compteur de caractères
