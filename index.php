@@ -149,7 +149,13 @@ foreach ($services as $service) {
                                                             <span class="detail-content">
                                                                 <strong>Département:</strong> <?php echo htmlspecialchars($service['departement']); ?>
                                                             </span>
-                                                            <?php if (!isset($_SESSION['tuteur_id'])): ?>
+                                                            <?php if (!isset($_SESSION['tuteur_id']) && isset($_SESSION['etudiant_id'])): ?>
+                                                                <button class="btn-contact-tuteur" 
+                                                                        data-tuteur-id="<?php echo htmlspecialchars($service['tuteur_id']); ?>"
+                                                                        data-tuteur-nom="<?php echo htmlspecialchars($service['tuteur_prenom'] . ' ' . $service['tuteur_nom']); ?>"
+                                                                        aria-label="Contacter le tuteur">
+                                                                    <span class="btn-contact-icon">✉</span>
+                                                                </button>
                                                                 <button class="btn-plus-creneaux" 
                                                                         data-service-id="<?php echo htmlspecialchars($service['id']); ?>"
                                                                         aria-label="Voir les créneaux">
@@ -194,6 +200,50 @@ foreach ($services as $service) {
                 <button class="creneaux-modal-close" aria-label="Fermer">&times;</button>
             </div>
             <div class="creneaux-modal-body" id="creneauxModalBody">
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de contact tuteur -->
+    <div id="contactModal" class="contact-modal">
+        <div class="contact-modal-overlay"></div>
+        <div class="contact-modal-content">
+            <div class="contact-modal-header">
+                <h2 class="contact-modal-title">Contacter le tuteur</h2>
+                <button class="contact-modal-close" aria-label="Fermer">&times;</button>
+            </div>
+            <div class="contact-modal-body">
+                <form id="contactForm" class="contact-form">
+                    <input type="hidden" id="contact-tuteur-id" name="tuteur_id">
+                    <div class="form-group">
+                        <label for="contact-tuteur-name" class="form-label">Tuteur</label>
+                        <input type="text" id="contact-tuteur-name" class="form-input" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-sujet" class="form-label">Sujet <span class="required">*</span></label>
+                        <input type="text" id="contact-sujet" name="sujet" class="form-input" required maxlength="255" placeholder="Ex: Question sur le service">
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-contenu" class="form-label">Message <span class="required">*</span></label>
+                        <textarea id="contact-contenu" name="contenu" class="form-textarea" required maxlength="500" rows="5" placeholder="Votre message (maximum 500 caractères)"></textarea>
+                        <div class="char-counter">
+                            <span id="char-count">0</span>/500 caractères
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact-priorite" class="form-label">Priorité</label>
+                        <select id="contact-priorite" name="priorite" class="form-select">
+                            <option value="">Normale</option>
+                            <option value="HAUTE">Haute</option>
+                            <option value="URGENTE">Urgente</option>
+                        </select>
+                    </div>
+                    <div id="contact-error" class="error-message" style="display: none;"></div>
+                    <div class="contact-modal-footer">
+                        <button type="button" class="btn-contact-cancel" id="btnContactCancel">Annuler</button>
+                        <button type="submit" class="btn-contact-submit" id="btnContactSubmit">Envoyer</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -273,6 +323,7 @@ foreach ($services as $service) {
     <script src="assets/js/script.js"></script>
     <script src="assets/js/confirmation-modal.js"></script>
     <script src="assets/js/creneaux-modal.js"></script>
+    <script src="assets/js/contact-modal.js"></script>
 </body>
 </html>
 
