@@ -133,6 +133,28 @@ CREATE TABLE IF NOT EXISTS rendez_vous (
     INDEX idx_statut (statut)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table des rendez-vous confirmés';
 
+-- Table des messages de contact entre étudiants et tuteurs
+CREATE TABLE IF NOT EXISTS messages_contact (
+    id CHAR(36) PRIMARY KEY COMMENT 'UUID du message',
+    etudiant_id CHAR(36) NOT NULL COMMENT 'UUID de l\'étudiant expéditeur',
+    tuteur_id CHAR(36) NOT NULL COMMENT 'UUID du tuteur destinataire',
+    sujet VARCHAR(255) NOT NULL COMMENT 'Sujet du message',
+    contenu TEXT NOT NULL COMMENT 'Contenu du message',
+    date_envoi DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date et heure d\'envoi',
+    statut VARCHAR(50) DEFAULT 'ENVOYE' COMMENT 'Statut du message (ENVOYE, LU, REPONDU, ARCHIVE)',
+    priorite VARCHAR(50) COMMENT 'Priorité du message (NORMALE, HAUTE, URGENTE)',
+    lu BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Indique si le message a été lu',
+    date_creation DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date de création',
+    date_modification DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Date de modification',
+    FOREIGN KEY (etudiant_id) REFERENCES etudiants(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (tuteur_id) REFERENCES tuteurs(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    INDEX idx_etudiant (etudiant_id),
+    INDEX idx_tuteur (tuteur_id),
+    INDEX idx_date_envoi (date_envoi),
+    INDEX idx_statut (statut),
+    INDEX idx_lu (lu)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table des messages de contact entre étudiants et tuteurs';
+
 -- Insertion de données de test pour les tuteurs
 INSERT INTO tuteurs (id, numero_employe, nom, prenom, email, telephone, departement, specialites, tarif_horaire, evaluation, nb_seances, actif) VALUES
 (UUID(), 'T001', 'Dupont', 'Jean', 'jean.dupont@college.qc.ca', '514-123-4567', 'Mathématiques', 'Algèbre,Calcul différentiel,Géométrie', 25.00, 4.5, 120, TRUE),
