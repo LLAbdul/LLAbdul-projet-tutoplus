@@ -36,6 +36,7 @@ foreach ($services as $service) {
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/creneaux-modal.css">
     <link rel="stylesheet" href="assets/css/confirmation-modal.css">
+    <link rel="stylesheet" href="assets/css/contact-modal.css">
 </head>
 <body>
     <header>
