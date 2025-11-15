@@ -118,8 +118,9 @@ try {
             $prix = $data['prix'] ?? null;
             $notes = $data['notes'] ?? null;
             
-            $success = $disponibiliteModel->modifierDisponibilite($id, $dateDebut, $dateFin, $statut, $serviceId, $prix, $notes);
-            
+            // Le tuteur ne peut pas directement assigner un étudiant (seulement via changement de statut)
+            // Si le statut change de RESERVE à autre chose, etudiant_id sera automatiquement mis à NULL
+            $success = $disponibiliteModel->modifierDisponibilite($id, $dateDebut, $dateFin, $statut, $serviceId, $prix, $notes, null);            
             if ($success) {
                 http_response_code(200);
                 echo json_encode(['success' => true, 'message' => 'Disponibilité modifiée avec succès']);
