@@ -26,29 +26,44 @@ class Demande {
     public function creerDemande($etudiantId, $serviceId, $tuteurId, $disponibiliteId = null, $motif = null, $priorite = null) {
         try {
             // Validation : vérifier que l'étudiant existe
-            $etudiantStmt = $this->pdo->prepare("SELECT id FROM etudiants WHERE id = :etudiant_id AND actif = TRUE");
+            $etudiantStmt = $this->pdo->prepare("SELECT id, actif FROM etudiants WHERE id = :etudiant_id");
             $etudiantStmt->bindParam(':etudiant_id', $etudiantId, PDO::PARAM_STR);
             $etudiantStmt->execute();
-            if (!$etudiantStmt->fetch()) {
-                error_log("Erreur : L'étudiant spécifié n'existe pas ou n'est pas actif");
+            $etudiant = $etudiantStmt->fetch();
+            if (!$etudiant) {
+                error_log("Erreur Demande::creerDemande : L'étudiant spécifié n'existe pas (ID: $etudiantId)");
+                return false;
+            }
+            if (!$etudiant['actif']) {
+                error_log("Erreur Demande::creerDemande : L'étudiant spécifié n'est pas actif (ID: $etudiantId)");
                 return false;
             }
             
             // Validation : vérifier que le service existe
-            $serviceStmt = $this->pdo->prepare("SELECT id FROM services WHERE id = :service_id AND actif = TRUE");
+            $serviceStmt = $this->pdo->prepare("SELECT id, nom, actif FROM services WHERE id = :service_id");
             $serviceStmt->bindParam(':service_id', $serviceId, PDO::PARAM_STR);
             $serviceStmt->execute();
-            if (!$serviceStmt->fetch()) {
-                error_log("Erreur : Le service spécifié n'existe pas ou n'est pas actif");
+            $service = $serviceStmt->fetch();
+            if (!$service) {
+                error_log("Erreur Demande::creerDemande : Le service spécifié n'existe pas (ID: $serviceId)");
+                return false;
+            }
+            if (!$service['actif']) {
+                error_log("Erreur Demande::creerDemande : Le service spécifié n'est pas actif (ID: $serviceId, Nom: " . ($service['nom'] ?? 'N/A') . ")");
                 return false;
             }
             
             // Validation : vérifier que le tuteur existe
-            $tuteurStmt = $this->pdo->prepare("SELECT id FROM tuteurs WHERE id = :tuteur_id AND actif = TRUE");
+            $tuteurStmt = $this->pdo->prepare("SELECT id, nom, prenom, actif FROM tuteurs WHERE id = :tuteur_id");
             $tuteurStmt->bindParam(':tuteur_id', $tuteurId, PDO::PARAM_STR);
             $tuteurStmt->execute();
-            if (!$tuteurStmt->fetch()) {
-                error_log("Erreur : Le tuteur spécifié n'existe pas ou n'est pas actif");
+            $tuteur = $tuteurStmt->fetch();
+            if (!$tuteur) {
+                error_log("Erreur Demande::creerDemande : Le tuteur spécifié n'existe pas (ID: $tuteurId)");
+                return false;
+            }
+            if (!$tuteur['actif']) {
+                error_log("Erreur Demande::creerDemande : Le tuteur spécifié n'est pas actif (ID: $tuteurId, Nom: " . ($tuteur['prenom'] ?? '') . " " . ($tuteur['nom'] ?? '') . ")");
                 return false;
             }
             
@@ -78,11 +93,21 @@ class Demande {
             $stmt->bindParam(':motif', $motif, PDO::PARAM_STR);
             $stmt->bindParam(':priorite', $priorite, PDO::PARAM_STR);
             
-            $stmt->execute();
+            $result = $stmt->execute();
+            
+            if (!$result) {
+                $errorInfo = $stmt->errorInfo();
+                error_log("Erreur SQL lors de l'INSERT dans demandes : " . ($errorInfo[2] ?? 'Erreur inconnue'));
+                return false;
+            }
             
             return $id;
         } catch (PDOException $e) {
-            error_log("Erreur lors de la création de la demande : " . $e->getMessage());
+            error_log("Erreur PDO lors de la création de la demande : " . $e->getMessage());
+            error_log("Détails - Etudiant: $etudiantId, Service: $serviceId, Tuteur: $tuteurId, Disponibilite: $disponibiliteId");
+            return false;
+        } catch (Exception $e) {
+            error_log("Erreur générale lors de la création de la demande : " . $e->getMessage());
             return false;
         }
     }
