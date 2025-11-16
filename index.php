@@ -46,7 +46,10 @@ foreach ($services as $service) {
                     <a href="index.php" class="logo-link">
                         <img src="https://www.collegeahuntsic.qc.ca/assets/logo-ahuntsic@2x-d26df4e07b2c21fcf37f518dd0ddba254ead36b6184274af4a4f6ca3b47bc838.png" 
                              alt="Collège Ahuntsic" 
-                             class="college-logo">
+                             class="college-logo college-logo-desktop">
+                        <img src="assets/images/collegeahuntsiclogoshort.png" 
+                             alt="Collège Ahuntsic" 
+                             class="college-logo college-logo-mobile">
                     </a>
                 </div>
                 <div class="header-center">
@@ -63,6 +66,20 @@ foreach ($services as $service) {
                         </div>
                         <a href="historique.php" class="btn-login-link">Mes Séances</a>
                         <a href="logout.php" class="btn-logout">Déconnexion</a>
+                        <!-- Menu dropdown pour mobile -->
+                        <div class="user-menu-dropdown">
+                            <button class="user-initial-btn" id="userMenuBtn" aria-label="Menu utilisateur">
+                                <?php echo strtoupper(substr($_SESSION['etudiant_prenom'], 0, 1)); ?>
+                            </button>
+                            <div class="user-dropdown-menu" id="userDropdownMenu">
+                                <a href="historique.php" class="dropdown-menu-link">
+                                    <span>Mes Séances</span>
+                                </a>
+                                <a href="logout.php" class="dropdown-menu-link dropdown-menu-link-logout">
+                                    <span>Déconnexion</span>
+                                </a>
+                            </div>
+                        </div>
                     <?php elseif (isset($_SESSION['tuteur_id'])): ?>
                         <div class="user-info">
                             <span class="user-name"><?php echo htmlspecialchars($_SESSION['tuteur_prenom'] . ' ' . $_SESSION['tuteur_nom']); ?></span>
@@ -70,6 +87,20 @@ foreach ($services as $service) {
                         </div>
                         <a href="gestion_disponibilites.php" class="btn-login-link">Mes Disponibilités</a>
                         <a href="logout.php" class="btn-logout">Déconnexion</a>
+                        <!-- Menu dropdown pour mobile -->
+                        <div class="user-menu-dropdown">
+                            <button class="user-initial-btn" id="userMenuBtn" aria-label="Menu utilisateur">
+                                <?php echo strtoupper(substr($_SESSION['tuteur_prenom'], 0, 1)); ?>
+                            </button>
+                            <div class="user-dropdown-menu" id="userDropdownMenu">
+                                <a href="gestion_disponibilites.php" class="dropdown-menu-link">
+                                    <span>Mes Disponibilités</span>
+                                </a>
+                                <a href="logout.php" class="dropdown-menu-link dropdown-menu-link-logout">
+                                    <span>Déconnexion</span>
+                                </a>
+                            </div>
+                        </div>
                     <?php else: ?>
                         <a href="login.php" class="btn-login-link">Connexion</a>
                     <?php endif; ?>
@@ -77,6 +108,7 @@ foreach ($services as $service) {
             </div>
         </div>
     </header>
+
 
     <main>
         <section class="hero">
@@ -326,6 +358,7 @@ foreach ($services as $service) {
     <script src="assets/js/confirmation-modal.js"></script>
     <script src="assets/js/creneaux-modal.js"></script>
     <script src="assets/js/contact-modal.js"></script>
+    <script src="assets/js/user-dropdown-menu.js"></script>
 </body>
 </html>
 
