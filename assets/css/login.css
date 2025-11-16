@@ -171,4 +171,125 @@
   .login-title {
     font-size: 1.75rem;
   }
+
+  /* Afficher le logo court du Collège Ahuntsic sur tablette */
+  .header-left {
+    display: flex;
+    order: 1;
+  }
+
+  .college-logo-desktop {
+    display: none;
+  }
+
+  .college-logo-mobile {
+    display: block;
+    height: 40px;
+    max-width: 140px;
+    min-width: 100px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .header-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: auto;
+    max-width: none;
+    margin: 0;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .header-right {
+    order: 2;
+    margin-left: auto;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    z-index: 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-section {
+    padding: 1.5rem var(--spacing);
+  }
+
+  .login-card {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .login-title {
+    font-size: 1.5rem;
+  }
+
+  .login-subtitle {
+    font-size: 0.875rem;
+  }
+
+  .header-content {
+    min-height: 60px;
+    height: 60px;
+    gap: 0.5rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+  }
+
+  /* Afficher le logo court du Collège Ahuntsic sur mobile */
+  .header-left {
+    display: flex;
+    order: 1;
+  }
+
+  .college-logo-desktop {
+    display: none;
+  }
+
+  .college-logo-mobile {
+    display: block;
+    height: 35px;
+    max-width: 120px;
+    min-width: 80px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .header-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: auto;
+    max-width: none;
+    margin: 0;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+
+  .header-center .subtitle {
+    display: none; /* Masquer le sous-titre sur très petits écrans */
+  }
+
+  .header-right {
+    order: 2;
+    gap: 0.5rem;
+    flex-wrap: nowrap;
+    margin-left: auto;
+    justify-content: flex-end;
+    z-index: 2;
+  }
+
+  header h1 {
+    font-size: 1.375rem;
+    line-height: 1.2;
+  }
 }
