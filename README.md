@@ -2,15 +2,15 @@
 
 Système de tutorat pour le Collège Ahuntsic permettant aux étudiants de découvrir les services de tutorat, consulter les créneaux horaires disponibles et réserver des séances avec des tuteurs.
 
-## 👥 Équipe
+## Équipe
 
-**Chef d'équipe :** Abdul Rahman Zahid  
+**Chef d'équipe :** Abdul Rahman Zahid
 **Développeur :** Adel Tamani  
 **Testeur :** Diane Devi
 
 ---
 
-## 📋 Structure du Projet
+## Structure du Projet
 
 ```
 LLAbdul-projet-tutoplus/
@@ -255,7 +255,7 @@ Ouvrir `index.php` dans votre navigateur :
 
 ---
 
-## 🗄️ Modèle de données
+## Modèle de données
 
 ### Tables principales
 
@@ -351,7 +351,7 @@ Ouvrir `index.php` dans votre navigateur :
 
 ---
 
-## 🛠️ Technologies utilisées
+## Technologies utilisées
 
 - **Backend :**
 
@@ -381,7 +381,7 @@ Ouvrir `index.php` dans votre navigateur :
 
 ---
 
-## 📝 Données de test
+## Données de test
 
 Le script `database/schema.sql` inclut des données de test :
 
