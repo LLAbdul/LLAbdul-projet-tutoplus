@@ -196,17 +196,42 @@ class RendezVous
                     rv.id, rv.demande_id, rv.etudiant_id, rv.tuteur_id, rv.service_id, rv.disponibilite_id,
                     rv.date_heure, rv.statut, rv.duree, rv.lieu, rv.notes, rv.prix, rv.date_creation,
                     t.nom AS tuteur_nom, t.prenom AS tuteur_prenom,
-                    s.nom AS service_nom, s.categorie AS service_categorie
+                    s.nom AS service_nom, s.categorie AS service_categorie,
+                    d.date_debut AS disponibilite_date_debut, d.date_fin AS disponibilite_date_fin
                 FROM rendez_vous rv
                 LEFT JOIN tuteurs  t ON rv.tuteur_id = t.id
                 LEFT JOIN services s ON rv.service_id = s.id
+                LEFT JOIN disponibilites d ON rv.disponibilite_id = d.id
                 WHERE rv.etudiant_id = :etudiant_id
                 ORDER BY rv.date_heure ASC
             ");
             $stmt->bindParam(':etudiant_id', $etudiantId, PDO::PARAM_STR);
             $stmt->execute();
 
-            return $stmt->fetchAll() ?: [];
+            $rendezVous = $stmt->fetchAll() ?: [];
+            
+            // Recalculer la durée à partir de la disponibilité si disponible
+            foreach ($rendezVous as &$rv) {
+                if (!empty($rv['disponibilite_date_debut']) && !empty($rv['disponibilite_date_fin'])) {
+                    try {
+                        $dateDebut = new DateTime($rv['disponibilite_date_debut']);
+                        $dateFin = new DateTime($rv['disponibilite_date_fin']);
+                        $diff = $dateDebut->diff($dateFin);
+                        // Calculer la durée totale en minutes
+                        $dureeCalculee = ($diff->days * 24 * 60) + ($diff->h * 60) + $diff->i;
+                        // Utiliser la durée calculée si elle est valide
+                        if ($dureeCalculee > 0) {
+                            $rv['duree'] = $dureeCalculee;
+                        }
+                    } catch (Exception $e) {
+                        // En cas d'erreur, garder la durée existante
+                        $this->logError("Erreur calcul durée pour RV " . ($rv['id'] ?? 'N/A') . " : " . $e->getMessage());
+                    }
+                }
+            }
+            unset($rv); // Libérer la référence
+            
+            return $rendezVous;
         } catch (PDOException $e) {
             $this->logError("getRendezVousByEtudiantId : " . $e->getMessage());
             return [];
