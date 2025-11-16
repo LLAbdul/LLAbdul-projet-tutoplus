@@ -398,7 +398,6 @@ function openModalEdit(event) {
     // En mode édition, préserver le prix personnalisé (ne pas l'écraser avec le prix du service)
     toggleFieldsByStatut(true);
 
-    // ✅ Sauvegarder l'état initial directement depuis les champs du formulaire
     const original = {
         date_debut: document.getElementById('date-debut').value || '',
         date_fin: document.getElementById('date-fin').value || '',
