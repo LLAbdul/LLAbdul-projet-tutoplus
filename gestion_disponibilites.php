@@ -39,7 +39,7 @@ $serviceParDefaut = !empty($services) ? $services[0] : null;
     <link rel="stylesheet" href="assets/css/style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="assets/css/gestion-disponibilites.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="assets/css/creneaux-modal.css?v=<?php echo time(); ?>">
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/fullcalendar.min.css?v=<?php echo time(); ?>">
 </head>
 <body>
     <header>
@@ -186,8 +186,8 @@ $serviceParDefaut = !empty($services) ? $services[0] : null;
         </div>
     </footer>
     
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/fr-ca.js"></script>
+    <script src="assets/js/fullcalendar.min.js?v=<?php echo time(); ?>"></script>
+    <script src="assets/js/fullcalendar-locales-fr-ca.js?v=<?php echo time(); ?>"></script>
     <script src="assets/js/gestion-disponibilites.js"></script>
     <script src="assets/js/user-dropdown-menu.js"></script>
 </body>
