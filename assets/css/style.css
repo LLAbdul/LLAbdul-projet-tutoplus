@@ -877,6 +877,7 @@ footer p {
   .header-right .btn-login-link[href="historique.php"],
   .header-right .btn-login-link[href="index.php"],
   .header-right .btn-login-link[href="gestion_disponibilites.php"],
+  .header-right .btn-login-link[href="gestion_demandes.php"],
   .header-right .btn-logout {
     display: none !important;
   }
@@ -1007,6 +1008,7 @@ footer p {
   .header-right .btn-login-link[href="historique.php"],
   .header-right .btn-login-link[href="index.php"],
   .header-right .btn-login-link[href="gestion_disponibilites.php"],
+  .header-right .btn-login-link[href="gestion_demandes.php"],
   .header-right .btn-logout {
     display: none !important;
   }
@@ -1169,6 +1171,7 @@ footer p {
   .header-right .btn-login-link[href="historique.php"],
   .header-right .btn-login-link[href="index.php"],
   .header-right .btn-login-link[href="gestion_disponibilites.php"],
+  .header-right .btn-login-link[href="gestion_demandes.php"],
   .header-right .btn-logout {
     display: none !important;
   }
@@ -1449,6 +1452,7 @@ footer p {
   .header-right .btn-login-link[href="historique.php"],
   .header-right .btn-login-link[href="index.php"],
   .header-right .btn-login-link[href="gestion_disponibilites.php"],
+  .header-right .btn-login-link[href="gestion_demandes.php"],
   .header-right .btn-logout {
     display: none !important;
   }
@@ -1693,8 +1697,113 @@ select:hover:not(:focus-visible) {
   }
 }
 
+/* Menu burger pour PC (grand écran) */
+.burger-menu-btn-desktop {
+  display: none;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-right: 0.75rem;
+  z-index: 10;
+}
+
+.burger-menu-btn-desktop span {
+  width: 24px;
+  height: 3px;
+  background: var(--text-dark);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  display: block;
+}
+
+.burger-menu-btn-desktop:hover span {
+  background: var(--accent-color);
+}
+
+.burger-menu-btn-desktop.active span:nth-child(1) {
+  transform: rotate(45deg) translate(8px, 8px);
+}
+
+.burger-menu-btn-desktop.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.burger-menu-btn-desktop.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(8px, -8px);
+}
+
+.burger-menu-desktop {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  padding: 0.5rem 0;
+  margin-top: 0.5rem;
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.burger-menu-desktop.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.burger-menu-link {
+  display: block;
+  padding: 0.75rem 1.5rem;
+  color: var(--text-dark);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.burger-menu-link:hover {
+  background: var(--bg-light);
+  color: var(--accent-color);
+}
+
+.burger-menu-link-logout {
+  border-top: 1px solid var(--border-light);
+  margin-top: 0.25rem;
+  padding-top: 0.75rem;
+  color: var(--accent-color);
+}
+
+.burger-menu-link-logout:hover {
+  background: #fee;
+  color: var(--accent-color);
+}
+
 @media (min-width: 1401px) {
   .user-menu-dropdown {
     display: none !important;
+  }
+
+  .burger-menu-btn-desktop {
+    display: flex;
+  }
+
+  .header-right {
+    position: relative;
   }
 }
