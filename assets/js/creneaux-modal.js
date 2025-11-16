@@ -165,7 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         Object.keys(creneauxParDate).sort().forEach(date => {
             const creneaux = creneauxParDate[date];
-            const dateObj = new Date(date);
+            // Créer la date en heure locale pour éviter les problèmes de fuseau horaire
+            const [year, month, day] = date.split('-').map(Number);
+            const dateObj = new Date(year, month - 1, day);
             const dateFormatted = dateObj.toLocaleDateString('fr-FR', {
                 day: '2-digit',
                 month: 'long',
@@ -497,41 +499,65 @@ async function reserverCreneau(creneauId) {
             throw new Error(data.error || 'Erreur lors de la réservation');
         }
 
-        if (!data.disponibilite) {
-            throw new Error('Données de réservation manquantes dans la réponse');
+        // La réponse contient maintenant une demande (pas un rendez-vous directement)
+        if (!data.demande) {
+            throw new Error('Données de demande manquantes dans la réponse');
         }
 
-        const dispo = data.disponibilite;
+        const demande = data.demande;
+        const dispo = data.disponibilite || null;
 
-        if (!dispo.date_debut || !dispo.date_fin) {
-            throw new Error('Données de réservation incomplètes');
+        let dateFormatted = '';
+        let heureFormatted = '';
+        
+        // Utiliser les informations de la disponibilité si disponibles
+        if (dispo && dispo.date_debut && dispo.date_fin) {
+            const dateDebut = new Date(dispo.date_debut);
+            const dateFin = new Date(dispo.date_fin);
+            
+            if (!isNaN(dateDebut.getTime()) && !isNaN(dateFin.getTime())) {
+                // Extraire la date en heure locale pour éviter les problèmes de fuseau horaire
+                const year = dateDebut.getFullYear();
+                const month = String(dateDebut.getMonth() + 1).padStart(2, '0');
+                const day = String(dateDebut.getDate()).padStart(2, '0');
+                const dateString = `${year}-${month}-${day}`;
+                dateFormatted = formatDateForConfirmation(dateString);
+                
+                const heureDebut = dateDebut.toLocaleTimeString('fr-FR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+                
+                const heureFin = dateFin.toLocaleTimeString('fr-FR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+                
+                heureFormatted = `${heureDebut} - ${heureFin}`;
+            }
         }
-
-        const dateDebut = new Date(dispo.date_debut);
-        const dateFin = new Date(dispo.date_fin);
-
-        if (isNaN(dateDebut.getTime()) || isNaN(dateFin.getTime())) {
-            throw new Error('Format de date invalide');
+        
+        // Fallback si les infos de disponibilité ne sont pas disponibles
+        if (!dateFormatted || !heureFormatted) {
+            const dateDemande = new Date(demande.date_heure_demande);
+            // Extraire la date en heure locale pour éviter les problèmes de fuseau horaire
+            const year = dateDemande.getFullYear();
+            const month = String(dateDemande.getMonth() + 1).padStart(2, '0');
+            const day = String(dateDemande.getDate()).padStart(2, '0');
+            const dateString = `${year}-${month}-${day}`;
+            dateFormatted = formatDateForConfirmation(dateString);
+            heureFormatted = 'À confirmer par le tuteur';
         }
-
-        const heureDebut = dateDebut.toLocaleTimeString('fr-FR', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
-
-        const heureFin = dateFin.toLocaleTimeString('fr-FR', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
-
+        
         const confirmationData = {
-            date: formatDateForConfirmation(dispo.date_debut.split(' ')[0]),
-            heure: `${heureDebut} - ${heureFin}`,
-            tuteur: `${dispo.tuteur_prenom || ''} ${dispo.tuteur_nom || ''}`.trim() || 'Tuteur non spécifié',
-            service: dispo.service_nom || 'Service général',
-            notificationEnabled
+            date: dateFormatted,
+            heure: heureFormatted,
+            tuteur: `${demande.tuteur_prenom || ''} ${demande.tuteur_nom || ''}`.trim() || 'Tuteur non spécifié',
+            service: demande.service_nom || 'Service général',
+            notificationEnabled,
+            enAttente: true // Indique que la demande est en attente
         };
 
         fillConfirmationData(confirmationData);
