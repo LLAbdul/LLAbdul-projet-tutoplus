@@ -451,6 +451,31 @@ try {
             ]);
         }
 
+        // Cas : gestion des rendez-vous (terminer)
+        if (isset($data['resource']) && $data['resource'] === 'rendez-vous') {
+            $action = $data['action'] ?? null;
+            $id     = $data['id']     ?? null;
+
+            if ($action === 'terminer' && $id) {
+                $rendezVousModel = new RendezVous($pdo);
+                $success         = $rendezVousModel->terminerRendezVous($id);
+
+                if ($success) {
+                    json_response(200, [
+                        'success' => true,
+                        'message' => 'Rendez-vous marqué comme terminé avec succès',
+                    ]);
+                }
+
+                json_error(
+                    400,
+                    'Impossible de terminer le rendez-vous. Il doit être à venir ou en cours.'
+                );
+            }
+
+            json_error(400, 'Action invalide pour les rendez-vous');
+        }
+
         /* === DELETE : annulation rendez-vous === */
         case 'DELETE': {
             $data    = get_json_body();
