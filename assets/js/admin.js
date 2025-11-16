@@ -196,3 +196,60 @@ async function loadComptes() {
     }
 }
 
+// Filtrer les comptes
+function filterComptes(filter) {
+    currentFilter = filter;
+    displayComptes();
+}
+
+// Afficher les comptes filtrés
+function displayComptes() {
+    const comptesList = document.getElementById('comptesList');
+    const noComptes = document.getElementById('noComptes');
+    
+    if (!comptesList) return;
+    
+    // Filtrer les comptes
+    let filteredComptes = allComptes;
+    
+    switch (currentFilter) {
+        case 'etudiants':
+            filteredComptes = allComptes.filter(c => c.type === 'etudiant');
+            break;
+        case 'tuteurs':
+            filteredComptes = allComptes.filter(c => c.type === 'tuteur');
+            break;
+        case 'actifs':
+            filteredComptes = allComptes.filter(c => c.actif === true || c.actif === 1);
+            break;
+        case 'inactifs':
+            filteredComptes = allComptes.filter(c => c.actif === false || c.actif === 0);
+            break;
+        default:
+            filteredComptes = allComptes;
+    }
+    
+    // Vider la liste
+    comptesList.innerHTML = '';
+    
+    // Afficher le message si aucun compte
+    if (filteredComptes.length === 0) {
+        if (noComptes) noComptes.style.display = 'block';
+        if (comptesList) comptesList.style.display = 'none';
+        return;
+    }
+    
+    // Masquer le message "aucun compte"
+    if (noComptes) noComptes.style.display = 'none';
+    if (comptesList) comptesList.style.display = 'grid';
+    
+    // Créer et ajouter les cartes
+    filteredComptes.forEach(compte => {
+        const card = createCompteCard(compte);
+        comptesList.appendChild(card);
+    });
+    
+    // Ajouter les event listeners pour les boutons
+    attachToggleListeners();
+}
+
