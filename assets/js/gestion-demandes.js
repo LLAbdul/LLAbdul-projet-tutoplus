@@ -96,3 +96,92 @@ function showError(message) {
 function hideError() {
     errorMessage.style.display = 'none';
 }
+
+// Fonction pour créer le HTML d'une carte de demande
+function createDemandeCard(demande) {
+    const statutClass = getStatutClass(demande.statut);
+    const statutLabel = getStatutLabel(demande.statut);
+    const dateFormatted = formatDate(demande.date_heure_demande);
+    const timeFormatted = formatTime(demande.date_heure_demande);
+
+    // Boutons d'action (seulement si EN_ATTENTE)
+    let actionsHTML = '';
+    if (demande.statut === 'EN_ATTENTE') {
+        actionsHTML = `
+            <div class="demande-card-actions">
+                <button 
+                    class="btn-accepter" 
+                    onclick="accepterDemande('${demande.id}')"
+                    type="button"
+                >
+                    Accepter
+                </button>
+                <button 
+                    class="btn-refuser" 
+                    onclick="refuserDemande('${demande.id}')"
+                    type="button"
+                >
+                    Refuser
+                </button>
+            </div>
+        `;
+    }
+
+    // Motif si présent
+    let motifHTML = '';
+    if (demande.motif) {
+        motifHTML = `
+            <div class="demande-card-motif">
+                <div class="demande-card-motif-label">Motif :</div>
+                <div class="demande-card-motif-text">${escapeHtml(demande.motif)}</div>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="demande-card">
+            <div class="demande-card-header">
+                <div class="demande-card-info">
+                    <div class="demande-card-title">
+                        ${escapeHtml(demande.service_nom || 'Service')}
+                    </div>
+                    <div class="demande-card-meta">
+                        <span>
+                            <strong>Étudiant :</strong> 
+                            ${escapeHtml((demande.etudiant_prenom || '') + ' ' + (demande.etudiant_nom || ''))}
+                        </span>
+                        <span>
+                            <strong>Date de demande :</strong> 
+                            ${dateFormatted} à ${timeFormatted}
+                        </span>
+                    </div>
+                </div>
+                <div class="demande-card-status ${statutClass}">
+                    ${statutLabel}
+                </div>
+            </div>
+            <div class="demande-card-body">
+                <div class="demande-card-details">
+                    <div class="demande-detail-item">
+                        <div class="demande-detail-label">Service</div>
+                        <div class="demande-detail-value">${escapeHtml(demande.service_nom || 'N/A')}</div>
+                    </div>
+                    <div class="demande-detail-item">
+                        <div class="demande-detail-label">Catégorie</div>
+                        <div class="demande-detail-value">${escapeHtml(demande.service_categorie || 'N/A')}</div>
+                    </div>
+                    <div class="demande-detail-item">
+                        <div class="demande-detail-label">Étudiant</div>
+                        <div class="demande-detail-value">${escapeHtml((demande.etudiant_prenom || '') + ' ' + (demande.etudiant_nom || ''))}</div>
+                    </div>
+                    <div class="demande-detail-item">
+                        <div class="demande-detail-label">Email</div>
+                        <div class="demande-detail-value">${escapeHtml(demande.etudiant_email || 'N/A')}</div>
+                    </div>
+                </div>
+                ${motifHTML}
+            </div>
+            ${actionsHTML}
+        </div>
+    `;
+}
