@@ -205,7 +205,8 @@ class Tuteur
         float $tarifHoraire,
         ?string $telephone = null,
         ?string $specialites = null,
-        bool $actif = true
+        bool $actif = true,
+        ?float $evaluation = null
     ) {
         try {
             // Vérifier si le numéro d'employé existe déjà
@@ -229,10 +230,10 @@ class Tuteur
             $stmt = $this->pdo->prepare("
                 INSERT INTO tuteurs (
                     id, numero_employe, nom, prenom, email, telephone,
-                    departement, specialites, tarif_horaire, actif, date_creation
+                    departement, specialites, tarif_horaire, actif, evaluation, date_creation
                 ) VALUES (
                     :id, :numero_employe, :nom, :prenom, :email, :telephone,
-                    :departement, :specialites, :tarif_horaire, :actif, NOW()
+                    :departement, :specialites, :tarif_horaire, :actif, :evaluation, NOW()
                 )
             ");
 
@@ -246,6 +247,7 @@ class Tuteur
             $stmt->bindParam(':specialites', $specialites, PDO::PARAM_STR);
             $stmt->bindParam(':tarif_horaire', $tarifHoraire);
             $stmt->bindValue(':actif', $actifValue, PDO::PARAM_INT);
+            $stmt->bindValue(':evaluation', $evaluation);
 
             if ($stmt->execute()) {
                 // Créer automatiquement un service par défaut pour ce tuteur

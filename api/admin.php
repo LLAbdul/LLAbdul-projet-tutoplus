@@ -207,6 +207,15 @@ try {
                     json_error(400, 'tarif_horaire est requis');
                 }
 
+                // Gérer l'évaluation si fournie
+                $evaluation = null;
+                if (isset($data['evaluation']) && $data['evaluation'] !== '') {
+                    $evalValue = (float)$data['evaluation'];
+                    if ($evalValue >= 0 && $evalValue <= 5) {
+                        $evaluation = $evalValue;
+                    }
+                }
+
                 $id = $tuteurModel->creerTuteur(
                     trim($data['numero_employe']),
                     trim($data['nom']),
@@ -216,7 +225,8 @@ try {
                     (float)$data['tarif_horaire'],
                     isset($data['telephone'])   ? trim((string)$data['telephone'])   : null,
                     isset($data['specialites']) ? trim((string)$data['specialites']) : null,
-                    isset($data['actif']) ? (bool)$data['actif'] : true
+                    isset($data['actif']) ? (bool)$data['actif'] : true,
+                    $evaluation
                 );
 
                 if (!$id) {
