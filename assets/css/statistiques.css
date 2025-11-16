@@ -66,11 +66,52 @@
     margin-bottom: 2rem;
 }
 
-.chart-container h3 {
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.chart-header h3 {
     font-size: 1.5rem;
     color: var(--primary-color);
-    margin-bottom: 1.5rem;
-    text-align: center;
+    margin: 0;
+}
+
+.chart-type-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chart-type-selector label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.chart-type-select {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: white;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.chart-type-select:hover {
+    border-color: var(--primary-color);
+}
+
+.chart-type-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
 }
 
 .chart-container canvas {
@@ -102,6 +143,21 @@
 
     .chart-container {
         padding: 1rem;
+    }
+
+    .chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .chart-type-selector {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .chart-type-select {
+        flex: 1;
+        max-width: 200px;
     }
 
     .chart-container canvas {

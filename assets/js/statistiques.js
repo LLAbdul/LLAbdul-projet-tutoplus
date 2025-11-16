@@ -3,6 +3,8 @@
  */
 
 let rendezVousChart = null;
+let currentChartData = null;
+let currentChartType = 'bar';
 
 // Charger les statistiques au chargement de la page
 document.addEventListener('DOMContentLoaded', () => {
@@ -36,8 +38,14 @@ async function loadStatistiques() {
         // Afficher les statistiques générales
         displayStatistiquesGenerales(data.generales);
 
+        // Stocker les données pour le changement de type
+        currentChartData = data.rendez_vous_par_statut;
+
         // Créer le graphique
-        createRendezVousChart(data.rendez_vous_par_statut);
+        createRendezVousChart(currentChartData, currentChartType);
+
+        // Initialiser le sélecteur de type
+        initChartTypeSelector();
 
         // Afficher le contenu
         loadingIndicator.style.display = 'none';
@@ -59,7 +67,7 @@ function displayStatistiquesGenerales(stats) {
 }
 
 // Créer le graphique des rendez-vous par statut
-function createRendezVousChart(data) {
+function createRendezVousChart(data, chartType = 'bar') {
     const ctx = document.getElementById('rendezVousChart').getContext('2d');
 
     // Détruire le graphique existant s'il existe
@@ -90,41 +98,94 @@ function createRendezVousChart(data) {
 
     const backgroundColors = Object.keys(data).map(key => colors[key] || '#757575');
 
-    rendezVousChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: chartLabels,
-            datasets: [{
-                label: 'Nombre de rendez-vous',
-                data: chartData,
-                backgroundColor: backgroundColors,
-                borderColor: backgroundColors,
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `Nombre: ${context.parsed.y}`;
-                        }
-                    }
-                }
+    // Configuration de base
+    const baseConfig = {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                display: chartType === 'pie' || chartType === 'doughnut'
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        if (chartType === 'pie' || chartType === 'doughnut') {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                        return `Nombre: ${context.parsed.y || context.parsed}`;
                     }
                 }
             }
+        }
+    };
+
+    // Configuration spécifique selon le type
+    if (chartType === 'bar' || chartType === 'line') {
+        baseConfig.scales = {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        };
+    }
+
+    // Préparer les données selon le type
+    let chartConfig;
+    if (chartType === 'pie' || chartType === 'doughnut') {
+        chartConfig = {
+            type: chartType,
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Nombre de rendez-vous',
+                    data: chartData,
+                    backgroundColor: backgroundColors,
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: baseConfig
+        };
+    } else {
+        chartConfig = {
+            type: chartType,
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Nombre de rendez-vous',
+                    data: chartData,
+                    backgroundColor: chartType === 'line' ? backgroundColors[0] : backgroundColors,
+                    borderColor: chartType === 'line' ? backgroundColors[0] : backgroundColors,
+                    borderWidth: chartType === 'line' ? 3 : 1,
+                    fill: chartType === 'line' ? false : undefined,
+                    tension: chartType === 'line' ? 0.4 : undefined
+                }]
+            },
+            options: baseConfig
+        };
+    }
+
+    rendezVousChart = new Chart(ctx, chartConfig);
+    currentChartType = chartType;
+}
+
+// Initialiser le sélecteur de type de graphique
+function initChartTypeSelector() {
+    const chartTypeSelect = document.getElementById('chartType');
+    if (!chartTypeSelect) return;
+
+    chartTypeSelect.value = currentChartType;
+
+    chartTypeSelect.addEventListener('change', (e) => {
+        const newType = e.target.value;
+        if (currentChartData) {
+            createRendezVousChart(currentChartData, newType);
         }
     });
 }

@@ -175,7 +175,18 @@ $cacheBuster = time();
 
             <!-- Graphique principal -->
             <div class="chart-container">
-                <h3>Rendez-vous par statut</h3>
+                <div class="chart-header">
+                    <h3>Rendez-vous par statut</h3>
+                    <div class="chart-type-selector">
+                        <label for="chartType">Type de graphique :</label>
+                        <select id="chartType" class="chart-type-select">
+                            <option value="bar">Barres</option>
+                            <option value="line">Lignes</option>
+                            <option value="pie">Camembert</option>
+                            <option value="doughnut">Donut</option>
+                        </select>
+                    </div>
+                </div>
                 <canvas id="rendezVousChart"></canvas>
             </div>
         </div>
