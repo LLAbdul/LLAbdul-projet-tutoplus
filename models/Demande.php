@@ -188,11 +188,13 @@ class Demande
                     s.categorie AS service_categorie,
                     t.nom   AS tuteur_nom, 
                     t.prenom AS tuteur_prenom, 
-                    t.email AS tuteur_email
+                    t.email AS tuteur_email,
+                    rv.id AS rendez_vous_id, rv.statut AS rendez_vous_statut
                 FROM demandes d
                 LEFT JOIN etudiants e ON d.etudiant_id = e.id
                 LEFT JOIN services  s ON d.service_id = s.id
                 LEFT JOIN tuteurs   t ON d.tuteur_id = t.id
+                LEFT JOIN rendez_vous rv ON rv.demande_id = d.id
                 WHERE d.id = :id
             ");
             $stmt->bindParam(':id', $id, PDO::PARAM_STR);
@@ -244,10 +246,12 @@ class Demande
                     d.date_heure_demande, d.statut, d.motif, d.priorite,
                     d.date_creation, d.date_modification,
                     e.nom AS etudiant_nom, e.prenom AS etudiant_prenom, e.email AS etudiant_email,
-                    s.nom AS service_nom, s.categorie AS service_categorie
+                    s.nom AS service_nom, s.categorie AS service_categorie,
+                    rv.id AS rendez_vous_id, rv.statut AS rendez_vous_statut
                 FROM demandes d
                 LEFT JOIN etudiants e ON d.etudiant_id = e.id
                 LEFT JOIN services  s ON d.service_id = s.id
+                LEFT JOIN rendez_vous rv ON rv.demande_id = d.id
                 WHERE d.tuteur_id = :tuteur_id
                 ORDER BY d.date_creation DESC
             ");
