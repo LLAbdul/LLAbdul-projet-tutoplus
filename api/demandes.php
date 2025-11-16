@@ -11,6 +11,7 @@ session_start();
 
 require_once '../config/database.php';
 require_once '../models/Demande.php';
+require_once '../services/ReservationService.php';
 
 header('Content-Type: application/json');
 
@@ -171,12 +172,49 @@ try {
                 }
                 
                 if (isset($data['action'])) {
+                    $reservationService = new ReservationService($pdo);
+                    
                     if ($data['action'] === 'accepter') {
-                        $success = $demandeModel->accepterDemande($demandeId);
-                        $message = $success ? 'Demande acceptée avec succès' : 'Erreur lors de l\'acceptation de la demande';
+                        // Accepter la demande et créer le rendez-vous
+                        $rendezVousId = $reservationService->confirmerDemande($demandeId);
+                        $success = $rendezVousId !== false;
+                        
+                        if ($success) {
+                            $message = 'Demande acceptée avec succès. Le rendez-vous a été créé.';
+                        } else {
+                            // Récupérer plus d'informations sur l'erreur
+                            $demandeCheck = $demandeModel->getDemandeById($demandeId);
+                            if ($demandeCheck && $demandeCheck['statut'] !== 'EN_ATTENTE') {
+                                $message = 'Cette demande ne peut plus être acceptée (statut: ' . $demandeCheck['statut'] . ')';
+                            } else {
+                                $message = 'Erreur lors de l\'acceptation de la demande. Vérifiez les logs pour plus de détails.';
+                            }
+                        }
                     } elseif ($data['action'] === 'refuser') {
+                        // Refuser la demande et libérer la disponibilité
                         $raison = $data['raison'] ?? null;
                         $success = $demandeModel->refuserDemande($demandeId, $raison);
+                        
+                        // Libérer la disponibilité si elle était réservée
+                        if ($success && $demande['disponibilite_id']) {
+                            require_once '../models/Disponibilite.php';
+                            $disponibiliteModel = new Disponibilite($pdo);
+                            $disponibilite = $disponibiliteModel->getDisponibiliteById($demande['disponibilite_id']);
+                            
+                            if ($disponibilite) {
+                                $disponibiliteModel->modifierDisponibilite(
+                                    $demande['disponibilite_id'],
+                                    $disponibilite['date_debut'],
+                                    $disponibilite['date_fin'],
+                                    'DISPONIBLE',
+                                    null,
+                                    null,
+                                    null,
+                                    null  // libérer l'etudiant_id
+                                );
+                            }
+                        }
+                        
                         $message = $success ? 'Demande refusée avec succès' : 'Erreur lors du refus de la demande';
                     } else {
                         http_response_code(400);
