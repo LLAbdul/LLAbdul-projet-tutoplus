@@ -53,3 +53,58 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+/**
+ * Gestion du menu burger desktop pour les tuteurs
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    const burgerMenuBtnDesktop = document.getElementById('burgerMenuBtnDesktop');
+    const burgerMenuDesktop = document.getElementById('burgerMenuDesktop');
+
+    if (!burgerMenuBtnDesktop || !burgerMenuDesktop) {
+        // Menu burger desktop non présent sur cette page
+        return;
+    }
+
+    const openBurgerMenu = () => {
+        burgerMenuDesktop.classList.add('active');
+        burgerMenuBtnDesktop.classList.add('active');
+    };
+
+    const closeBurgerMenu = () => {
+        burgerMenuDesktop.classList.remove('active');
+        burgerMenuBtnDesktop.classList.remove('active');
+    };
+
+    const toggleBurgerMenu = () => {
+        const isOpen = burgerMenuDesktop.classList.contains('active');
+        isOpen ? closeBurgerMenu() : openBurgerMenu();
+    };
+
+    burgerMenuBtnDesktop.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleBurgerMenu();
+    });
+
+    // Fermer le menu en cliquant en dehors
+    document.addEventListener('click', (e) => {
+        if (!burgerMenuBtnDesktop.contains(e.target) && !burgerMenuDesktop.contains(e.target)) {
+            closeBurgerMenu();
+        }
+    });
+
+    // Fermer le menu en appuyant sur Échap
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && burgerMenuDesktop.classList.contains('active')) {
+            closeBurgerMenu();
+        }
+    });
+
+    // Fermer le menu lors du clic sur un lien
+    const burgerLinks = burgerMenuDesktop.querySelectorAll('.burger-menu-link');
+    burgerLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            setTimeout(closeBurgerMenu, 100);
+        });
+    });
+});
