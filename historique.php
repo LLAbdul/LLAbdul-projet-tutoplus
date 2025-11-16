@@ -129,6 +129,28 @@ $cacheBuster = time();
         </div>
 
         <div class="historique-content">
+            <!-- Filtres de statut -->
+            <div class="historique-filters" id="historiqueFilters" style="display: none;">
+                <button class="filter-btn active" data-filter="all" type="button">
+                    Tous
+                </button>
+                <button class="filter-btn" data-filter="EN_ATTENTE" type="button">
+                    En attente
+                </button>
+                <button class="filter-btn" data-filter="A_VENIR" type="button">
+                    À venir
+                </button>
+                <button class="filter-btn" data-filter="REFUSEE" type="button">
+                    Refusées
+                </button>
+                <button class="filter-btn" data-filter="TERMINE" type="button">
+                    Terminé
+                </button>
+                <button class="filter-btn" data-filter="ANNULE" type="button">
+                    Annulé
+                </button>
+            </div>
+
             <!-- Zone de chargement -->
             <div id="loadingIndicator" class="loading-indicator">
                 <div class="spinner"></div>
