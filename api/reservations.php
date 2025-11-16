@@ -86,7 +86,7 @@ try {
                 break;
             }
             
-            // Créer une demande
+            // Créer une demande (statut EN_ATTENTE - le tuteur devra l'accepter)
             $motif = $data['motif'] ?? null;
             $priorite = $data['priorite'] ?? null;
             $demandeId = $reservationService->creerDemande(
@@ -104,31 +104,46 @@ try {
                 break;
             }
             
-            // Confirmer la demande (crée automatiquement le rendez-vous et réserve la disponibilité)
-            $rendezVousId = $reservationService->confirmerDemande($demandeId);
+            // Marquer temporairement la disponibilité comme réservée pour éviter les doubles réservations
+            // Si le tuteur refuse, la disponibilité sera libérée
+            $reserveOk = $disponibiliteModel->modifierDisponibilite(
+                $disponibiliteId,
+                $disponibilite['date_debut'],
+                $disponibilite['date_fin'],
+                'RESERVE',
+                null,
+                null,
+                null,
+                $etudiantId
+            );
             
-            if (!$rendezVousId) {
+            if (!$reserveOk) {
                 http_response_code(500);
-                echo json_encode(['error' => 'Erreur lors de la confirmation de la réservation']);
+                echo json_encode(['error' => 'Erreur lors de la réservation du créneau']);
                 break;
             }
             
-            // Récupérer les informations complètes de la disponibilité après modification
+            // Récupérer la demande créée
+            require_once '../models/Demande.php';
+            $demandeModel = new Demande($pdo);
+            $demandeComplete = $demandeModel->getDemandeById($demandeId);
+            
+            if (!$demandeComplete) {
+                http_response_code(500);
+                echo json_encode(['error' => 'Erreur lors de la récupération des données de la demande']);
+                break;
+            }
+            
+            // Récupérer les informations complètes de la disponibilité pour l'affichage
             $disponibiliteComplete = $disponibiliteModel->getDisponibiliteById($disponibiliteId);
-            
-            if (!$disponibiliteComplete) {
-                http_response_code(500);
-                echo json_encode(['error' => 'Erreur lors de la récupération des données de réservation']);
-                break;
-            }
             
             http_response_code(200);
             echo json_encode([
                 'success' => true,
-                'message' => 'Réservation créée avec succès',
+                'message' => 'Demande créée avec succès. Le tuteur doit l\'accepter pour confirmer le rendez-vous.',
                 'disponibilite_id' => $disponibiliteId,
                 'demande_id' => $demandeId,
-                'rendez_vous_id' => $rendezVousId,
+                'demande' => $demandeComplete,
                 'disponibilite' => $disponibiliteComplete
             ]);
             break;
