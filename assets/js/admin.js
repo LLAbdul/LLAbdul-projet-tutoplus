@@ -253,3 +253,67 @@ function displayComptes() {
     attachToggleListeners();
 }
 
+// Attacher les event listeners pour les boutons d'activation/désactivation
+function attachToggleListeners() {
+    const toggleButtons = document.querySelectorAll('.btn-compte-toggle');
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const compteId = button.getAttribute('data-compte-id');
+            const compteType = button.getAttribute('data-compte-type');
+            const currentActif = button.getAttribute('data-compte-actif') === 'true';
+            const newActif = !currentActif;
+            
+            await toggleCompteActif(compteId, compteType, newActif);
+        });
+    });
+}
+
+// Activer/désactiver un compte
+async function toggleCompteActif(compteId, compteType, actif) {
+    try {
+        const response = await fetch('api/admin.php', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: compteId,
+                type: compteType,
+                actif: actif
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Mettre à jour le compte dans allComptes
+        const compteIndex = allComptes.findIndex(c => c.id === compteId && c.type === compteType);
+        if (compteIndex !== -1 && data.compte) {
+            allComptes[compteIndex] = data.compte;
+        }
+        
+        // Réafficher les comptes
+        displayComptes();
+        
+        // Afficher un message de succès
+        showToast(
+            `Compte ${actif ? 'activé' : 'désactivé'} avec succès`,
+            'success'
+        );
+        
+    } catch (error) {
+        console.error('Erreur lors de la modification du compte:', error);
+        showToast(
+            'Erreur lors de la modification du compte: ' + error.message,
+            'error'
+        );
+    }
+}
+
