@@ -8,6 +8,21 @@
 // Constantes
 const DEMANDES_API_URL = 'api/demandes.php';
 
+// Maps pour les statuts
+const STATUT_LABELS = {
+    EN_ATTENTE: 'En attente',
+    ACCEPTEE: 'Acceptée',
+    REFUSEE: 'Refusée',
+    EXPIRED: 'Expirée'
+};
+
+const STATUT_CLASSES = {
+    EN_ATTENTE: 'en-attente',
+    ACCEPTEE: 'acceptee',
+    REFUSEE: 'refusee',
+    EXPIRED: 'expired'
+};
+
 // État global pour le filtrage
 let allDemandes = [];
 let currentFilter = 'all';
@@ -51,24 +66,12 @@ function formatTime(dateString) {
 
 // Fonction pour obtenir le libellé du statut
 function getStatutLabel(statut) {
-    const labels = {
-        EN_ATTENTE: 'En attente',
-        ACCEPTEE: 'Acceptée',
-        REFUSEE: 'Refusée',
-        EXPIRED: 'Expirée'
-    };
-    return labels[statut] || statut || 'N/A';
+    return STATUT_LABELS[statut] || statut || 'N/A';
 }
 
 // Fonction pour obtenir la classe CSS du statut
 function getStatutClass(statut) {
-    const classes = {
-        EN_ATTENTE: 'en-attente',
-        ACCEPTEE: 'acceptee',
-        REFUSEE: 'refusee',
-        EXPIRED: 'expired'
-    };
-    return classes[statut] || '';
+    return STATUT_CLASSES[statut] || '';
 }
 
 // Fonction pour afficher une notification toast
@@ -119,14 +122,21 @@ function filterDemandes(demandes, filter) {
 
 // Fonction pour afficher les demandes avec filtrage
 function displayDemandes(demandes) {
+    if (!noDemandes || !demandesList) return;
+
     // Filtrer selon le filtre actif
     const filteredDemandes = filterDemandes(demandes, currentFilter);
 
     if (filteredDemandes.length === 0) {
         // Afficher un message si aucun résultat après filtrage
         noDemandes.style.display = 'block';
-        noDemandes.querySelector('h3').textContent = 'Aucune demande trouvée';
-        noDemandes.querySelector('p').textContent = 'Aucune demande avec le statut sélectionné.';
+
+        const title = noDemandes.querySelector('h3');
+        const text = noDemandes.querySelector('p');
+
+        if (title) title.textContent = 'Aucune demande trouvée';
+        if (text) text.textContent = 'Aucune demande avec le statut sélectionné.';
+
         demandesList.style.display = 'none';
         return;
     }
@@ -135,7 +145,7 @@ function displayDemandes(demandes) {
     noDemandes.style.display = 'none';
 
     // Afficher les demandes
-    demandesList.innerHTML = filteredDemandes.map(demande => createDemandeCard(demande)).join('');
+    demandesList.innerHTML = filteredDemandes.map(createDemandeCard).join('');
     demandesList.style.display = 'flex';
 }
 
@@ -160,13 +170,13 @@ function createDemandeCard(demande) {
                 >
                     Accepter
                 </button>
-                            <button 
-                                class="btn-refuser" 
-                                onclick="openRefusModal('${demande.id}')"
-                                type="button"
-                            >
-                                Refuser
-                            </button>
+                <button 
+                    class="btn-refuser" 
+                    onclick="openRefusModal('${demande.id}')"
+                    type="button"
+                >
+                    Refuser
+                </button>
             </div>
         `;
     }
@@ -256,12 +266,13 @@ async function loadDemandes() {
 
         if (loadingIndicator) loadingIndicator.style.display = 'none';
 
-        // Stocker toutes les demandes pour le filtrage
-        allDemandes = demandes || [];
+        // Normaliser les données dans allDemandes
+        allDemandes = Array.isArray(demandes) ? demandes : [];
 
-        if (!demandes || !Array.isArray(demandes) || demandes.length === 0) {
+        if (allDemandes.length === 0) {
             if (noDemandes) noDemandes.style.display = 'block';
             if (demandesList) demandesList.style.display = 'none';
+
             // Cacher les filtres s'il n'y a pas de données
             const filters = document.getElementById('demandesFilters');
             if (filters) filters.style.display = 'none';
@@ -339,7 +350,7 @@ function openRefusModal(demandeId) {
     }
 }
 
-// Rendre la fonction accessible globalement
+// Rendre la fonction accessible globalement (si nécessaire)
 window.openRefusModal = openRefusModal;
 
 // Fonction pour fermer le modal de refus
@@ -445,6 +456,7 @@ function initFilters() {
 // Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', () => {
     if (!loadingIndicator || !demandesList) return;
+
     initFilters();
     loadDemandes();
 
