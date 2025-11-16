@@ -220,7 +220,7 @@ function createCompteCard(compte) {
                 <div class="compte-info-item">
                     <span class="compte-info-label">Évaluation:</span>
                     <span class="compte-info-value">
-                        ★ ${parseFloat(compte.evaluation).toFixed(1)} / 5
+                        ★ ${parseFloat(compte.evaluation).toFixed(2)} / 5
                     </span>
                 </div>
                 ` : ''}
@@ -847,7 +847,18 @@ async function submitCompteForm(e) {
             body: JSON.stringify(data)
         });
         
-        const result = await response.json();
+        // Vérifier si la réponse est vide ou invalide
+        const text = await response.text();
+        if (!text || text.trim() === '') {
+            throw new Error('Réponse vide du serveur');
+        }
+        
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (parseError) {
+            throw new Error('Réponse invalide du serveur');
+        }
         
         if (!response.ok) {
             throw new Error(result.error || 'Erreur lors de l\'enregistrement');
@@ -866,7 +877,6 @@ async function submitCompteForm(e) {
         );
         
     } catch (error) {
-        console.error('Erreur lors de l\'enregistrement du compte:', error);
         showCompteError(error.message || 'Erreur lors de l\'enregistrement du compte');
     } finally {
         if (submitBtn) {

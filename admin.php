@@ -305,7 +305,7 @@ $cacheBuster = time();
 
                     <div class="form-group">
                         <label for="compte-evaluation" class="form-label">Évaluation (0-5)</label>
-                        <input type="number" id="compte-evaluation" name="evaluation" class="form-input" step="0.1" min="0" max="5" placeholder="Ex: 4.5">
+                        <input type="number" id="compte-evaluation" name="evaluation" class="form-input" step="0.01" min="0" max="5" placeholder="Ex: 4.96">
                     </div>
                 </div>
 

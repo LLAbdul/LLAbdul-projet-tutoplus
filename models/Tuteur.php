@@ -355,22 +355,34 @@ class Tuteur
             // Si la modification réussit, vérifier si un service existe pour ce tuteur
             // Si aucun service n'existe, en créer un par défaut
             if ($success) {
-                require_once __DIR__ . '/Service.php';
-                $serviceModel = new Service($this->pdo);
-                $services = $serviceModel->getServicesByTuteurId($id);
-                
-                if (empty($services)) {
-                    // Aucun service n'existe, en créer un par défaut
-                    $serviceId = $serviceModel->creerServiceParDefaut($id, $departement, $tarifHoraire);
-                    if ($serviceId === false) {
-                        error_log("Avertissement Tuteur::modifierTuteur : échec de la création du service par défaut pour le tuteur $id");
+                try {
+                    // Vérifier si la classe Service existe, sinon l'inclure
+                    if (!class_exists('Service')) {
+                        require_once __DIR__ . '/Service.php';
                     }
+                    
+                    $serviceModel = new Service($this->pdo);
+                    $services = $serviceModel->getServicesByTuteurId($id);
+                    
+                    if (empty($services)) {
+                        // Aucun service n'existe, en créer un par défaut
+                        $serviceId = $serviceModel->creerServiceParDefaut($id, $departement, $tarifHoraire);
+                        if ($serviceId === false) {
+                            error_log("Avertissement Tuteur::modifierTuteur : échec de la création du service par défaut pour le tuteur $id");
+                        }
+                    }
+                } catch (Throwable $serviceException) {
+                    // Ne pas faire échouer la modification du tuteur si la création du service échoue
+                    error_log("Avertissement Tuteur::modifierTuteur : erreur lors de la création du service : " . $serviceException->getMessage());
                 }
             }
             
             return $success;
         } catch (PDOException $e) {
             error_log("Erreur Tuteur::modifierTuteur : " . $e->getMessage());
+            return false;
+        } catch (Exception $e) {
+            error_log("Erreur Tuteur::modifierTuteur (exception générale) : " . $e->getMessage());
             return false;
         }
     }
