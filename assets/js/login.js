@@ -1,7 +1,7 @@
 // Gestion du switch entre étudiant et tuteur
 document.addEventListener('DOMContentLoaded', () => {
     const switchButtons = document.querySelectorAll('.switch-btn');
-
+    const baseLoginUrl = 'login.php?type='; // Base de redirection
     if (!switchButtons.length) return;
 
     switchButtons.forEach(btn => {
@@ -9,9 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const type = btn.dataset.type;
             if (!type) return;
 
-            const url = new URL('login.php', window.location.origin);
-            url.searchParams.set('type', type);
-            window.location.href = url.toString();
+            window.location.href = baseLoginUrl + encodeURIComponent(type);
         });
     });
 });
