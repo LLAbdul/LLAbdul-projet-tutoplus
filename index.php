@@ -404,7 +404,7 @@ $cacheBuster       = time();
         </div>
     </div>
 </footer>
-
+<!-- Testé par Abdul Rahman Zahid le 16/11/2025 Réussi -->
 <!-- Modal pour les créneaux -->
 <div id="creneauxModal" class="creneaux-modal">
     <div class="creneaux-modal-overlay"></div>
