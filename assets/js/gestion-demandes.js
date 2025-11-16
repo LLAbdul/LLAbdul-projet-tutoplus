@@ -185,3 +185,38 @@ function createDemandeCard(demande) {
         </div>
     `;
 }
+
+// Fonction pour charger les demandes depuis l'API
+async function loadDemandes() {
+    try {
+        hideError();
+        loadingIndicator.style.display = 'block';
+        noDemandes.style.display = 'none';
+        demandesList.style.display = 'none';
+
+        const response = await fetch('api/demandes.php');
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+
+        const demandes = await response.json();
+
+        loadingIndicator.style.display = 'none';
+
+        if (!demandes || demandes.length === 0) {
+            noDemandes.style.display = 'block';
+            demandesList.style.display = 'none';
+            return;
+        }
+
+        // Afficher les demandes
+        demandesList.innerHTML = demandes.map(demande => createDemandeCard(demande)).join('');
+        demandesList.style.display = 'flex';
+        noDemandes.style.display = 'none';
+
+    } catch (error) {
+        console.error('Erreur lors du chargement des demandes:', error);
+        showError('Erreur lors du chargement des demandes. Veuillez réessayer plus tard.');
+    }
+}
