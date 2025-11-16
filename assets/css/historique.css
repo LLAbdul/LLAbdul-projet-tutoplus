@@ -301,10 +301,56 @@
   }
 
   .historique-header h1 {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
+  }
+
+  .historique-subtitle {
+    font-size: 0.875rem;
   }
 
   .rendez-vous-card {
     padding: var(--spacing-sm);
+  }
+
+  .rendez-vous-card-header {
+    gap: 0.5rem;
+  }
+
+  .rendez-vous-card-title {
+    font-size: 1.125rem;
+  }
+
+  .rendez-vous-card-body {
+    gap: 0.75rem;
+  }
+
+  .rendez-vous-info-item {
+    font-size: 0.875rem;
+  }
+
+  .rendez-vous-info-label {
+    font-size: 0.75rem;
+  }
+}
+
+/* Tablette */
+@media (min-width: 481px) and (max-width: 768px) {
+  .historique-section {
+    padding: var(--spacing-xl) var(--spacing);
+  }
+
+  .rendez-vous-list {
+    gap: var(--spacing);
+  }
+}
+
+/* Laptop */
+@media (min-width: 1025px) and (max-width: 1400px) {
+  .historique-section {
+    padding: var(--spacing-xl) 2rem;
+  }
+
+  .rendez-vous-card {
+    padding: var(--spacing-lg);
   }
 }
