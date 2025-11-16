@@ -31,7 +31,10 @@ require_once 'config/database.php';
                     <a href="index.php" class="logo-link">
                         <img src="https://www.collegeahuntsic.qc.ca/assets/logo-ahuntsic@2x-d26df4e07b2c21fcf37f518dd0ddba254ead36b6184274af4a4f6ca3b47bc838.png" 
                              alt="Collège Ahuntsic" 
-                             class="college-logo">
+                             class="college-logo college-logo-desktop">
+                        <img src="assets/images/collegeahuntsiclogoshort.png" 
+                             alt="Collège Ahuntsic" 
+                             class="college-logo college-logo-mobile">
                     </a>
                 </div>
                 <div class="header-center">
