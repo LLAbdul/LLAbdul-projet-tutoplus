@@ -618,3 +618,159 @@ function showNotification(message, type = 'info') {
         }
     }, 5000);
 }
+
+// === Gestion du modal de service ===
+
+const TUTEURS_API_URL = 'api/tuteurs.php';
+
+
+function closeServiceModal() {
+    const modal = document.getElementById('modal-service');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+    const form = document.getElementById('form-service');
+    if (form) {
+        form.reset();
+    }
+    const errorDiv = document.getElementById('modal-service-error');
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
+    }
+}
+
+async function submitServiceForm(e) {
+    e.preventDefault();
+    
+    const form = document.getElementById('form-service');
+    const submitBtn = document.getElementById('modal-service-submit');
+    const serviceId = document.getElementById('service-id-edit').value;
+    const errorDiv = document.getElementById('modal-service-error');
+    
+    if (!serviceId) {
+        if (errorDiv) {
+            errorDiv.textContent = 'ID du service manquant';
+            errorDiv.style.display = 'block';
+        }
+        return;
+    }
+    
+    const data = {
+        resource: 'service',
+        id: serviceId,
+        description: document.getElementById('service-description-edit').value.trim(),
+        nom: document.getElementById('service-nom-edit').value.trim(),
+        prix: parseFloat(document.getElementById('service-prix-edit').value) || null,
+        duree_minute: parseInt(document.getElementById('service-duree-edit').value) || null
+    };
+    
+    // Désactiver le bouton pendant l'envoi
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Enregistrement...';
+    }
+    
+    try {
+        const response = await fetch(TUTEURS_API_URL, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const text = await response.text();
+        if (!text || text.trim() === '') {
+            throw new Error('Réponse vide du serveur');
+        }
+        
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (parseError) {
+            throw new Error('Réponse invalide du serveur');
+        }
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Erreur lors de l\'enregistrement');
+        }
+        
+        // Fermer le modal
+        closeServiceModal();
+        
+        // Recharger la page pour mettre à jour les informations
+        window.location.reload();
+        
+    } catch (error) {
+        if (errorDiv) {
+            errorDiv.textContent = error.message || 'Erreur lors de l\'enregistrement du service';
+            errorDiv.style.display = 'block';
+        }
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Enregistrer';
+        }
+    }
+}
+
+// Initialiser le modal de service
+function initServiceModal() {
+    const btnModifier = document.getElementById('btnModifierService');
+    const modal = document.getElementById('modal-service');
+    const form = document.getElementById('form-service');
+    const closeBtn = document.getElementById('modal-service-close');
+    const cancelBtn = document.getElementById('modal-service-cancel');
+    
+    if (!btnModifier || !modal || !form) return;
+    
+    // Ouvrir le modal
+    btnModifier.addEventListener('click', () => {
+        // Récupérer les données du service depuis les data attributes
+        const serviceId = btnModifier.getAttribute('data-service-id');
+        const serviceNom = btnModifier.getAttribute('data-service-nom');
+        const serviceDescription = btnModifier.getAttribute('data-service-description');
+        const servicePrix = btnModifier.getAttribute('data-service-prix');
+        const serviceDuree = btnModifier.getAttribute('data-service-duree');
+        
+        if (!serviceId) {
+            showNotification('Aucun service trouvé', 'error');
+            return;
+        }
+        
+        // Remplir le formulaire
+        document.getElementById('service-id-edit').value = serviceId;
+        document.getElementById('service-nom-edit').value = serviceNom || '';
+        document.getElementById('service-description-edit').value = serviceDescription || '';
+        document.getElementById('service-prix-edit').value = servicePrix || '';
+        document.getElementById('service-duree-edit').value = serviceDuree || 60;
+        
+        // Ouvrir le modal
+        modal.classList.add('active');
+    });
+    
+    // Gérer la soumission du formulaire
+    form.addEventListener('submit', submitServiceForm);
+    
+    // Gérer la fermeture du modal
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeServiceModal);
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeServiceModal);
+    }
+    
+    // Fermer en cliquant sur l'overlay
+    const overlay = modal.querySelector('.creneaux-modal-overlay');
+    if (overlay) {
+        overlay.addEventListener('click', closeServiceModal);
+    }
+}
+
+// Initialiser le modal de service au chargement
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initServiceModal);
+} else {
+    initServiceModal();
+}
