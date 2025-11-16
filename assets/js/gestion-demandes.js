@@ -23,6 +23,23 @@ const STATUT_CLASSES = {
     EXPIRED: 'expired'
 };
 
+// Maps pour les statuts de rendez-vous
+const RENDEZ_VOUS_STATUT_LABELS = {
+    A_VENIR: 'À venir',
+    EN_COURS: 'En cours',
+    TERMINE: 'Terminé',
+    ANNULE: 'Annulé',
+    REPORTE: 'Reporté'
+};
+
+const RENDEZ_VOUS_STATUT_CLASSES = {
+    A_VENIR: 'rendez-vous-a-venir',
+    EN_COURS: 'rendez-vous-en-cours',
+    TERMINE: 'rendez-vous-termine',
+    ANNULE: 'rendez-vous-annule',
+    REPORTE: 'rendez-vous-reporte'
+};
+
 // État global pour le filtrage
 let allDemandes = [];
 let currentFilter = 'all';
@@ -149,6 +166,16 @@ function displayDemandes(demandes) {
     demandesList.style.display = 'flex';
 }
 
+// Fonction pour obtenir le libellé du statut de rendez-vous
+function getRendezVousStatutLabel(statut) {
+    return RENDEZ_VOUS_STATUT_LABELS[statut] || statut || 'N/A';
+}
+
+// Fonction pour obtenir la classe CSS du statut de rendez-vous
+function getRendezVousStatutClass(statut) {
+    return RENDEZ_VOUS_STATUT_CLASSES[statut] || '';
+}
+
 // Fonction pour créer le HTML d'une carte de demande
 function createDemandeCard(demande) {
     const statutClass = getStatutClass(demande.statut);
@@ -188,6 +215,21 @@ function createDemandeCard(demande) {
             <div class="demande-card-motif">
                 <div class="demande-card-motif-label">Motif :</div>
                 <div class="demande-card-motif-text">${escapeHtml(demande.motif)}</div>
+            </div>
+        `;
+    }
+
+    // Statut du rendez-vous si présent
+    let rendezVousStatutHTML = '';
+    if (demande.rendez_vous_id && demande.rendez_vous_statut) {
+        const rvStatutClass = getRendezVousStatutClass(demande.rendez_vous_statut);
+        const rvStatutLabel = getRendezVousStatutLabel(demande.rendez_vous_statut);
+        rendezVousStatutHTML = `
+            <div class="demande-detail-item">
+                <div class="demande-detail-label">Statut du rendez-vous</div>
+                <div class="demande-detail-value">
+                    <span class="rendez-vous-status-badge ${rvStatutClass}">${rvStatutLabel}</span>
+                </div>
             </div>
         `;
     }
@@ -232,6 +274,7 @@ function createDemandeCard(demande) {
                         <div class="demande-detail-label">Email</div>
                         <div class="demande-detail-value">${escapeHtml(demande.etudiant_email || 'N/A')}</div>
                     </div>
+                    ${rendezVousStatutHTML}
                 </div>
                 ${motifHTML}
             </div>
