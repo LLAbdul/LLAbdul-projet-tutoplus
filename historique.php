@@ -52,6 +52,23 @@ require_once 'config/database.php';
                         <a href="index.php" class="btn-login-link">Services</a>
                         <a href="historique.php" class="btn-login-link">Mes Séances</a>
                         <a href="logout.php" class="btn-logout">Déconnexion</a>
+                        <!-- Menu dropdown pour mobile -->
+                        <div class="user-menu-dropdown">
+                            <button class="user-initial-btn" id="userMenuBtn" aria-label="Menu utilisateur">
+                                <?php echo strtoupper(substr($_SESSION['etudiant_prenom'], 0, 1)); ?>
+                            </button>
+                            <div class="user-dropdown-menu" id="userDropdownMenu">
+                                <a href="index.php" class="dropdown-menu-link">
+                                    <span>Services</span>
+                                </a>
+                                <a href="historique.php" class="dropdown-menu-link">
+                                    <span>Mes Séances</span>
+                                </a>
+                                <a href="logout.php" class="dropdown-menu-link dropdown-menu-link-logout">
+                                    <span>Déconnexion</span>
+                                </a>
+                            </div>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -109,6 +126,7 @@ require_once 'config/database.php';
     </footer>
 
     <script src="assets/js/historique.js"></script>
+    <script src="assets/js/user-dropdown-menu.js"></script>
 </body>
 </html>
 

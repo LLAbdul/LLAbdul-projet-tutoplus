@@ -1224,6 +1224,7 @@ footer p {
 
   /* Masquer les boutons pour utilisateurs connectés, mais garder le bouton de connexion */
   .header-right .btn-login-link[href="historique.php"],
+  .header-right .btn-login-link[href="index.php"],
   .header-right .btn-login-link[href="gestion_disponibilites.php"],
   .header-right .btn-logout {
     display: none !important;
