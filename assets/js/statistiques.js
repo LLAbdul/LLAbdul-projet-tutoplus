@@ -36,8 +36,8 @@ async function loadStatistiques() {
         // Afficher les statistiques générales
         displayStatistiquesGenerales(data.generales);
 
-        // TODO: Créer le graphique
-        // createRendezVousChart(data.rendez_vous_par_statut);
+        // Créer le graphique
+        createRendezVousChart(data.rendez_vous_par_statut);
 
         // Afficher le contenu
         loadingIndicator.style.display = 'none';
@@ -56,4 +56,75 @@ function displayStatistiquesGenerales(stats) {
     document.getElementById('totalTuteurs').textContent = stats.total_tuteurs || 0;
     document.getElementById('totalEtudiants').textContent = stats.total_etudiants || 0;
     document.getElementById('rendezVousTermines').textContent = stats.rendez_vous_termines || 0;
+}
+
+// Créer le graphique des rendez-vous par statut
+function createRendezVousChart(data) {
+    const ctx = document.getElementById('rendezVousChart').getContext('2d');
+
+    // Détruire le graphique existant s'il existe
+    if (rendezVousChart) {
+        rendezVousChart.destroy();
+    }
+
+    // Labels en français
+    const labels = {
+        'A_VENIR': 'À venir',
+        'EN_COURS': 'En cours',
+        'TERMINE': 'Terminé',
+        'ANNULE': 'Annulé',
+        'REPORTE': 'Reporté'
+    };
+
+    const chartLabels = Object.keys(data).map(key => labels[key] || key);
+    const chartData = Object.values(data);
+
+    // Couleurs pour chaque statut
+    const colors = {
+        'A_VENIR': '#2196F3',    // Bleu
+        'EN_COURS': '#FF9800',   // Orange
+        'TERMINE': '#4CAF50',    // Vert
+        'ANNULE': '#F44336',     // Rouge
+        'REPORTE': '#9C27B0'     // Violet
+    };
+
+    const backgroundColors = Object.keys(data).map(key => colors[key] || '#757575');
+
+    rendezVousChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                label: 'Nombre de rendez-vous',
+                data: chartData,
+                backgroundColor: backgroundColors,
+                borderColor: backgroundColors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Nombre: ${context.parsed.y}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
 }
