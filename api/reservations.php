@@ -1,8 +1,9 @@
 <?php
 /**
- * API endpoint pour gérer les réservations des étudiants
- * TutoPlus - Système de tutorat
+ * API reservations.php
+ * - POST : réservation d’un créneau (création demande + rendez-vous)
  */
+
 
 session_start();
 
