@@ -98,4 +98,69 @@ class Etudiant
             return [];
         }
     }
+
+    // Paramètres : aucun
+    // Retourne : tableau de tous les étudiants (actifs et inactifs) - pour admin
+    public function getAllEtudiants(): array
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT 
+                    id, numero_etudiant, nom, prenom, email, telephone, 
+                    niveau, specialite, annee_etude, actif, date_creation, derniere_connexion
+                FROM etudiants 
+                ORDER BY nom, prenom
+            ");
+            $stmt->execute();
+
+            return $stmt->fetchAll() ?: [];
+        } catch (PDOException $e) {
+            error_log("Erreur Etudiant::getAllEtudiants : " . $e->getMessage());
+            return [];
+        }
+    }
+
+    // Paramètres : id étudiant, actif (booléen)
+    // Retourne : true si succès, false sinon
+    public function updateActif(string $id, bool $actif): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                UPDATE etudiants 
+                SET actif = :actif 
+                WHERE id = :id
+            ");
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmt->bindValue(':actif', $actif ? 1 : 0, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            error_log("Erreur Etudiant::updateActif : " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Paramètre : id étudiant (retourne même si inactif - pour admin)
+    // Retourne : tableau associatif ou null
+    public function getEtudiantByIdForAdmin(string $id): ?array
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT 
+                    id, numero_etudiant, nom, prenom, email, telephone, 
+                    niveau, specialite, annee_etude, actif, date_creation, derniere_connexion
+                FROM etudiants 
+                WHERE id = :id
+            ");
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmt->execute();
+
+            $row = $stmt->fetch();
+            return $row !== false ? $row : null;
+        } catch (PDOException $e) {
+            error_log("Erreur Etudiant::getEtudiantByIdForAdmin : " . $e->getMessage());
+            return null;
+        }
+    }
 }
