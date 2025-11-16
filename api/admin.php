@@ -53,6 +53,18 @@ try {
                 $rendezVousModel = new RendezVous($pdo);
                 $rendezVous = $rendezVousModel->getAllRendezVous();
                 echo json_encode($rendezVous);
+            } elseif ($resource === 'services') {
+                // Récupérer les services d'un tuteur
+                $tuteurId = $_GET['tuteur_id'] ?? null;
+                if (!$tuteurId) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'tuteur_id est requis']);
+                    break;
+                }
+                
+                $serviceModel = new Service($pdo);
+                $services = $serviceModel->getServicesByTuteurId($tuteurId);
+                echo json_encode($services);
             } else {
                 // Récupérer les comptes
                 $id = $_GET['id'] ?? null;
@@ -253,7 +265,7 @@ try {
             
         case 'PUT':
             ob_clean(); // Nettoyer le buffer avant la réponse
-            // Mettre à jour un compte
+            // Mettre à jour un compte ou un service
             $input = file_get_contents('php://input');
             $data = json_decode($input, true);
             
@@ -264,6 +276,56 @@ try {
                 exit;
             }
             
+            // Vérifier si c'est une modification de service
+            if (isset($data['resource']) && $data['resource'] === 'service') {
+                if (!isset($data['id']) || empty($data['id'])) {
+                    ob_clean();
+                    http_response_code(400);
+                    echo json_encode(['error' => 'id du service est requis']);
+                    exit;
+                }
+                
+                $serviceModel = new Service($pdo);
+                $serviceId = $data['id'];
+                
+                // Vérifier que le service existe
+                $service = $serviceModel->getServiceById($serviceId);
+                if (!$service) {
+                    ob_clean();
+                    http_response_code(404);
+                    echo json_encode(['error' => 'Service non trouvé']);
+                    exit;
+                }
+                
+                // Modifier le service
+                $description = isset($data['description']) ? trim($data['description']) : null;
+                $nom = isset($data['nom']) ? trim($data['nom']) : null;
+                $prix = isset($data['prix']) ? (float)$data['prix'] : null;
+                $dureeMinute = isset($data['duree_minute']) ? (int)$data['duree_minute'] : null;
+                
+                $success = $serviceModel->modifierService($serviceId, $description, $nom, $prix, $dureeMinute);
+                
+                if (!$success) {
+                    ob_clean();
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Erreur lors de la modification du service']);
+                    exit;
+                }
+                
+                // Récupérer le service mis à jour
+                $service = $serviceModel->getServiceById($serviceId);
+                
+                ob_clean();
+                http_response_code(200);
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Service modifié avec succès',
+                    'service' => $service
+                ]);
+                exit;
+            }
+            
+            // Sinon, c'est une modification de compte
             if (!isset($data['id']) || empty($data['id'])) {
                 ob_clean();
                 http_response_code(400);
