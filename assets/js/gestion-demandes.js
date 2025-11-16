@@ -91,7 +91,7 @@ function showToast(message, type = 'success') {
 
     // Supprimer après 5 secondes
     setTimeout(() => {
-        toast.style.animation = 'slideInRight 0.3s ease reverse';
+        toast.classList.add('toast-notification-out');
         setTimeout(() => toast.remove(), 300);
     }, 5000);
 }
@@ -373,9 +373,9 @@ function updateRefusCharCount() {
         charCount.textContent = count;
         
         if (count > 500) {
-            charCount.style.color = '#dc3545';
+            charCount.classList.add('char-counter-error');
         } else {
-            charCount.style.color = '';
+            charCount.classList.remove('char-counter-error');
         }
     }
 }

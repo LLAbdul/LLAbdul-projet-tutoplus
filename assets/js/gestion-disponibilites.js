@@ -613,7 +613,7 @@ function showNotification(message, type = 'info') {
     
     setTimeout(() => {
         if (notification.parentElement) {
-            notification.style.animation = 'slideInRight 0.3s reverse';
+            notification.classList.add('notification-out');
             setTimeout(() => notification.remove(), 300);
         }
     }, 5000);

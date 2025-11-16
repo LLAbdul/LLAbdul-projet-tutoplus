@@ -118,6 +118,21 @@
   }
 }
 
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.notification-out {
+  animation: slideOutRight 0.3s ease;
+}
+
 @media (max-width: 1024px) {
   .gestion-disponibilites-section {
     padding: 2.5rem 0;

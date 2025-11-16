@@ -358,6 +358,21 @@
     }
 }
 
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.toast-notification-out {
+    animation: slideOutRight 0.3s ease;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .demandes-section {
@@ -562,6 +577,10 @@
     font-size: 0.8125rem;
     color: var(--text-light);
     margin-top: 0.5rem;
+}
+
+.refus-modal-body .char-counter-error {
+    color: #dc3545;
 }
 
 .refus-modal-footer {
