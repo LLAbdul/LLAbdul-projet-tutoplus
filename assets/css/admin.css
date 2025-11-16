@@ -749,9 +749,26 @@
   box-shadow: 0 0 0 3px rgba(204, 0, 0, 0.1);
 }
 
+/* Cacher les flèches des champs number */
+.form-input[type="number"]::-webkit-inner-spin-button,
+.form-input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+.form-input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 .form-textarea {
   resize: vertical;
   min-height: 100px;
+}
+
+#compte-specialites {
+  resize: none;
 }
 
 .form-checkbox-label {
