@@ -317,3 +317,49 @@ async function toggleCompteActif(compteId, compteType, actif) {
     }
 }
 
+// Initialiser les filtres
+function initFilters() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Retirer la classe active de tous les boutons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            // Ajouter la classe active au bouton cliqué
+            button.classList.add('active');
+            // Filtrer les comptes
+            const filter = button.getAttribute('data-filter');
+            filterComptes(filter);
+        });
+    });
+}
+
+// Initialiser les onglets
+function initTabs() {
+    const tabButtons = document.querySelectorAll('.admin-tab');
+    const tabContents = document.querySelectorAll('.admin-tab-content');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetTab = button.getAttribute('data-tab');
+            
+            // Retirer la classe active de tous les onglets et contenus
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Ajouter la classe active à l'onglet et au contenu sélectionnés
+            button.classList.add('active');
+            const targetContent = document.getElementById(`tab-${targetTab}`);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+        });
+    });
+}
+
+// Initialisation au chargement de la page
+document.addEventListener('DOMContentLoaded', () => {
+    initTabs();
+    initFilters();
+    loadComptes();
+});
+
