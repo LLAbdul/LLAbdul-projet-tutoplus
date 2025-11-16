@@ -1,7 +1,10 @@
 <?php
 /**
- * API endpoint pour gérer les demandes de rendez-vous
- * TutoPlus - Système de tutorat
+ * API demandes.php
+ * - GET    : liste ou détail des demandes (selon présence de id)
+ * - POST   : création d'une demande (étudiant connecté)
+ * - PUT    : mise à jour (tuteur : accepter/refuser, étudiant : modifier en attente)
+ * - DELETE : (non implémenté pour l'instant)
  */
 
 session_start();
