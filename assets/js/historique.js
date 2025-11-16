@@ -2,6 +2,10 @@
 
 const RENDEZ_VOUS_API_URL = 'api/rendez-vous.php';
 
+// État global pour le filtrage
+let allRendezVous = [];
+let currentFilter = 'all';
+
 // === Helpers génériques ===
 
 // Retourne un objet Date valide ou null
@@ -51,19 +55,23 @@ function formatDuration(minutes) {
 
 // Mappings statut -> label / classe CSS
 const STATUT_LABELS = {
-    A_VENIR:  'À venir',
-    EN_COURS: 'En cours',
-    TERMINE:  'Terminé',
-    ANNULE:   'Annulé',
-    REPORTE:  'Reporté'
+    A_VENIR:    'À venir',
+    EN_COURS:   'En cours',
+    TERMINE:    'Terminé',
+    ANNULE:     'Annulé',
+    REPORTE:    'Reporté',
+    EN_ATTENTE: 'En attente',
+    REFUSEE:    'Refusée'
 };
 
 const STATUT_CLASSES = {
-    A_VENIR:  'a-venir',
-    EN_COURS: 'en-cours',
-    TERMINE:  'termine',
-    ANNULE:   'annule',
-    REPORTE:  'reporte'
+    A_VENIR:    'a-venir',
+    EN_COURS:   'en-cours',
+    TERMINE:    'termine',
+    ANNULE:     'annule',
+    REPORTE:    'reporte',
+    EN_ATTENTE: 'en-attente',
+    REFUSEE:    'refusee'
 };
 
 function formatStatut(statut) {
@@ -114,15 +122,65 @@ function getHistoriqueElements() {
     };
 }
 
+// Filtre les rendez-vous selon le statut sélectionné
+function filterRendezVous(rendezVous, filter) {
+    if (filter === 'all') {
+        return rendezVous;
+    }
+
+    return rendezVous.filter(rv => {
+        if (filter === 'A_VENIR') {
+            // Pour "À venir", on veut les rendez-vous avec statut A_VENIR
+            // ou EN_COURS qui sont dans le futur
+            const rvDate = toValidDate(rv.date_heure);
+            const now = new Date();
+
+            if (rv.statut === 'A_VENIR') {
+                return true;
+            }
+            if (rv.statut === 'EN_COURS' && rvDate && rvDate > now) {
+                return true;
+            }
+            return false;
+        }
+
+        return rv.statut === filter;
+    });
+}
+
 // Affiche les rendez-vous dans le DOM
 function displayRendezVous(rendezVous) {
-    const { rendezVousList } = getHistoriqueElements();
+    const { rendezVousList, noRendezVous } = getHistoriqueElements();
+    if (!rendezVousList || !noRendezVous) return;
+
     rendezVousList.innerHTML = '';
 
-    rendezVous.forEach(rv => {
+    // Filtrer selon le filtre actif
+    const filteredRendezVous = filterRendezVous(rendezVous, currentFilter);
+
+    if (filteredRendezVous.length === 0) {
+        // Afficher un message si aucun résultat après filtrage
+        noRendezVous.style.display = 'block';
+
+        const title = noRendezVous.querySelector('h3');
+        const text  = noRendezVous.querySelector('p');
+
+        if (title) title.textContent = 'Aucune séance trouvée';
+        if (text)  text.innerHTML   = 'Aucune séance avec le statut sélectionné.';
+
+        rendezVousList.style.display = 'none';
+        return;
+    }
+
+    // Cacher le message "aucun rendez-vous"
+    noRendezVous.style.display = 'none';
+
+    filteredRendezVous.forEach(rv => {
         const card = createRendezVousCard(rv);
         rendezVousList.appendChild(card);
     });
+
+    rendezVousList.style.display = 'flex';
 }
 
 // Crée une carte HTML pour un rendez-vous
@@ -130,12 +188,16 @@ function createRendezVousCard(rv) {
     const card = document.createElement('div');
     card.className = 'rendez-vous-card';
 
-    const now = new Date();
+    const now    = new Date();
     const rvDate = toValidDate(rv.date_heure);
     const isPast = rvDate ? rvDate < now : false;
 
     // Classes CSS selon statut / passé / futur
-    if (rv.statut === 'ANNULE') {
+    if (rv.statut === 'EN_ATTENTE') {
+        card.classList.add('pending');
+    } else if (rv.statut === 'REFUSEE') {
+        card.classList.add('refused');
+    } else if (rv.statut === 'ANNULE') {
         card.classList.add('cancelled');
     } else if (rv.statut === 'TERMINE') {
         card.classList.add('completed');
@@ -147,13 +209,19 @@ function createRendezVousCard(rv) {
 
     const formattedDate     = formatDateForHistorique(rv.date_heure);
     const formattedTime     = formatTimeForHistorique(rv.date_heure);
-    const formattedDuration = formatDuration(rv.duree);
-    const statutLabel       = formatStatut(rv.statut);
-    const statutClass       = formatStatutClass(rv.statut);
+    // Pour les demandes en attente ou refusées, la durée peut être null
+    const formattedDuration = (rv.statut === 'EN_ATTENTE' || rv.statut === 'REFUSEE')
+        ? 'À confirmer'
+        : formatDuration(rv.duree);
 
-    const tuteurNom   = `${escapeHtml(rv.tuteur_prenom || '')} ${escapeHtml(rv.tuteur_nom || '')}`.trim();
-    const serviceNom  = escapeHtml(rv.service_nom || 'Non spécifié');
-    const prixSection = rv.prix
+    const statutLabel = formatStatut(rv.statut);
+    const statutClass = formatStatutClass(rv.statut);
+
+    const tuteurNom  = `${escapeHtml(rv.tuteur_prenom || '')} ${escapeHtml(rv.tuteur_nom || '')}`.trim();
+    const serviceNom = escapeHtml(rv.service_nom || 'Non spécifié');
+
+    // Ne pas afficher le prix pour les demandes en attente ou refusées
+    const prixSection = (rv.prix && rv.statut !== 'EN_ATTENTE' && rv.statut !== 'REFUSEE')
         ? `
         <div class="rendez-vous-info">
             <span class="rendez-vous-info-label">Prix</span>
@@ -200,11 +268,29 @@ function createRendezVousCard(rv) {
     return card;
 }
 
-// === Chargement des rendez-vous ===
+// === Gestion des filtres ===
 
-document.addEventListener('DOMContentLoaded', function() {
-    loadRendezVous();
-});
+function initFilters() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Retirer la classe active de tous les boutons
+            filterButtons.forEach(b => b.classList.remove('active'));
+            
+            // Ajouter la classe active au bouton cliqué
+            btn.classList.add('active');
+            
+            // Mettre à jour le filtre actif
+            currentFilter = btn.getAttribute('data-filter');
+            
+            // Réafficher les rendez-vous avec le nouveau filtre
+            displayRendezVous(allRendezVous);
+        });
+    });
+}
+
+// === Chargement des rendez-vous ===
 
 // Charge les rendez-vous depuis l'API
 async function loadRendezVous() {
@@ -215,6 +301,12 @@ async function loadRendezVous() {
         noRendezVous,
         rendezVousList
     } = getHistoriqueElements();
+
+    // Si des éléments critiques manquent, on arrête proprement
+    if (!loadingIndicator || !errorMessage || !errorText || !noRendezVous || !rendezVousList) {
+        console.error('Certains éléments de l’interface historique sont manquants.');
+        return;
+    }
 
     // État initial : chargement
     loadingIndicator.style.display = 'block';
@@ -241,14 +333,24 @@ async function loadRendezVous() {
             throw new Error('Format de réponse invalide');
         }
 
+        // Stocker tous les rendez-vous pour le filtrage
+        allRendezVous = data;
+
         if (data.length === 0) {
             noRendezVous.style.display = 'block';
+
+            const filters = document.getElementById('historiqueFilters');
+            if (filters) filters.style.display = 'none';
+
             return;
         }
 
+        // Afficher les filtres
+        const filters = document.getElementById('historiqueFilters');
+        if (filters) filters.style.display = 'flex';
+
         const sortedRendezVous = sortRendezVousByDate(data);
         displayRendezVous(sortedRendezVous);
-        rendezVousList.style.display = 'flex';
 
     } catch (error) {
         console.error('Erreur lors du chargement des rendez-vous:', error);
@@ -258,3 +360,9 @@ async function loadRendezVous() {
         errorMessage.style.display = 'block';
     }
 }
+
+// Initialisation au chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    initFilters();
+    loadRendezVous();
+});
