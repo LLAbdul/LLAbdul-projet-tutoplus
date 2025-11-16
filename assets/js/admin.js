@@ -227,6 +227,14 @@ function createCompteCard(compte) {
         </div>
         <div class="compte-card-actions">
             <button 
+                class="btn-compte-edit"
+                data-compte-id="${escapeHtml(String(compte.id))}"
+                data-compte-type="${escapeHtml(compte.type || '')}"
+                type="button"
+            >
+                Modifier
+            </button>
+            <button 
                 class="btn-compte-toggle ${isActif ? 'btn-deactivate' : 'btn-activate'}"
                 data-compte-id="${escapeHtml(String(compte.id))}"
                 data-compte-type="${escapeHtml(compte.type || '')}"
@@ -593,11 +601,283 @@ function initTabs() {
     });
 }
 
+// === Gestion du modal de compte ===
+
+function openCompteModal(compte = null) {
+    const modal = document.getElementById('compteModal');
+    const form = document.getElementById('compteForm');
+    const title = document.getElementById('compteModalTitle');
+    
+    if (!modal || !form) return;
+    
+    // Réinitialiser le formulaire
+    form.reset();
+    hideCompteError();
+    
+    if (compte) {
+        // Mode modification
+        title.textContent = 'Modifier le compte';
+        document.getElementById('compte-id').value = compte.id;
+        document.getElementById('compte-type').value = compte.type;
+        document.getElementById('compte-type-select').value = compte.type;
+        document.getElementById('compte-type-select').disabled = true;
+        
+        // Remplir les champs communs
+        const numeroField = document.getElementById('compte-numero');
+        const numeroLabel = document.getElementById('compte-numero-label');
+        if (compte.type === 'etudiant') {
+            numeroField.value = compte.numero_etudiant || '';
+            numeroLabel.textContent = 'Numéro d\'étudiant';
+        } else {
+            numeroField.value = compte.numero_employe || '';
+            numeroLabel.textContent = 'Numéro d\'employé';
+        }
+        
+        document.getElementById('compte-nom').value = compte.nom || '';
+        document.getElementById('compte-prenom').value = compte.prenom || '';
+        document.getElementById('compte-email').value = compte.email || '';
+        document.getElementById('compte-telephone').value = compte.telephone || '';
+        document.getElementById('compte-actif').checked = compte.actif === true || compte.actif === 1;
+        
+        // Remplir les champs spécifiques
+        if (compte.type === 'etudiant') {
+            document.getElementById('compte-niveau').value = compte.niveau || '';
+            document.getElementById('compte-specialite').value = compte.specialite || '';
+            document.getElementById('compte-annee-etude').value = compte.annee_etude || '';
+            showEtudiantFields();
+        } else {
+            document.getElementById('compte-departement').value = compte.departement || '';
+            document.getElementById('compte-specialites').value = compte.specialites || '';
+            document.getElementById('compte-tarif-horaire').value = compte.tarif_horaire || '';
+            showTuteurFields();
+        }
+    } else {
+        // Mode création
+        title.textContent = 'Ajouter un compte';
+        document.getElementById('compte-id').value = '';
+        document.getElementById('compte-type').value = '';
+        document.getElementById('compte-type-select').value = '';
+        document.getElementById('compte-type-select').disabled = false;
+        hideTypeFields();
+    }
+    
+    modal.classList.add('active');
+}
+
+function closeCompteModal() {
+    const modal = document.getElementById('compteModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+function showCompteError(message) {
+    const errorDiv = document.getElementById('compte-error');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+}
+
+function hideCompteError() {
+    const errorDiv = document.getElementById('compte-error');
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
+    }
+}
+
+function showEtudiantFields() {
+    document.getElementById('compte-etudiant-fields').style.display = 'block';
+    document.getElementById('compte-tuteur-fields').style.display = 'none';
+    document.getElementById('compte-departement').removeAttribute('required');
+    document.getElementById('compte-tarif-horaire').removeAttribute('required');
+}
+
+function showTuteurFields() {
+    document.getElementById('compte-etudiant-fields').style.display = 'none';
+    document.getElementById('compte-tuteur-fields').style.display = 'block';
+    document.getElementById('compte-departement').setAttribute('required', 'required');
+    document.getElementById('compte-tarif-horaire').setAttribute('required', 'required');
+}
+
+function hideTypeFields() {
+    document.getElementById('compte-etudiant-fields').style.display = 'none';
+    document.getElementById('compte-tuteur-fields').style.display = 'none';
+}
+
+async function submitCompteForm(e) {
+    e.preventDefault();
+    hideCompteError();
+    
+    const form = document.getElementById('compteForm');
+    const submitBtn = document.getElementById('btnCompteSubmit');
+    const compteId = document.getElementById('compte-id').value;
+    const compteTypeSelect = document.getElementById('compte-type-select').value;
+    const isEdit = !!compteId;
+    
+    // Validation du type
+    if (!compteTypeSelect) {
+        showCompteError('Veuillez sélectionner un type de compte');
+        return;
+    }
+    
+    // Préparer les données
+    const data = {
+        type: compteTypeSelect
+    };
+    
+    if (isEdit) {
+        data.id = compteId;
+    }
+    
+    // Champs communs
+    const numero = document.getElementById('compte-numero').value.trim();
+    data.nom = document.getElementById('compte-nom').value.trim();
+    data.prenom = document.getElementById('compte-prenom').value.trim();
+    data.email = document.getElementById('compte-email').value.trim();
+    const telephone = document.getElementById('compte-telephone').value.trim();
+    if (telephone) data.telephone = telephone;
+    data.actif = document.getElementById('compte-actif').checked;
+    
+    // Champs spécifiques
+    if (compteTypeSelect === 'etudiant') {
+        data.numero_etudiant = numero;
+        const niveau = document.getElementById('compte-niveau').value.trim();
+        if (niveau) data.niveau = niveau;
+        const specialite = document.getElementById('compte-specialite').value.trim();
+        if (specialite) data.specialite = specialite;
+        const anneeEtude = document.getElementById('compte-annee-etude').value;
+        if (anneeEtude) data.annee_etude = parseInt(anneeEtude);
+    } else {
+        data.numero_employe = numero;
+        data.departement = document.getElementById('compte-departement').value.trim();
+        const specialites = document.getElementById('compte-specialites').value.trim();
+        if (specialites) data.specialites = specialites;
+        data.tarif_horaire = parseFloat(document.getElementById('compte-tarif-horaire').value) || 0;
+    }
+    
+    // Désactiver le bouton pendant l'envoi
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Enregistrement...';
+    }
+    
+    try {
+        const method = isEdit ? 'PUT' : 'POST';
+        const response = await fetch(ADMIN_API_URL, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Erreur lors de l\'enregistrement');
+        }
+        
+        // Fermer le modal
+        closeCompteModal();
+        
+        // Recharger les comptes
+        await loadComptes();
+        
+        // Afficher un message de succès
+        showToast(
+            isEdit ? 'Compte modifié avec succès' : 'Compte créé avec succès',
+            'success'
+        );
+        
+    } catch (error) {
+        console.error('Erreur lors de l\'enregistrement du compte:', error);
+        showCompteError(error.message || 'Erreur lors de l\'enregistrement du compte');
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Enregistrer';
+        }
+    }
+}
+
+function initCompteModal() {
+    const btnAdd = document.getElementById('btnAddCompte');
+    const modal = document.getElementById('compteModal');
+    const form = document.getElementById('compteForm');
+    const btnClose = document.getElementById('compteModalClose');
+    const btnCancel = document.getElementById('btnCompteCancel');
+    const typeSelect = document.getElementById('compte-type-select');
+    
+    // Ouvrir le modal pour créer
+    if (btnAdd) {
+        btnAdd.addEventListener('click', () => openCompteModal());
+    }
+    
+    // Fermer le modal
+    if (btnClose) {
+        btnClose.addEventListener('click', closeCompteModal);
+    }
+    
+    if (btnCancel) {
+        btnCancel.addEventListener('click', closeCompteModal);
+    }
+    
+    // Fermer en cliquant sur l'overlay
+    if (modal) {
+        const overlay = modal.querySelector('.compte-modal-overlay');
+        if (overlay) {
+            overlay.addEventListener('click', closeCompteModal);
+        }
+    }
+    
+    // Gérer le changement de type
+    if (typeSelect) {
+        typeSelect.addEventListener('change', (e) => {
+            const type = e.target.value;
+            const numeroLabel = document.getElementById('compte-numero-label');
+            
+            if (type === 'etudiant') {
+                if (numeroLabel) numeroLabel.textContent = 'Numéro d\'étudiant';
+                showEtudiantFields();
+            } else if (type === 'tuteur') {
+                if (numeroLabel) numeroLabel.textContent = 'Numéro d\'employé';
+                showTuteurFields();
+            } else {
+                hideTypeFields();
+            }
+        });
+    }
+    
+    // Soumettre le formulaire
+    if (form) {
+        form.addEventListener('submit', submitCompteForm);
+    }
+    
+    // Gérer les clics sur les boutons Modifier
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('btn-compte-edit')) {
+            const compteId = e.target.getAttribute('data-compte-id');
+            const compteType = e.target.getAttribute('data-compte-type');
+            
+            // Trouver le compte dans allComptes
+            const compte = allComptes.find(c => 
+                String(c.id) === String(compteId) && c.type === compteType
+            );
+            
+            if (compte) {
+                openCompteModal(compte);
+            }
+        }
+    });
+}
+
 // === Initialisation au chargement de la page ===
 
 document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initFilters();
     initRendezVousFilters();
+    initCompteModal();
     loadComptes();
 });

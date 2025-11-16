@@ -101,6 +101,16 @@ $cacheBuster = time();
 
             <!-- Section Gestion des Comptes -->
             <div class="admin-tab-content active" id="tab-comptes">
+                <!-- Barre d'actions -->
+                <div class="admin-actions">
+                    <button class="btn-add-compte" id="btnAddCompte" type="button">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Ajouter un compte
+                    </button>
+                </div>
+
                 <!-- Filtres pour les comptes -->
                 <div class="admin-filters">
                     <button class="filter-btn active" data-filter="all" type="button">
@@ -204,6 +214,118 @@ $cacheBuster = time();
         </div>
     </section>
 </main>
+
+<!-- Modal pour créer/modifier un compte -->
+<div id="compteModal" class="compte-modal">
+    <div class="compte-modal-overlay"></div>
+    <div class="compte-modal-content">
+        <div class="compte-modal-header">
+            <h2 id="compteModalTitle">Ajouter un compte</h2>
+            <button class="compte-modal-close" id="compteModalClose" aria-label="Fermer" type="button">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+        <div class="compte-modal-body">
+            <form id="compteForm" class="compte-form">
+                <input type="hidden" id="compte-id" name="id">
+                <input type="hidden" id="compte-type" name="type">
+
+                <!-- Type de compte -->
+                <div class="form-group">
+                    <label for="compte-type-select" class="form-label">
+                        Type de compte <span class="required">*</span>
+                    </label>
+                    <select id="compte-type-select" name="type_select" class="form-select" required>
+                        <option value="">Sélectionnez un type</option>
+                        <option value="etudiant">Étudiant</option>
+                        <option value="tuteur">Tuteur</option>
+                    </select>
+                </div>
+
+                <!-- Champs communs -->
+                <div class="form-group">
+                    <label for="compte-numero" class="form-label">
+                        <span id="compte-numero-label">Numéro</span> <span class="required">*</span>
+                    </label>
+                    <input type="text" id="compte-numero" name="numero" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="compte-nom" class="form-label">Nom <span class="required">*</span></label>
+                    <input type="text" id="compte-nom" name="nom" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="compte-prenom" class="form-label">Prénom <span class="required">*</span></label>
+                    <input type="text" id="compte-prenom" name="prenom" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="compte-email" class="form-label">Email <span class="required">*</span></label>
+                    <input type="email" id="compte-email" name="email" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="compte-telephone" class="form-label">Téléphone</label>
+                    <input type="tel" id="compte-telephone" name="telephone" class="form-input">
+                </div>
+
+                <!-- Champs spécifiques étudiant -->
+                <div id="compte-etudiant-fields" class="compte-type-fields" style="display: none;">
+                    <div class="form-group">
+                        <label for="compte-niveau" class="form-label">Niveau</label>
+                        <input type="text" id="compte-niveau" name="niveau" class="form-input" placeholder="Ex: DEC, AEC">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="compte-specialite" class="form-label">Spécialité</label>
+                        <input type="text" id="compte-specialite" name="specialite" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="compte-annee-etude" class="form-label">Année d'études</label>
+                        <input type="number" id="compte-annee-etude" name="annee_etude" class="form-input" min="1" max="5">
+                    </div>
+                </div>
+
+                <!-- Champs spécifiques tuteur -->
+                <div id="compte-tuteur-fields" class="compte-type-fields" style="display: none;">
+                    <div class="form-group">
+                        <label for="compte-departement" class="form-label">Département <span class="required">*</span></label>
+                        <input type="text" id="compte-departement" name="departement" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="compte-specialites" class="form-label">Spécialités</label>
+                        <textarea id="compte-specialites" name="specialites" class="form-textarea" rows="3" placeholder="Séparées par des virgules"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="compte-tarif-horaire" class="form-label">Tarif horaire ($) <span class="required">*</span></label>
+                        <input type="number" id="compte-tarif-horaire" name="tarif_horaire" class="form-input" step="0.01" min="0">
+                    </div>
+                </div>
+
+                <!-- Statut actif -->
+                <div class="form-group">
+                    <label class="form-checkbox-label">
+                        <input type="checkbox" id="compte-actif" name="actif" checked>
+                        <span>Compte actif</span>
+                    </label>
+                </div>
+
+                <div id="compte-error" class="error-message" style="display: none;"></div>
+
+                <div class="compte-modal-footer">
+                    <button type="button" class="btn-cancel" id="btnCompteCancel">Annuler</button>
+                    <button type="submit" class="btn-submit" id="btnCompteSubmit">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <footer>
     <div class="container">
