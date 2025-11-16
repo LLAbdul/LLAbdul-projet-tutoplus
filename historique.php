@@ -58,6 +58,17 @@ $cacheBuster = time();
 
             <div class="header-right">
                 <?php if (isset($_SESSION['etudiant_id'])): ?>
+                    <!-- Menu burger pour PC -->
+                    <button class="burger-menu-btn-desktop" id="burgerMenuBtnDesktop" aria-label="Menu" type="button">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <div class="burger-menu-desktop" id="burgerMenuDesktop">
+                        <a href="index.php" class="burger-menu-link">Services</a>
+                        <a href="historique.php" class="burger-menu-link">Mes Séances</a>
+                        <a href="logout.php" class="burger-menu-link burger-menu-link-logout">Déconnexion</a>
+                    </div>
                     <div class="user-info">
                         <span class="user-name">
                             <?= htmlspecialchars($_SESSION['etudiant_prenom'] . ' ' . $_SESSION['etudiant_nom'], ENT_QUOTES, 'UTF-8') ?>
@@ -66,10 +77,6 @@ $cacheBuster = time();
                             <?= htmlspecialchars($_SESSION['etudiant_numero'], ENT_QUOTES, 'UTF-8') ?>
                         </span>
                     </div>
-
-                    <a href="index.php" class="btn-login-link">Services</a>
-                    <a href="historique.php" class="btn-login-link">Mes Séances</a>
-                    <a href="logout.php" class="btn-logout">Déconnexion</a>
 
                     <!-- Menu dropdown pour mobile -->
                     <div class="user-menu-dropdown">
