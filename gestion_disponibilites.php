@@ -164,6 +164,35 @@ $cacheBuster = time();
 
             <div id="notification-container" class="notification-container"></div>
 
+            <?php if (!empty($services)): 
+                $serviceActuel = $services[0];
+            ?>
+                <div class="service-info-section" style="margin-bottom: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.125rem;">Mon Service</h3>
+                            <p style="margin: 0; color: #6c757d;">
+                                <strong><?= htmlspecialchars($serviceActuel['nom'], ENT_QUOTES, 'UTF-8') ?></strong> - 
+                                <?= htmlspecialchars($serviceActuel['categorie'], ENT_QUOTES, 'UTF-8') ?>
+                            </p>
+                        </div>
+                        <button 
+                            type="button" 
+                            id="btnModifierService" 
+                            class="btn-primary"
+                            style="padding: 0.625rem 1.25rem;"
+                            data-service-id="<?= htmlspecialchars($serviceActuel['id'], ENT_QUOTES, 'UTF-8') ?>"
+                            data-service-nom="<?= htmlspecialchars($serviceActuel['nom'], ENT_QUOTES, 'UTF-8') ?>"
+                            data-service-description="<?= htmlspecialchars($serviceActuel['description'], ENT_QUOTES, 'UTF-8') ?>"
+                            data-service-prix="<?= htmlspecialchars($serviceActuel['prix'], ENT_QUOTES, 'UTF-8') ?>"
+                            data-service-duree="<?= htmlspecialchars($serviceActuel['duree_minute'], ENT_QUOTES, 'UTF-8') ?>"
+                        >
+                            Modifier mon service
+                        </button>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <div class="calendrier-container">
                 <div id="calendrier-disponibilites"></div>
             </div>
@@ -284,6 +313,57 @@ $cacheBuster = time();
                         </button>
                         <button type="submit" class="btn-primary" id="modal-submit">
                             Créer
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour modifier le service -->
+<div id="modal-service" class="creneaux-modal" role="dialog" aria-modal="true" aria-labelledby="modal-service-title">
+    <div class="creneaux-modal-overlay"></div>
+    <div class="creneaux-modal-content">
+        <div class="creneaux-modal-header">
+            <h3 class="creneaux-modal-title" id="modal-service-title">Modifier mon service</h3>
+            <button type="button" class="creneaux-modal-close" id="modal-service-close" aria-label="Fermer le modal">
+                &times;
+            </button>
+        </div>
+        <div class="creneaux-modal-body">
+            <form id="form-service">
+                <input type="hidden" id="service-id-edit" name="service_id">
+                
+                <div class="form-group">
+                    <label for="service-nom-edit" class="form-label">Nom du service</label>
+                    <input type="text" id="service-nom-edit" name="nom" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="service-description-edit" class="form-label">Description</label>
+                    <textarea id="service-description-edit" name="description" class="form-input" rows="4" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="service-prix-edit" class="form-label">Prix ($)</label>
+                    <input type="number" id="service-prix-edit" name="prix" class="form-input" min="0" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="service-duree-edit" class="form-label">Durée (minutes)</label>
+                    <input type="number" id="service-duree-edit" name="duree_minute" class="form-input" min="15" step="15" required>
+                </div>
+
+                <div id="modal-service-error" class="error-message" style="display: none;"></div>
+
+                <div class="modal-actions">
+                    <div class="modal-actions-right">
+                        <button type="button" class="btn-secondary" id="modal-service-cancel">
+                            Annuler
+                        </button>
+                        <button type="submit" class="btn-primary" id="modal-service-submit">
+                            Enregistrer
                         </button>
                     </div>
                 </div>
