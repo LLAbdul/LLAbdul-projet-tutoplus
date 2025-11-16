@@ -1,50 +1,66 @@
 <?php
+declare(strict_types=1);
 
-class Etudiant {
-    private $pdo;
-    
-    public function __construct($pdo) {
+class Etudiant
+{
+    private PDO $pdo;
+
+    // Paramètre : instance PDO
+    public function __construct(PDO $pdo)
+    {
         $this->pdo = $pdo;
     }
-    
-    // Récupère un étudiant par son ID
-    public function getEtudiantById($id) {
+
+    // Paramètre : id étudiant
+    // Retourne : tableau associatif ou null
+    public function getEtudiantById(string $id): ?array
+    {
         try {
             $stmt = $this->pdo->prepare("
-                SELECT id, numero_etudiant, nom, prenom, email, telephone, 
-                       niveau, specialite, annee_etude, actif
+                SELECT 
+                    id, numero_etudiant, nom, prenom, email, telephone, 
+                    niveau, specialite, annee_etude, actif
                 FROM etudiants 
                 WHERE id = :id AND actif = TRUE
             ");
             $stmt->bindParam(':id', $id, PDO::PARAM_STR);
             $stmt->execute();
-            return $stmt->fetch();
+
+            $row = $stmt->fetch();
+            return $row !== false ? $row : null;
         } catch (PDOException $e) {
-            error_log("Erreur lors de la récupération de l'étudiant : " . $e->getMessage());
+            error_log("Erreur Etudiant::getEtudiantById : " . $e->getMessage());
             return null;
         }
     }
-    
-    // Récupère un étudiant par son numéro d'étudiant (pour la connexion)
-    public function getEtudiantByNumero($numeroEtudiant) {
+
+    // Paramètre : numéro d'étudiant
+    // Retourne : tableau associatif ou null
+    public function getEtudiantByNumero(string $numeroEtudiant): ?array
+    {
         try {
             $stmt = $this->pdo->prepare("
-                SELECT id, numero_etudiant, nom, prenom, email, telephone, 
-                       niveau, specialite, annee_etude, actif
+                SELECT 
+                    id, numero_etudiant, nom, prenom, email, telephone, 
+                    niveau, specialite, annee_etude, actif
                 FROM etudiants 
                 WHERE numero_etudiant = :numero_etudiant AND actif = TRUE
             ");
             $stmt->bindParam(':numero_etudiant', $numeroEtudiant, PDO::PARAM_STR);
             $stmt->execute();
-            return $stmt->fetch();
+
+            $row = $stmt->fetch();
+            return $row !== false ? $row : null;
         } catch (PDOException $e) {
-            error_log("Erreur lors de la récupération de l'étudiant par numéro : " . $e->getMessage());
+            error_log("Erreur Etudiant::getEtudiantByNumero : " . $e->getMessage());
             return null;
         }
     }
-    
-    // Met à jour la dernière connexion
-    public function updateDerniereConnexion($id) {
+
+    // Paramètre : id étudiant
+    // Retourne : true si succès, false sinon
+    public function updateDerniereConnexion(string $id): bool
+    {
         try {
             $stmt = $this->pdo->prepare("
                 UPDATE etudiants 
@@ -53,29 +69,33 @@ class Etudiant {
             ");
             $stmt->bindParam(':id', $id, PDO::PARAM_STR);
             $stmt->execute();
-            return true;
+
+            return $stmt->rowCount() > 0;
         } catch (PDOException $e) {
-            error_log("Erreur lors de la mise à jour de la dernière connexion : " . $e->getMessage());
+            error_log("Erreur Etudiant::updateDerniereConnexion : " . $e->getMessage());
             return false;
         }
     }
-    
-    // Récupère tous les étudiants actifs
-    public function getAllActiveEtudiants() {
+
+    // Paramètres : aucun
+    // Retourne : tableau d'étudiants actifs
+    public function getAllActiveEtudiants(): array
+    {
         try {
             $stmt = $this->pdo->prepare("
-                SELECT id, numero_etudiant, nom, prenom, email, telephone, 
-                       niveau, specialite, annee_etude, actif
+                SELECT 
+                    id, numero_etudiant, nom, prenom, email, telephone, 
+                    niveau, specialite, annee_etude, actif
                 FROM etudiants 
                 WHERE actif = TRUE 
                 ORDER BY nom, prenom
             ");
             $stmt->execute();
-            return $stmt->fetchAll();
+
+            return $stmt->fetchAll() ?: [];
         } catch (PDOException $e) {
-            error_log("Erreur lors de la récupération des étudiants : " . $e->getMessage());
+            error_log("Erreur Etudiant::getAllActiveEtudiants : " . $e->getMessage());
             return [];
         }
     }
 }
-
