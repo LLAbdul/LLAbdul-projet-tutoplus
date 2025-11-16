@@ -172,22 +172,38 @@ class ReservationService
                 return false;
             }
 
-            // Récupérer les infos du service
-            $service = $this->serviceModel->getServiceById($demande['service_id']);
-            if (!$service) {
-                $this->logError("Le service n'existe pas (ID: " . $demande['service_id'] . ')');
-                return false;
-            }
-
-            $duree = $service['duree_minute'];
-            $prix = $this->calculerPrix($demande['service_id'], $duree);
-
             // Récupérer la disponibilité (après mise à jour) si nécessaire
             $disponibilite = $this->disponibiliteModel->getDisponibiliteById($disponibiliteId);
             if (!$disponibilite) {
                 $this->logError("Impossible de récupérer la disponibilité après réservation (ID: $disponibiliteId)");
                 return false;
             }
+
+            // Calculer la durée réelle à partir de la disponibilité (date_fin - date_debut)
+            $dateDebut = new DateTime($disponibilite['date_debut']);
+            $dateFin = new DateTime($disponibilite['date_fin']);
+            $diff = $dateDebut->diff($dateFin);
+            // Calculer la durée totale en minutes
+            $duree = ($diff->days * 24 * 60) + ($diff->h * 60) + $diff->i;
+
+            // Si la durée calculée est 0 ou invalide, utiliser la durée du service par défaut
+            if ($duree <= 0) {
+                $service = $this->serviceModel->getServiceById($demande['service_id']);
+                if (!$service) {
+                    $this->logError("Le service n'existe pas (ID: " . $demande['service_id'] . ')');
+                    return false;
+                }
+                $duree = $service['duree_minute'] ?? 60;
+            }
+
+            // Récupérer les infos du service pour calculer le prix
+            $service = $this->serviceModel->getServiceById($demande['service_id']);
+            if (!$service) {
+                $this->logError("Le service n'existe pas (ID: " . $demande['service_id'] . ')');
+                return false;
+            }
+
+            $prix = $this->calculerPrix($demande['service_id'], $duree);
 
             // Créer le rendez-vous
             $rendezVousId = $this->rendezVousModel->creerRendezVous(
