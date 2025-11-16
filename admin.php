@@ -68,6 +68,7 @@ $cacheBuster = time();
                     <div class="burger-menu-desktop" id="burgerMenuDesktop">
                         <a href="index.php#services" class="burger-menu-link">Services</a>
                         <a href="admin.php" class="burger-menu-link">Administration</a>
+                        <a href="statistiques.php" class="burger-menu-link">Statistiques</a>
                         <a href="logout.php" class="burger-menu-link burger-menu-link-logout">
                             <span>Déconnexion</span>
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-left" viewBox="0 0 16 16">
@@ -107,6 +108,9 @@ $cacheBuster = time();
                             </a>
                             <a href="admin.php" class="dropdown-menu-link">
                                 <span>Administration</span>
+                            </a>
+                            <a href="statistiques.php" class="dropdown-menu-link">
+                                <span>Statistiques</span>
                             </a>
                             <a href="logout.php" class="dropdown-menu-link dropdown-menu-link-logout">
                                 <span>Déconnexion</span>
