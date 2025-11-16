@@ -1,7 +1,10 @@
 <?php
 /**
- * API endpoint pour récupérer les créneaux d'un service
+ * API creneaux.php
+ * - GET : retourne les créneaux disponibles pour un service (service_id requis)
+ *         → regroupés par date avec horaires & prix
  */
+
 
 require_once '../config/database.php';
 require_once '../models/Service.php';
