@@ -1,6 +1,5 @@
-// Testé par Abdul Rahman Zahid le 16/11/2025 Réussi
-
 <?php
+// Testé par Abdul Rahman Zahid le 16/11/2025 Réussi
 /**
  * API creneaux.php
  * - GET : retourne les créneaux disponibles pour un service (service_id requis)
@@ -12,7 +11,7 @@ require_once '../config/database.php';
 require_once '../models/Service.php';
 require_once '../models/Disponibilite.php';
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
 if (!isset($_GET['service_id']) || empty($_GET['service_id'])) {
     http_response_code(400);
@@ -67,8 +66,13 @@ try {
         'creneaux' => $creneauxParDate
     ]);
     
+} catch (PDOException $e) {
+    http_response_code(500);
+    error_log('Erreur PDO dans creneaux.php: ' . $e->getMessage());
+    echo json_encode(['error' => 'Erreur de base de données']);
 } catch (Exception $e) {
     http_response_code(500);
+    error_log('Erreur dans creneaux.php: ' . $e->getMessage());
     echo json_encode(['error' => 'Erreur serveur: ' . $e->getMessage()]);
 }
 
