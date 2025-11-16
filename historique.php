@@ -55,7 +55,7 @@ require_once 'config/database.php';
                         <!-- Menu dropdown pour mobile -->
                         <div class="user-menu-dropdown">
                             <button class="user-initial-btn" id="userMenuBtn" aria-label="Menu utilisateur">
-                                <?php echo strtoupper(substr($_SESSION['etudiant_prenom'], 0, 1)); ?>
+                                <?php echo strtoupper(substr($_SESSION['etudiant_prenom'], 0, 1) . substr($_SESSION['etudiant_nom'], 0, 1)); ?>
                             </button>
                             <div class="user-dropdown-menu" id="userDropdownMenu">
                                 <a href="index.php" class="dropdown-menu-link">
