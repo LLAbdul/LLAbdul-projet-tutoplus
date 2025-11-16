@@ -242,6 +242,15 @@ function createCompteCard(compte) {
             >
                 Modifier
             </button>
+            ${!isEtudiant ? `
+            <button 
+                class="btn-service-edit"
+                data-tuteur-id="${escapeHtml(String(compte.id))}"
+                type="button"
+            >
+                Modifier le service
+            </button>
+            ` : ''}
             <button 
                 class="btn-compte-toggle ${isActif ? 'btn-deactivate' : 'btn-activate'}"
                 data-compte-id="${escapeHtml(String(compte.id))}"
@@ -963,11 +972,203 @@ function initCompteModal() {
 
 // === Initialisation au chargement de la page ===
 
+// === Gestion du modal de service ===
+
+function openServiceModal(tuteurId) {
+    const modal = document.getElementById('serviceModal');
+    const form = document.getElementById('serviceForm');
+    const errorDiv = document.getElementById('service-error');
+    
+    if (!modal || !form) return;
+    
+    // Réinitialiser le formulaire
+    form.reset();
+    hideServiceError();
+    
+    // Charger les services du tuteur
+    loadTuteurServices(tuteurId);
+}
+
+async function loadTuteurServices(tuteurId) {
+    try {
+        const response = await fetch(`${ADMIN_API_URL}?resource=services&tuteur_id=${encodeURIComponent(tuteurId)}`);
+        const text = await response.text();
+        
+        if (!text || text.trim() === '') {
+            showServiceError('Aucun service trouvé pour ce tuteur');
+            return;
+        }
+        
+        const services = JSON.parse(text);
+        
+        if (!Array.isArray(services) || services.length === 0) {
+            showServiceError('Aucun service trouvé pour ce tuteur');
+            return;
+        }
+        
+        // Prendre le premier service (normalement il n'y en a qu'un)
+        const service = services[0];
+        
+        // Remplir le formulaire
+        document.getElementById('service-id').value = service.id;
+        document.getElementById('service-tuteur-id').value = tuteurId;
+        document.getElementById('service-nom').value = service.nom || '';
+        document.getElementById('service-description').value = service.description || '';
+        document.getElementById('service-prix').value = service.prix || '';
+        document.getElementById('service-duree').value = service.duree_minute || 60;
+        
+        // Ouvrir le modal
+        const modal = document.getElementById('serviceModal');
+        if (modal) {
+            modal.classList.add('active');
+        }
+    } catch (error) {
+        console.error('Erreur lors du chargement des services:', error);
+        showServiceError('Erreur lors du chargement des services');
+    }
+}
+
+function closeServiceModal() {
+    const modal = document.getElementById('serviceModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+    const form = document.getElementById('serviceForm');
+    if (form) {
+        form.reset();
+    }
+    hideServiceError();
+}
+
+function showServiceError(message) {
+    const errorDiv = document.getElementById('service-error');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+}
+
+function hideServiceError() {
+    const errorDiv = document.getElementById('service-error');
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
+    }
+}
+
+async function submitServiceForm(e) {
+    e.preventDefault();
+    
+    const form = document.getElementById('serviceForm');
+    const submitBtn = document.getElementById('btnServiceSubmit');
+    const serviceId = document.getElementById('service-id').value;
+    
+    if (!serviceId) {
+        showServiceError('ID du service manquant');
+        return;
+    }
+    
+    const data = {
+        resource: 'service',
+        id: serviceId,
+        description: document.getElementById('service-description').value.trim(),
+        nom: document.getElementById('service-nom').value.trim(),
+        prix: parseFloat(document.getElementById('service-prix').value) || null,
+        duree_minute: parseInt(document.getElementById('service-duree').value) || null
+    };
+    
+    // Désactiver le bouton pendant l'envoi
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Enregistrement...';
+    }
+    
+    try {
+        const response = await fetch(ADMIN_API_URL, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const text = await response.text();
+        if (!text || text.trim() === '') {
+            throw new Error('Réponse vide du serveur');
+        }
+        
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (parseError) {
+            throw new Error('Réponse invalide du serveur');
+        }
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Erreur lors de l\'enregistrement');
+        }
+        
+        // Fermer le modal
+        closeServiceModal();
+        
+        // Recharger les comptes pour mettre à jour l'affichage
+        await loadComptes();
+        
+        // Afficher un message de succès
+        showToast('Service modifié avec succès', 'success');
+        
+    } catch (error) {
+        showServiceError(error.message || 'Erreur lors de l\'enregistrement du service');
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Enregistrer';
+        }
+    }
+}
+
+function initServiceModal() {
+    const modal = document.getElementById('serviceModal');
+    const form = document.getElementById('serviceForm');
+    const closeBtn = document.getElementById('serviceModalClose');
+    const cancelBtn = document.getElementById('btnServiceCancel');
+    
+    if (!modal || !form) return;
+    
+    // Gérer la soumission du formulaire
+    form.addEventListener('submit', submitServiceForm);
+    
+    // Gérer la fermeture du modal
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeServiceModal);
+    }
+    
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeServiceModal);
+    }
+    
+    // Fermer en cliquant sur l'overlay
+    const overlay = modal.querySelector('.compte-modal-overlay');
+    if (overlay) {
+        overlay.addEventListener('click', closeServiceModal);
+    }
+    
+    // Gérer les clics sur les boutons "Modifier le service"
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('btn-service-edit')) {
+            const tuteurId = e.target.getAttribute('data-tuteur-id');
+            if (tuteurId) {
+                openServiceModal(tuteurId);
+            }
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initFilters();
     initRendezVousFilters();
     initRendezVousActions();
     initCompteModal();
+    initServiceModal();
     loadComptes();
 });
