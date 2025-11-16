@@ -163,4 +163,159 @@ class Etudiant
             return null;
         }
     }
+
+    // Créer un nouvel étudiant (pour admin)
+    // Paramètres : tous les champs nécessaires
+    // Retourne : id de l'étudiant créé ou false en cas d'erreur
+    public function creerEtudiant(
+        string $numeroEtudiant,
+        string $nom,
+        string $prenom,
+        string $email,
+        ?string $telephone = null,
+        ?string $niveau = null,
+        ?string $specialite = null,
+        ?int $anneeEtude = null,
+        bool $actif = true
+    ) {
+        try {
+            // Vérifier si le numéro d'étudiant existe déjà
+            if ($this->getEtudiantByNumero($numeroEtudiant)) {
+                error_log("Erreur Etudiant::creerEtudiant : numéro d'étudiant déjà existant");
+                return false;
+            }
+
+            // Vérifier si l'email existe déjà
+            $stmtCheck = $this->pdo->prepare("SELECT id FROM etudiants WHERE email = :email");
+            $stmtCheck->bindParam(':email', $email, PDO::PARAM_STR);
+            $stmtCheck->execute();
+            if ($stmtCheck->fetch()) {
+                error_log("Erreur Etudiant::creerEtudiant : email déjà existant");
+                return false;
+            }
+
+            $id = $this->generateUUID();
+            $actifValue = $actif ? 1 : 0;
+
+            $stmt = $this->pdo->prepare("
+                INSERT INTO etudiants (
+                    id, numero_etudiant, nom, prenom, email, telephone,
+                    niveau, specialite, annee_etude, actif, date_creation
+                ) VALUES (
+                    :id, :numero_etudiant, :nom, :prenom, :email, :telephone,
+                    :niveau, :specialite, :annee_etude, :actif, NOW()
+                )
+            ");
+
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmt->bindParam(':numero_etudiant', $numeroEtudiant, PDO::PARAM_STR);
+            $stmt->bindParam(':nom', $nom, PDO::PARAM_STR);
+            $stmt->bindParam(':prenom', $prenom, PDO::PARAM_STR);
+            $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+            $stmt->bindParam(':telephone', $telephone, PDO::PARAM_STR);
+            $stmt->bindParam(':niveau', $niveau, PDO::PARAM_STR);
+            $stmt->bindParam(':specialite', $specialite, PDO::PARAM_STR);
+            $stmt->bindParam(':annee_etude', $anneeEtude, PDO::PARAM_INT);
+            $stmt->bindValue(':actif', $actifValue, PDO::PARAM_INT);
+
+            if ($stmt->execute()) {
+                return $id;
+            }
+
+            return false;
+        } catch (PDOException $e) {
+            error_log("Erreur Etudiant::creerEtudiant : " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Modifier un étudiant (pour admin)
+    // Paramètres : id et tous les champs modifiables
+    // Retourne : true si succès, false sinon
+    public function modifierEtudiant(
+        string $id,
+        string $numeroEtudiant,
+        string $nom,
+        string $prenom,
+        string $email,
+        ?string $telephone = null,
+        ?string $niveau = null,
+        ?string $specialite = null,
+        ?int $anneeEtude = null,
+        bool $actif = true
+    ): bool {
+        try {
+            // Vérifier si l'étudiant existe
+            $etudiant = $this->getEtudiantByIdForAdmin($id);
+            if (!$etudiant) {
+                error_log("Erreur Etudiant::modifierEtudiant : étudiant non trouvé");
+                return false;
+            }
+
+            // Vérifier si le numéro d'étudiant existe déjà (sauf pour cet étudiant)
+            $stmtCheck = $this->pdo->prepare("SELECT id FROM etudiants WHERE numero_etudiant = :numero AND id != :id");
+            $stmtCheck->bindParam(':numero', $numeroEtudiant, PDO::PARAM_STR);
+            $stmtCheck->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmtCheck->execute();
+            if ($stmtCheck->fetch()) {
+                error_log("Erreur Etudiant::modifierEtudiant : numéro d'étudiant déjà utilisé");
+                return false;
+            }
+
+            // Vérifier si l'email existe déjà (sauf pour cet étudiant)
+            $stmtCheck = $this->pdo->prepare("SELECT id FROM etudiants WHERE email = :email AND id != :id");
+            $stmtCheck->bindParam(':email', $email, PDO::PARAM_STR);
+            $stmtCheck->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmtCheck->execute();
+            if ($stmtCheck->fetch()) {
+                error_log("Erreur Etudiant::modifierEtudiant : email déjà utilisé");
+                return false;
+            }
+
+            $actifValue = $actif ? 1 : 0;
+
+            $stmt = $this->pdo->prepare("
+                UPDATE etudiants SET
+                    numero_etudiant = :numero_etudiant,
+                    nom = :nom,
+                    prenom = :prenom,
+                    email = :email,
+                    telephone = :telephone,
+                    niveau = :niveau,
+                    specialite = :specialite,
+                    annee_etude = :annee_etude,
+                    actif = :actif
+                WHERE id = :id
+            ");
+
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmt->bindParam(':numero_etudiant', $numeroEtudiant, PDO::PARAM_STR);
+            $stmt->bindParam(':nom', $nom, PDO::PARAM_STR);
+            $stmt->bindParam(':prenom', $prenom, PDO::PARAM_STR);
+            $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+            $stmt->bindParam(':telephone', $telephone, PDO::PARAM_STR);
+            $stmt->bindParam(':niveau', $niveau, PDO::PARAM_STR);
+            $stmt->bindParam(':specialite', $specialite, PDO::PARAM_STR);
+            $stmt->bindParam(':annee_etude', $anneeEtude, PDO::PARAM_INT);
+            $stmt->bindValue(':actif', $actifValue, PDO::PARAM_INT);
+
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Erreur Etudiant::modifierEtudiant : " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Générer un UUID v4
+    private function generateUUID(): string
+    {
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
+    }
 }

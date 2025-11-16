@@ -192,6 +192,162 @@ class Tuteur
             return [];
         }
     }
+
+    // Créer un nouveau tuteur (pour admin)
+    // Paramètres : tous les champs nécessaires
+    // Retourne : id du tuteur créé ou false en cas d'erreur
+    public function creerTuteur(
+        string $numeroEmploye,
+        string $nom,
+        string $prenom,
+        string $email,
+        string $departement,
+        float $tarifHoraire,
+        ?string $telephone = null,
+        ?string $specialites = null,
+        bool $actif = true
+    ) {
+        try {
+            // Vérifier si le numéro d'employé existe déjà
+            if ($this->getTuteurByNumero($numeroEmploye)) {
+                error_log("Erreur Tuteur::creerTuteur : numéro d'employé déjà existant");
+                return false;
+            }
+
+            // Vérifier si l'email existe déjà
+            $stmtCheck = $this->pdo->prepare("SELECT id FROM tuteurs WHERE email = :email");
+            $stmtCheck->bindParam(':email', $email, PDO::PARAM_STR);
+            $stmtCheck->execute();
+            if ($stmtCheck->fetch()) {
+                error_log("Erreur Tuteur::creerTuteur : email déjà existant");
+                return false;
+            }
+
+            $id = $this->generateUUID();
+            $actifValue = $actif ? 1 : 0;
+
+            $stmt = $this->pdo->prepare("
+                INSERT INTO tuteurs (
+                    id, numero_employe, nom, prenom, email, telephone,
+                    departement, specialites, tarif_horaire, actif, date_creation
+                ) VALUES (
+                    :id, :numero_employe, :nom, :prenom, :email, :telephone,
+                    :departement, :specialites, :tarif_horaire, :actif, NOW()
+                )
+            ");
+
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmt->bindParam(':numero_employe', $numeroEmploye, PDO::PARAM_STR);
+            $stmt->bindParam(':nom', $nom, PDO::PARAM_STR);
+            $stmt->bindParam(':prenom', $prenom, PDO::PARAM_STR);
+            $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+            $stmt->bindParam(':telephone', $telephone, PDO::PARAM_STR);
+            $stmt->bindParam(':departement', $departement, PDO::PARAM_STR);
+            $stmt->bindParam(':specialites', $specialites, PDO::PARAM_STR);
+            $stmt->bindParam(':tarif_horaire', $tarifHoraire);
+            $stmt->bindValue(':actif', $actifValue, PDO::PARAM_INT);
+
+            if ($stmt->execute()) {
+                return $id;
+            }
+
+            return false;
+        } catch (PDOException $e) {
+            error_log("Erreur Tuteur::creerTuteur : " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Modifier un tuteur (pour admin)
+    // Paramètres : id et tous les champs modifiables
+    // Retourne : true si succès, false sinon
+    public function modifierTuteur(
+        string $id,
+        string $numeroEmploye,
+        string $nom,
+        string $prenom,
+        string $email,
+        string $departement,
+        float $tarifHoraire,
+        ?string $telephone = null,
+        ?string $specialites = null,
+        bool $actif = true
+    ): bool {
+        try {
+            // Vérifier si le tuteur existe
+            $tuteur = $this->getTuteurByIdForAdmin($id);
+            if (!$tuteur) {
+                error_log("Erreur Tuteur::modifierTuteur : tuteur non trouvé");
+                return false;
+            }
+
+            // Vérifier si le numéro d'employé existe déjà (sauf pour ce tuteur)
+            $stmtCheck = $this->pdo->prepare("SELECT id FROM tuteurs WHERE numero_employe = :numero AND id != :id");
+            $stmtCheck->bindParam(':numero', $numeroEmploye, PDO::PARAM_STR);
+            $stmtCheck->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmtCheck->execute();
+            if ($stmtCheck->fetch()) {
+                error_log("Erreur Tuteur::modifierTuteur : numéro d'employé déjà utilisé");
+                return false;
+            }
+
+            // Vérifier si l'email existe déjà (sauf pour ce tuteur)
+            $stmtCheck = $this->pdo->prepare("SELECT id FROM tuteurs WHERE email = :email AND id != :id");
+            $stmtCheck->bindParam(':email', $email, PDO::PARAM_STR);
+            $stmtCheck->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmtCheck->execute();
+            if ($stmtCheck->fetch()) {
+                error_log("Erreur Tuteur::modifierTuteur : email déjà utilisé");
+                return false;
+            }
+
+            $actifValue = $actif ? 1 : 0;
+
+            $stmt = $this->pdo->prepare("
+                UPDATE tuteurs SET
+                    numero_employe = :numero_employe,
+                    nom = :nom,
+                    prenom = :prenom,
+                    email = :email,
+                    telephone = :telephone,
+                    departement = :departement,
+                    specialites = :specialites,
+                    tarif_horaire = :tarif_horaire,
+                    actif = :actif
+                WHERE id = :id
+            ");
+
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmt->bindParam(':numero_employe', $numeroEmploye, PDO::PARAM_STR);
+            $stmt->bindParam(':nom', $nom, PDO::PARAM_STR);
+            $stmt->bindParam(':prenom', $prenom, PDO::PARAM_STR);
+            $stmt->bindParam(':email', $email, PDO::PARAM_STR);
+            $stmt->bindParam(':telephone', $telephone, PDO::PARAM_STR);
+            $stmt->bindParam(':departement', $departement, PDO::PARAM_STR);
+            $stmt->bindParam(':specialites', $specialites, PDO::PARAM_STR);
+            $stmt->bindParam(':tarif_horaire', $tarifHoraire);
+            $stmt->bindValue(':actif', $actifValue, PDO::PARAM_INT);
+
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Erreur Tuteur::modifierTuteur : " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Générer un UUID v4
+    private function generateUUID(): string
+    {
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
+    }
+
     // Méthodes du UML que je vais implémenter plus tard
     // +gererDisponibilites(): void
     // +accepterDemande(): void
