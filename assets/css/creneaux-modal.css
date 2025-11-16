@@ -568,6 +568,39 @@
   }
 }
 
+@media (max-width: 480px) {
+  .creneaux-modal-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .creneaux-modal-title {
+    font-size: 1.125rem;
+  }
+
+  .calendar-widget {
+    padding: 0.75rem;
+  }
+
+  .scheduling-summary {
+    padding: 1rem;
+  }
+
+  .selected-date-time {
+    font-size: 0.875rem;
+  }
+
+  .time-slot-item {
+    padding: 0.75rem;
+  }
+}
+
+/* Laptop */
+@media (min-width: 1025px) and (max-width: 1400px) {
+  .creneaux-modal-content {
+    max-width: 850px;
+  }
+}
+
 /* Scrollbar personnalisée */
 .time-slots-list::-webkit-scrollbar {
   width: 8px;
