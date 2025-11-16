@@ -196,6 +196,90 @@ class Service
         return 'Général';
     }
 
+    // Modifier un service (pour admin ou tuteur)
+    // Paramètres : id service, description (optionnel), nom (optionnel), prix (optionnel), duree_minute (optionnel)
+    // Retourne : true si succès, false sinon
+    public function modifierService(
+        string $id,
+        ?string $description = null,
+        ?string $nom = null,
+        ?float $prix = null,
+        ?int $dureeMinute = null
+    ): bool {
+        try {
+            // Construire la requête UPDATE dynamiquement
+            $updateFields = [];
+            $params = [':id' => $id];
+            
+            if ($description !== null) {
+                $updateFields[] = 'description = :description';
+                $params[':description'] = $description;
+            }
+            if ($nom !== null) {
+                $updateFields[] = 'nom = :nom';
+                $params[':nom'] = $nom;
+            }
+            if ($prix !== null) {
+                $updateFields[] = 'prix = :prix';
+                $params[':prix'] = $prix;
+            }
+            if ($dureeMinute !== null) {
+                $updateFields[] = 'duree_minute = :duree_minute';
+                $params[':duree_minute'] = $dureeMinute;
+            }
+            
+            if (empty($updateFields)) {
+                return false; // Aucun champ à mettre à jour
+            }
+            
+            $updateFields[] = 'date_modification = NOW()';
+            
+            $updateQuery = "UPDATE services SET " . implode(', ', $updateFields) . " WHERE id = :id";
+            
+            $stmt = $this->pdo->prepare($updateQuery);
+            
+            foreach ($params as $key => $value) {
+                if ($key === ':duree_minute') {
+                    $stmt->bindValue($key, $value, PDO::PARAM_INT);
+                } elseif ($key === ':prix') {
+                    $stmt->bindValue($key, $value);
+                } else {
+                    $stmt->bindValue($key, $value, PDO::PARAM_STR);
+                }
+            }
+            
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Erreur Service::modifierService : " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    // Récupérer un service par ID pour un tuteur (vérifie que le service appartient au tuteur)
+    // Paramètres : id service, id tuteur
+    // Retourne : service ou null
+    public function getServiceByIdForTuteur(string $serviceId, string $tuteurId): ?array
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT 
+                    s.id, s.nom, s.description, s.categorie, s.duree_minute, s.prix,
+                    s.tuteur_id, s.actif
+                FROM services s
+                WHERE s.id = :service_id AND s.tuteur_id = :tuteur_id
+            ");
+            $stmt->bindParam(':service_id', $serviceId, PDO::PARAM_STR);
+            $stmt->bindParam(':tuteur_id', $tuteurId, PDO::PARAM_STR);
+            $stmt->execute();
+            
+            $row = $stmt->fetch();
+            return $row !== false ? $row : null;
+        } catch (PDOException $e) {
+            error_log("Erreur Service::getServiceByIdForTuteur : " . $e->getMessage());
+            return null;
+        }
+    }
+
     // Générer un UUID v4
     private function generateUUID(): string
     {
