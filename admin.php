@@ -302,6 +302,11 @@ $cacheBuster = time();
                         <label for="compte-tarif-horaire" class="form-label">Tarif horaire ($) <span class="required">*</span></label>
                         <input type="number" id="compte-tarif-horaire" name="tarif_horaire" class="form-input" step="0.01" min="0">
                     </div>
+
+                    <div class="form-group">
+                        <label for="compte-evaluation" class="form-label">Évaluation (0-5)</label>
+                        <input type="number" id="compte-evaluation" name="evaluation" class="form-input" step="0.1" min="0" max="5" placeholder="Ex: 4.5">
+                    </div>
                 </div>
 
                 <!-- Statut actif -->

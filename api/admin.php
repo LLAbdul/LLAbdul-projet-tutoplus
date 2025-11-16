@@ -347,6 +347,14 @@ try {
                         break;
                     }
                     
+                    $evaluation = null;
+                    if (isset($data['evaluation']) && $data['evaluation'] !== '') {
+                        $evalValue = (float)$data['evaluation'];
+                        if ($evalValue >= 0 && $evalValue <= 5) {
+                            $evaluation = $evalValue;
+                        }
+                    }
+                    
                     $success = $tuteurModel->modifierTuteur(
                         $compteId,
                         trim($data['numero_employe']),
@@ -357,7 +365,8 @@ try {
                         (float)$data['tarif_horaire'],
                         isset($data['telephone']) ? trim($data['telephone']) : null,
                         isset($data['specialites']) ? trim($data['specialites']) : null,
-                        isset($data['actif']) ? (bool)$data['actif'] : true
+                        isset($data['actif']) ? (bool)$data['actif'] : true,
+                        $evaluation
                     );
                 }
                 

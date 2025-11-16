@@ -281,7 +281,8 @@ class Tuteur
         float $tarifHoraire,
         ?string $telephone = null,
         ?string $specialites = null,
-        bool $actif = true
+        bool $actif = true,
+        ?float $evaluation = null
     ): bool {
         try {
             // Vérifier si le tuteur existe
@@ -313,19 +314,26 @@ class Tuteur
 
             $actifValue = $actif ? 1 : 0;
 
-            $stmt = $this->pdo->prepare("
-                UPDATE tuteurs SET
-                    numero_employe = :numero_employe,
-                    nom = :nom,
-                    prenom = :prenom,
-                    email = :email,
-                    telephone = :telephone,
-                    departement = :departement,
-                    specialites = :specialites,
-                    tarif_horaire = :tarif_horaire,
-                    actif = :actif
-                WHERE id = :id
-            ");
+            // Construire la requête UPDATE dynamiquement pour inclure l'évaluation si fournie
+            $updateFields = [
+                'numero_employe = :numero_employe',
+                'nom = :nom',
+                'prenom = :prenom',
+                'email = :email',
+                'telephone = :telephone',
+                'departement = :departement',
+                'specialites = :specialites',
+                'tarif_horaire = :tarif_horaire',
+                'actif = :actif'
+            ];
+            
+            if ($evaluation !== null) {
+                $updateFields[] = 'evaluation = :evaluation';
+            }
+            
+            $updateQuery = "UPDATE tuteurs SET " . implode(', ', $updateFields) . " WHERE id = :id";
+            
+            $stmt = $this->pdo->prepare($updateQuery);
 
             $stmt->bindParam(':id', $id, PDO::PARAM_STR);
             $stmt->bindParam(':numero_employe', $numeroEmploye, PDO::PARAM_STR);
@@ -337,8 +345,30 @@ class Tuteur
             $stmt->bindParam(':specialites', $specialites, PDO::PARAM_STR);
             $stmt->bindParam(':tarif_horaire', $tarifHoraire);
             $stmt->bindValue(':actif', $actifValue, PDO::PARAM_INT);
+            
+            if ($evaluation !== null) {
+                $stmt->bindParam(':evaluation', $evaluation);
+            }
 
-            return $stmt->execute();
+            $success = $stmt->execute();
+            
+            // Si la modification réussit, vérifier si un service existe pour ce tuteur
+            // Si aucun service n'existe, en créer un par défaut
+            if ($success) {
+                require_once __DIR__ . '/Service.php';
+                $serviceModel = new Service($this->pdo);
+                $services = $serviceModel->getServicesByTuteurId($id);
+                
+                if (empty($services)) {
+                    // Aucun service n'existe, en créer un par défaut
+                    $serviceId = $serviceModel->creerServiceParDefaut($id, $departement, $tarifHoraire);
+                    if ($serviceId === false) {
+                        error_log("Avertissement Tuteur::modifierTuteur : échec de la création du service par défaut pour le tuteur $id");
+                    }
+                }
+            }
+            
+            return $success;
         } catch (PDOException $e) {
             error_log("Erreur Tuteur::modifierTuteur : " . $e->getMessage());
             return false;

@@ -216,6 +216,14 @@ function createCompteCard(compte) {
                         $${parseFloat(compte.tarif_horaire || 0).toFixed(2)}
                     </span>
                 </div>
+                ${compte.evaluation ? `
+                <div class="compte-info-item">
+                    <span class="compte-info-label">Évaluation:</span>
+                    <span class="compte-info-value">
+                        ★ ${parseFloat(compte.evaluation).toFixed(1)} / 5
+                    </span>
+                </div>
+                ` : ''}
                 `}
                 ${compte.date_creation ? `
                 <div class="compte-info-item">
@@ -708,6 +716,7 @@ function openCompteModal(compte = null) {
             document.getElementById('compte-departement').value = compte.departement || '';
             document.getElementById('compte-specialites').value = compte.specialites || '';
             document.getElementById('compte-tarif-horaire').value = compte.tarif_horaire || '';
+            document.getElementById('compte-evaluation').value = compte.evaluation || '';
             showTuteurFields();
         }
     } else {
@@ -813,6 +822,13 @@ async function submitCompteForm(e) {
         const specialites = document.getElementById('compte-specialites').value.trim();
         if (specialites) data.specialites = specialites;
         data.tarif_horaire = parseFloat(document.getElementById('compte-tarif-horaire').value) || 0;
+        const evaluation = document.getElementById('compte-evaluation').value;
+        if (evaluation) {
+            const evalValue = parseFloat(evaluation);
+            if (evalValue >= 0 && evalValue <= 5) {
+                data.evaluation = evalValue;
+            }
+        }
     }
     
     // Désactiver le bouton pendant l'envoi
