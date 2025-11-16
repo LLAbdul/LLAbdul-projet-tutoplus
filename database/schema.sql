@@ -155,6 +155,21 @@ CREATE TABLE IF NOT EXISTS messages_contact (
     INDEX idx_lu (lu)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table des messages de contact entre étudiants et tuteurs';
 
+-- Table des administrateurs (hérite de Utilisateur selon UML)
+CREATE TABLE IF NOT EXISTS administrateurs (
+    id CHAR(36) PRIMARY KEY COMMENT 'UUID de l\'administrateur',
+    numero_admin VARCHAR(50) NOT NULL UNIQUE COMMENT 'Numéro d\'administrateur unique',
+    nom VARCHAR(255) NOT NULL COMMENT 'Nom de l\'administrateur',
+    prenom VARCHAR(255) NOT NULL COMMENT 'Prénom de l\'administrateur',
+    email VARCHAR(255) NOT NULL UNIQUE COMMENT 'Email de l\'administrateur',
+    telephone VARCHAR(20) COMMENT 'Téléphone de l\'administrateur',
+    niveau_acces VARCHAR(50) NOT NULL DEFAULT 'ADMIN' COMMENT 'Niveau d\'accès (ADMIN, SUPER_ADMIN)',
+    permissions TEXT COMMENT 'Permissions spécifiques (JSON ou séparées par des virgules)',
+    actif BOOLEAN NOT NULL DEFAULT TRUE COMMENT 'Indique si l\'administrateur est actif',
+    date_creation DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date de création',
+    derniere_connexion DATETIME COMMENT 'Dernière connexion'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table des administrateurs';
+
 -- Insertion de données de test pour les tuteurs
 INSERT INTO tuteurs (id, numero_employe, nom, prenom, email, telephone, departement, specialites, tarif_horaire, evaluation, nb_seances, actif) VALUES
 (UUID(), 'T001', 'Dupont', 'Jean', 'jean.dupont@college.qc.ca', '514-123-4567', 'Mathématiques', 'Algèbre,Calcul différentiel,Géométrie', 25.00, 4.5, 120, TRUE),
@@ -171,6 +186,29 @@ INSERT INTO etudiants (id, numero_etudiant, nom, prenom, email, telephone, nivea
 (UUID(), 'E003', 'Roy', 'Marc', 'marc.roy@college.qc.ca', '514-333-4444', 'DEC', 'Sciences de la nature', 1, TRUE),
 (UUID(), 'E004', 'Lavoie', 'Julie', 'julie.lavoie@college.qc.ca', '514-444-5555', 'AEC', 'Programmation', 1, TRUE),
 (UUID(), 'E005', 'Fortin', 'Thomas', 'thomas.fortin@college.qc.ca', '514-555-6666', 'DEC', 'Sciences humaines', 2, TRUE);
+
+-- Insertion d'un administrateur de test
+INSERT INTO administrateurs (
+    id,
+    numero_admin,
+    nom,
+    prenom,
+    email,
+    telephone,
+    niveau_acces,
+    permissions,
+    actif
+) VALUES (
+    'a0000000-0000-0000-0000-000000000001',
+    'ADMIN001',
+    'Admin',
+    'Système',
+    'admin@collegeahuntsic.qc.ca',
+    '514-555-0001',
+    'SUPER_ADMIN',
+    'gerer_utilisateurs,gerer_rendez_vous,consulter_statistiques,modifier_parametres',
+    TRUE
+) ON DUPLICATE KEY UPDATE id=id;
 
 -- Insertion de données de test pour les services (avec tuteurs associés)
 -- Note: Les UUIDs des tuteurs doivent être récupérés après l'insertion des tuteurs
