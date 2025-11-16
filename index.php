@@ -69,7 +69,7 @@ foreach ($services as $service) {
                         <!-- Menu dropdown pour mobile -->
                         <div class="user-menu-dropdown">
                             <button class="user-initial-btn" id="userMenuBtn" aria-label="Menu utilisateur">
-                                <?php echo strtoupper(substr($_SESSION['etudiant_prenom'], 0, 1)); ?>
+                                <?php echo strtoupper(substr($_SESSION['etudiant_prenom'], 0, 1) . substr($_SESSION['etudiant_nom'], 0, 1)); ?>
                             </button>
                             <div class="user-dropdown-menu" id="userDropdownMenu">
                                 <a href="historique.php" class="dropdown-menu-link">
@@ -90,7 +90,7 @@ foreach ($services as $service) {
                         <!-- Menu dropdown pour mobile -->
                         <div class="user-menu-dropdown">
                             <button class="user-initial-btn" id="userMenuBtn" aria-label="Menu utilisateur">
-                                <?php echo strtoupper(substr($_SESSION['tuteur_prenom'], 0, 1)); ?>
+                                <?php echo strtoupper(substr($_SESSION['tuteur_prenom'], 0, 1) . substr($_SESSION['tuteur_nom'], 0, 1)); ?>
                             </button>
                             <div class="user-dropdown-menu" id="userDropdownMenu">
                                 <a href="gestion_disponibilites.php" class="dropdown-menu-link">
