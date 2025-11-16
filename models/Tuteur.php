@@ -249,13 +249,22 @@ class Tuteur
 
             if ($stmt->execute()) {
                 // Créer automatiquement un service par défaut pour ce tuteur
-                require_once __DIR__ . '/Service.php';
-                $serviceModel = new Service($this->pdo);
-                $serviceId = $serviceModel->creerServiceParDefaut($id, $departement, $tarifHoraire);
-                
-                if ($serviceId === false) {
-                    error_log("Avertissement Tuteur::creerTuteur : échec de la création du service par défaut pour le tuteur $id");
-                    // On continue quand même, le tuteur est créé
+                try {
+                    // Vérifier si la classe Service existe, sinon l'inclure
+                    if (!class_exists('Service')) {
+                        require_once __DIR__ . '/Service.php';
+                    }
+                    
+                    $serviceModel = new Service($this->pdo);
+                    $serviceId = $serviceModel->creerServiceParDefaut($id, $departement, $tarifHoraire);
+                    
+                    if ($serviceId === false) {
+                        error_log("Avertissement Tuteur::creerTuteur : échec de la création du service par défaut pour le tuteur $id");
+                        // On continue quand même, le tuteur est créé
+                    }
+                } catch (Throwable $serviceException) {
+                    // Ne pas faire échouer la création du tuteur si la création du service échoue
+                    error_log("Avertissement Tuteur::creerTuteur : erreur lors de la création du service : " . $serviceException->getMessage());
                 }
                 
                 return $id;
@@ -264,6 +273,12 @@ class Tuteur
             return false;
         } catch (PDOException $e) {
             error_log("Erreur Tuteur::creerTuteur : " . $e->getMessage());
+            return false;
+        } catch (Exception $e) {
+            error_log("Erreur Tuteur::creerTuteur (exception générale) : " . $e->getMessage());
+            return false;
+        } catch (Error $e) {
+            error_log("Erreur fatale Tuteur::creerTuteur : " . $e->getMessage());
             return false;
         }
     }

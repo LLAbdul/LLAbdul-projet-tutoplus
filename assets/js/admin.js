@@ -857,11 +857,15 @@ async function submitCompteForm(e) {
         try {
             result = JSON.parse(text);
         } catch (parseError) {
+            // En cas d'erreur de parsing, afficher la réponse brute pour déboguer
+            console.error('Réponse non-JSON reçue:', text);
             throw new Error('Réponse invalide du serveur');
         }
         
         if (!response.ok) {
-            throw new Error(result.error || 'Erreur lors de l\'enregistrement');
+            const errorMsg = result.error || `Erreur serveur (${response.status})`;
+            console.error('Erreur serveur:', errorMsg);
+            throw new Error(errorMsg);
         }
         
         // Fermer le modal

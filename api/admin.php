@@ -232,6 +232,13 @@ try {
                 $compte = $tuteurModel->getTuteurByIdForAdmin($id);
             }
             
+            if (!$compte) {
+                ob_clean();
+                http_response_code(500);
+                echo json_encode(['error' => 'Erreur lors de la récupération du compte créé']);
+                exit;
+            }
+            
             $compte['type'] = $compteType;
             
             // Nettoyer le buffer une dernière fois avant la réponse finale
