@@ -129,6 +129,22 @@ $cacheBuster = time();
         </div>
 
         <div class="demandes-content">
+            <!-- Filtres de statut -->
+            <div class="demandes-filters" id="demandesFilters" style="display: none;">
+                <button class="filter-btn active" data-filter="all" type="button">
+                    Toutes
+                </button>
+                <button class="filter-btn" data-filter="EN_ATTENTE" type="button">
+                    En attente
+                </button>
+                <button class="filter-btn" data-filter="ACCEPTEE" type="button">
+                    Acceptées
+                </button>
+                <button class="filter-btn" data-filter="REFUSEE" type="button">
+                    Refusées
+                </button>
+            </div>
+
             <!-- Zone de chargement -->
             <div id="loadingIndicator" class="loading-indicator">
                 <div class="spinner"></div>
@@ -167,6 +183,48 @@ $cacheBuster = time();
         </div>
     </section>
 </main>
+
+<!-- Modal de refus de demande -->
+<div id="refusModal" class="refus-modal">
+    <div class="refus-modal-overlay"></div>
+    <div class="refus-modal-content">
+        <div class="refus-modal-header">
+            <h2>Refuser la demande</h2>
+            <button class="refus-modal-close" id="refusModalClose" aria-label="Fermer" type="button">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+        <div class="refus-modal-body">
+            <p class="refus-modal-message">Êtes-vous sûr de vouloir refuser cette demande ?</p>
+            <div class="form-group">
+                <label for="refus-raison" class="form-label">
+                    Raison du refus <span class="optional">(optionnel)</span>
+                </label>
+                <textarea
+                    id="refus-raison"
+                    name="raison"
+                    class="form-textarea"
+                    rows="4"
+                    maxlength="500"
+                    placeholder="Expliquez la raison du refus (optionnel)"
+                ></textarea>
+                <div class="char-counter">
+                    <span id="refus-char-count">0</span>/500 caractères
+                </div>
+            </div>
+        </div>
+        <div class="refus-modal-footer">
+            <button type="button" class="btn-refus-cancel" id="btnRefusCancel">
+                Annuler
+            </button>
+            <button type="button" class="btn-refus-confirm" id="btnRefusConfirm">
+                Confirmer le refus
+            </button>
+        </div>
+    </div>
+</div>
 
 <footer>
     <div class="container">
