@@ -910,7 +910,8 @@
   cursor: not-allowed;
 }
 
-.btn-compte-edit {
+.btn-compte-edit,
+.btn-service-edit {
   padding: 0.625rem 1rem;
   border: 2px solid var(--accent-color);
   background: transparent;
@@ -922,7 +923,8 @@
   transition: all 0.2s ease;
 }
 
-.btn-compte-edit:hover {
+.btn-compte-edit:hover,
+.btn-service-edit:hover {
   background: var(--accent-color);
   color: var(--text-white);
 }
