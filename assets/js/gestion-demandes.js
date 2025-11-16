@@ -5,6 +5,9 @@
  * - Gère les actions d'acceptation et de refus
  */
 
+// Constantes
+const DEMANDES_API_URL = 'api/demandes.php';
+
 // Éléments DOM
 const loadingIndicator = document.getElementById('loadingIndicator');
 const errorMessage = document.getElementById('errorMessage');
@@ -14,6 +17,7 @@ const demandesList = document.getElementById('demandesList');
 
 // Fonction utilitaire pour échapper le HTML
 function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
@@ -21,6 +25,7 @@ function escapeHtml(text) {
 
 // Fonction pour formater la date
 function formatDate(dateString) {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-CA', {
         weekday: 'long',
@@ -32,6 +37,7 @@ function formatDate(dateString) {
 
 // Fonction pour formater l'heure
 function formatTime(dateString) {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleTimeString('fr-CA', {
         hour: '2-digit',
@@ -42,21 +48,21 @@ function formatTime(dateString) {
 // Fonction pour obtenir le libellé du statut
 function getStatutLabel(statut) {
     const labels = {
-        'EN_ATTENTE': 'En attente',
-        'ACCEPTEE': 'Acceptée',
-        'REFUSEE': 'Refusée',
-        'EXPIRED': 'Expirée'
+        EN_ATTENTE: 'En attente',
+        ACCEPTEE: 'Acceptée',
+        REFUSEE: 'Refusée',
+        EXPIRED: 'Expirée'
     };
-    return labels[statut] || statut;
+    return labels[statut] || statut || 'N/A';
 }
 
 // Fonction pour obtenir la classe CSS du statut
 function getStatutClass(statut) {
     const classes = {
-        'EN_ATTENTE': 'en-attente',
-        'ACCEPTEE': 'acceptee',
-        'REFUSEE': 'refusee',
-        'EXPIRED': 'expired'
+        EN_ATTENTE: 'en-attente',
+        ACCEPTEE: 'acceptee',
+        REFUSEE: 'refusee',
+        EXPIRED: 'expired'
     };
     return classes[statut] || '';
 }
@@ -85,15 +91,17 @@ function showToast(message, type = 'success') {
 
 // Fonction pour afficher une erreur
 function showError(message) {
+    if (!errorMessage || !errorText) return;
     errorText.textContent = message;
     errorMessage.style.display = 'block';
-    loadingIndicator.style.display = 'none';
-    noDemandes.style.display = 'none';
-    demandesList.style.display = 'none';
+    if (loadingIndicator) loadingIndicator.style.display = 'none';
+    if (noDemandes) noDemandes.style.display = 'none';
+    if (demandesList) demandesList.style.display = 'none';
 }
 
 // Fonction pour cacher l'erreur
 function hideError() {
+    if (!errorMessage) return;
     errorMessage.style.display = 'none';
 }
 
@@ -103,6 +111,8 @@ function createDemandeCard(demande) {
     const statutLabel = getStatutLabel(demande.statut);
     const dateFormatted = formatDate(demande.date_heure_demande);
     const timeFormatted = formatTime(demande.date_heure_demande);
+
+    const etudiantNomComplet = `${demande.etudiant_prenom || ''} ${demande.etudiant_nom || ''}`.trim() || 'N/A';
 
     // Boutons d'action (seulement si EN_ATTENTE)
     let actionsHTML = '';
@@ -148,7 +158,7 @@ function createDemandeCard(demande) {
                     <div class="demande-card-meta">
                         <span>
                             <strong>Étudiant :</strong> 
-                            ${escapeHtml((demande.etudiant_prenom || '') + ' ' + (demande.etudiant_nom || ''))}
+                            ${escapeHtml(etudiantNomComplet)}
                         </span>
                         <span>
                             <strong>Date de demande :</strong> 
@@ -172,7 +182,7 @@ function createDemandeCard(demande) {
                     </div>
                     <div class="demande-detail-item">
                         <div class="demande-detail-label">Étudiant</div>
-                        <div class="demande-detail-value">${escapeHtml((demande.etudiant_prenom || '') + ' ' + (demande.etudiant_nom || ''))}</div>
+                        <div class="demande-detail-value">${escapeHtml(etudiantNomComplet)}</div>
                     </div>
                     <div class="demande-detail-item">
                         <div class="demande-detail-label">Email</div>
@@ -186,37 +196,48 @@ function createDemandeCard(demande) {
     `;
 }
 
+// Utilitaire : désactiver/réactiver les boutons d'une demande
+function setDemandeButtonsDisabled(demandeId, disabled) {
+    const buttons = document.querySelectorAll(`[onclick*="${demandeId}"]`);
+    buttons.forEach(btn => {
+        btn.disabled = disabled;
+    });
+}
+
 // Fonction pour charger les demandes depuis l'API
 async function loadDemandes() {
     try {
         hideError();
-        loadingIndicator.style.display = 'block';
-        noDemandes.style.display = 'none';
-        demandesList.style.display = 'none';
+        if (loadingIndicator) loadingIndicator.style.display = 'block';
+        if (noDemandes) noDemandes.style.display = 'none';
+        if (demandesList) demandesList.style.display = 'none';
 
-        const response = await fetch('api/demandes.php');
-        
+        const response = await fetch(DEMANDES_API_URL);
+
         if (!response.ok) {
             throw new Error(`Erreur HTTP: ${response.status}`);
         }
 
         const demandes = await response.json();
 
-        loadingIndicator.style.display = 'none';
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
 
-        if (!demandes || demandes.length === 0) {
-            noDemandes.style.display = 'block';
-            demandesList.style.display = 'none';
+        if (!demandes || !Array.isArray(demandes) || demandes.length === 0) {
+            if (noDemandes) noDemandes.style.display = 'block';
+            if (demandesList) demandesList.style.display = 'none';
             return;
         }
 
-        // Afficher les demandes
-        demandesList.innerHTML = demandes.map(demande => createDemandeCard(demande)).join('');
-        demandesList.style.display = 'flex';
-        noDemandes.style.display = 'none';
+        if (demandesList) {
+            demandesList.innerHTML = demandes
+                .map(demande => createDemandeCard(demande))
+                .join('');
+            demandesList.style.display = 'flex';
+        }
+        if (noDemandes) noDemandes.style.display = 'none';
 
     } catch (error) {
-        console.error('Erreur lors du chargement des demandes:', error);
+        console.error('Erreur lors du chargement des demandes :', error);
         showError('Erreur lors du chargement des demandes. Veuillez réessayer plus tard.');
     }
 }
@@ -224,11 +245,9 @@ async function loadDemandes() {
 // Fonction pour accepter une demande
 async function accepterDemande(demandeId) {
     try {
-        // Désactiver les boutons
-        const buttons = document.querySelectorAll(`[onclick*="${demandeId}"]`);
-        buttons.forEach(btn => btn.disabled = true);
+        setDemandeButtonsDisabled(demandeId, true);
 
-        const response = await fetch('api/demandes.php', {
+        const response = await fetch(DEMANDES_API_URL, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -246,31 +265,24 @@ async function accepterDemande(demandeId) {
         }
 
         showToast(data.message || 'Demande acceptée avec succès', 'success');
-        
-        // Recharger les demandes après un court délai
+
         setTimeout(() => {
             loadDemandes();
         }, 1000);
 
     } catch (error) {
-        console.error('Erreur lors de l\'acceptation de la demande:', error);
+        console.error('Erreur lors de l\'acceptation de la demande :', error);
         showToast(error.message || 'Erreur lors de l\'acceptation de la demande', 'error');
-        
-        // Réactiver les boutons
-        const buttons = document.querySelectorAll(`[onclick*="${demandeId}"]`);
-        buttons.forEach(btn => btn.disabled = false);
+        setDemandeButtonsDisabled(demandeId, false);
     }
 }
 
 // Fonction pour refuser une demande
 async function refuserDemande(demandeId) {
-    // Demander une raison (optionnel)
     const raison = prompt('Raison du refus (optionnel) :');
-    
+
     try {
-        // Désactiver les boutons
-        const buttons = document.querySelectorAll(`[onclick*="${demandeId}"]`);
-        buttons.forEach(btn => btn.disabled = true);
+        setDemandeButtonsDisabled(demandeId, true);
 
         const body = {
             id: demandeId,
@@ -281,7 +293,7 @@ async function refuserDemande(demandeId) {
             body.raison = raison.trim();
         }
 
-        const response = await fetch('api/demandes.php', {
+        const response = await fetch(DEMANDES_API_URL, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -296,23 +308,20 @@ async function refuserDemande(demandeId) {
         }
 
         showToast(data.message || 'Demande refusée avec succès', 'success');
-        
-        // Recharger les demandes après un court délai
+
         setTimeout(() => {
             loadDemandes();
         }, 1000);
 
     } catch (error) {
-        console.error('Erreur lors du refus de la demande:', error);
+        console.error('Erreur lors du refus de la demande :', error);
         showToast(error.message || 'Erreur lors du refus de la demande', 'error');
-        
-        // Réactiver les boutons
-        const buttons = document.querySelectorAll(`[onclick*="${demandeId}"]`);
-        buttons.forEach(btn => btn.disabled = false);
+        setDemandeButtonsDisabled(demandeId, false);
     }
 }
 
 // Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', () => {
+    if (!loadingIndicator || !demandesList) return;
     loadDemandes();
 });
