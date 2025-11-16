@@ -1,14 +1,20 @@
 <?php
+declare(strict_types=1);
+
 /**
  * API admin.php
- * - GET    : liste des comptes (étudiants et tuteurs) ou détails d'un compte
- *            GET ?resource=rendez-vous : liste de tous les rendez-vous
- * - POST   : création d'un nouveau compte (étudiant ou tuteur)
- * - PUT    : modification d'un compte (activer/désactiver, modifier les informations)
- * - DELETE : (non implémenté pour l'instant)
+ * - GET
+ *      - ?resource=comptes (défaut) : liste des comptes (étudiants + tuteurs)
+ *      - ?resource=rendez-vous     : liste de tous les rendez-vous
+ *      - ?resource=services&tuteur_id=... : services d’un tuteur
+ * - POST   : création d'un compte (étudiant ou tuteur)
+ * - PUT    :
+ *      - compte (activer/désactiver ou modification complète)
+ *      - service (resource=service)
+ * - DELETE :
+ *      - rendez-vous (resource=rendez-vous, action=annuler)
  */
 
-// Désactiver l'affichage des erreurs pour éviter qu'elles polluent le JSON
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
@@ -21,188 +27,186 @@ require_once '../models/Tuteur.php';
 require_once '../models/RendezVous.php';
 require_once '../models/Service.php';
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
-// Vérifier que l'administrateur est connecté
-if (!isset($_SESSION['admin_id'])) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Non autorisé - Administrateur non connecté']);
+/* === Helpers JSON === */
+
+function json_response(int $status, array $payload): void
+{
+    http_response_code($status);
+    echo json_encode($payload);
     exit;
 }
 
-$method = $_SERVER['REQUEST_METHOD'];
+function json_error(int $status, string $message): void
+{
+    json_response($status, ['error' => $message]);
+}
+
+function get_json_body(): array
+{
+    $raw = file_get_contents('php://input');
+    if ($raw === '' || $raw === false) {
+        return [];
+    }
+
+    $data = json_decode($raw, true);
+
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
+        json_error(400, 'Format JSON invalide dans la requête');
+    }
+
+    return $data;
+}
+
+/* === Vérification de l’authentification admin === */
+
+if (!isset($_SESSION['admin_id'])) {
+    json_error(401, 'Non autorisé - Administrateur non connecté');
+}
+
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 try {
-    $pdo = getDBConnection();
+    $pdo          = getDBConnection();
     $etudiantModel = new Etudiant($pdo);
-    $tuteurModel = new Tuteur($pdo);
-    
-    // Gérer les différentes méthodes HTTP
+    $tuteurModel   = new Tuteur($pdo);
+
     switch ($method) {
-        case 'GET':
-            // Déterminer la ressource demandée (comptes ou rendez-vous)
+        /* === GET === */
+        case 'GET': {
             $resource = $_GET['resource'] ?? 'comptes';
-            
+
+            // 1) Liste des rendez-vous
             if ($resource === 'rendez-vous') {
-                // Récupérer tous les rendez-vous
                 $rendezVousModel = new RendezVous($pdo);
-                $rendezVous = $rendezVousModel->getAllRendezVous();
-                echo json_encode($rendezVous);
-            } elseif ($resource === 'services') {
-                // Récupérer les services d'un tuteur
+                $rendezVous      = $rendezVousModel->getAllRendezVous();
+                json_response(200, $rendezVous);
+            }
+
+            // 2) Services d’un tuteur
+            if ($resource === 'services') {
                 $tuteurId = $_GET['tuteur_id'] ?? null;
                 if (!$tuteurId) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'tuteur_id est requis']);
-                    break;
+                    json_error(400, 'tuteur_id est requis');
                 }
-                
+
                 $serviceModel = new Service($pdo);
-                $services = $serviceModel->getServicesByTuteurId($tuteurId);
-                echo json_encode($services);
-            } else {
-                // Récupérer les comptes
-                $id = $_GET['id'] ?? null;
-                $type = $_GET['type'] ?? null; // 'etudiant' ou 'tuteur'
-                
-                if ($id) {
-                    // Récupérer un compte spécifique (même si inactif - pour admin)
-                    if ($type === 'etudiant') {
-                        $compte = $etudiantModel->getEtudiantByIdForAdmin($id);
-                    } elseif ($type === 'tuteur') {
-                        $compte = $tuteurModel->getTuteurByIdForAdmin($id);
-                    } else {
-                        http_response_code(400);
-                        echo json_encode(['error' => 'Type de compte requis (etudiant ou tuteur)']);
-                        break;
-                    }
-                    
-                    if (!$compte) {
-                        http_response_code(404);
-                        echo json_encode(['error' => 'Compte non trouvé']);
-                        break;
-                    }
-                    
-                    // Ajouter le type de compte
-                    $compte['type'] = $type;
-                    echo json_encode($compte);
+                $services     = $serviceModel->getServicesByTuteurId($tuteurId);
+
+                json_response(200, $services);
+            }
+
+            // 3) Comptes (par défaut)
+            $id   = $_GET['id']   ?? null;
+            $type = $_GET['type'] ?? null; // 'etudiant' ou 'tuteur'
+
+            // 3.a) Un compte en particulier
+            if ($id !== null && $id !== '') {
+                if ($type === 'etudiant') {
+                    $compte = $etudiantModel->getEtudiantByIdForAdmin($id);
+                } elseif ($type === 'tuteur') {
+                    $compte = $tuteurModel->getTuteurByIdForAdmin($id);
                 } else {
-                    // Récupérer la liste de tous les comptes
-                    $comptes = [];
-                    
-                    // Récupérer tous les étudiants
-                    $etudiants = $etudiantModel->getAllEtudiants();
-                    foreach ($etudiants as $etudiant) {
-                        $etudiant['type'] = 'etudiant';
-                        $comptes[] = $etudiant;
-                    }
-                    
-                    // Récupérer tous les tuteurs
-                    $tuteurs = $tuteurModel->getAllTuteurs();
-                    foreach ($tuteurs as $tuteur) {
-                        $tuteur['type'] = 'tuteur';
-                        $comptes[] = $tuteur;
-                    }
-                    
-                    echo json_encode($comptes);
+                    json_error(400, 'Type de compte requis (etudiant ou tuteur)');
                 }
+
+                if (!$compte) {
+                    json_error(404, 'Compte non trouvé');
+                }
+
+                $compte['type'] = $type;
+                json_response(200, $compte);
             }
-            break;
-            
-        case 'POST':
-            // Créer un nouveau compte
-            $input = file_get_contents('php://input');
-            $data = json_decode($input, true);
-            
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                http_response_code(400);
-                echo json_encode(['error' => 'Format JSON invalide dans la requête']);
-                exit;
+
+            // 3.b) Tous les comptes
+            $comptes = [];
+
+            $etudiants = $etudiantModel->getAllEtudiants();
+            foreach ($etudiants as $etudiant) {
+                $etudiant['type'] = 'etudiant';
+                $comptes[]        = $etudiant;
             }
-            
-            if (!isset($data['type']) || !in_array($data['type'], ['etudiant', 'tuteur'])) {
-                http_response_code(400);
-                echo json_encode(['error' => 'type est requis et doit être "etudiant" ou "tuteur"']);
-                exit;
+
+            $tuteurs = $tuteurModel->getAllTuteurs();
+            foreach ($tuteurs as $tuteur) {
+                $tuteur['type'] = 'tuteur';
+                $comptes[]      = $tuteur;
             }
-            
+
+            json_response(200, $comptes);
+        }
+
+        /* === POST : création compte === */
+        case 'POST': {
+            $data = get_json_body();
+
+            if (
+                !isset($data['type'])
+                || !in_array($data['type'], ['etudiant', 'tuteur'], true)
+            ) {
+                json_error(400, 'type est requis et doit être "etudiant" ou "tuteur"');
+            }
+
             $compteType = $data['type'];
-            
+
+            /* --- Création étudiant --- */
             if ($compteType === 'etudiant') {
-                // Validation des champs requis pour étudiant
-                if (!isset($data['numero_etudiant']) || empty(trim($data['numero_etudiant']))) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'numero_etudiant est requis']);
-                    exit;
+                if (empty(trim($data['numero_etudiant'] ?? ''))) {
+                    json_error(400, 'numero_etudiant est requis');
                 }
-                if (!isset($data['nom']) || empty(trim($data['nom']))) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'nom est requis']);
-                    exit;
+                if (empty(trim($data['nom'] ?? ''))) {
+                    json_error(400, 'nom est requis');
                 }
-                if (!isset($data['prenom']) || empty(trim($data['prenom']))) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'prenom est requis']);
-                    exit;
+                if (empty(trim($data['prenom'] ?? ''))) {
+                    json_error(400, 'prenom est requis');
                 }
-                if (!isset($data['email']) || empty(trim($data['email']))) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'email est requis']);
-                    exit;
+                if (empty(trim($data['email'] ?? ''))) {
+                    json_error(400, 'email est requis');
                 }
-                
+
                 $id = $etudiantModel->creerEtudiant(
                     trim($data['numero_etudiant']),
                     trim($data['nom']),
                     trim($data['prenom']),
                     trim($data['email']),
-                    isset($data['telephone']) ? trim($data['telephone']) : null,
-                    isset($data['niveau']) ? trim($data['niveau']) : null,
-                    isset($data['specialite']) ? trim($data['specialite']) : null,
-                    isset($data['annee_etude']) ? (int)$data['annee_etude'] : null,
+                    isset($data['telephone'])  ? trim((string)$data['telephone'])  : null,
+                    isset($data['niveau'])     ? trim((string)$data['niveau'])     : null,
+                    isset($data['specialite']) ? trim((string)$data['specialite']) : null,
+                    isset($data['annee_etude']) ? (int)$data['annee_etude']        : null,
                     isset($data['actif']) ? (bool)$data['actif'] : true
                 );
-                
+
                 if (!$id) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'Erreur lors de la création de l\'étudiant. Vérifiez que le numéro et l\'email sont uniques.']);
-                    exit;
+                    json_error(
+                        400,
+                        'Erreur lors de la création de l\'étudiant. Vérifiez que le numéro et l\'email sont uniques.'
+                    );
                 }
-                
+
                 $compte = $etudiantModel->getEtudiantByIdForAdmin($id);
-            } else {
-                // Validation des champs requis pour tuteur
-                if (!isset($data['numero_employe']) || empty(trim($data['numero_employe']))) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'numero_employe est requis']);
-                    exit;
+            }
+            /* --- Création tuteur --- */
+            else {
+                if (empty(trim($data['numero_employe'] ?? ''))) {
+                    json_error(400, 'numero_employe est requis');
                 }
-                if (!isset($data['nom']) || empty(trim($data['nom']))) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'nom est requis']);
-                    exit;
+                if (empty(trim($data['nom'] ?? ''))) {
+                    json_error(400, 'nom est requis');
                 }
-                if (!isset($data['prenom']) || empty(trim($data['prenom']))) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'prenom est requis']);
-                    exit;
+                if (empty(trim($data['prenom'] ?? ''))) {
+                    json_error(400, 'prenom est requis');
                 }
-                if (!isset($data['email']) || empty(trim($data['email']))) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'email est requis']);
-                    exit;
+                if (empty(trim($data['email'] ?? ''))) {
+                    json_error(400, 'email est requis');
                 }
-                if (!isset($data['departement']) || empty(trim($data['departement']))) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'departement est requis']);
-                    exit;
+                if (empty(trim($data['departement'] ?? ''))) {
+                    json_error(400, 'departement est requis');
                 }
                 if (!isset($data['tarif_horaire'])) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'tarif_horaire est requis']);
-                    exit;
+                    json_error(400, 'tarif_horaire est requis');
                 }
-                
+
                 $id = $tuteurModel->creerTuteur(
                     trim($data['numero_employe']),
                     trim($data['nom']),
@@ -210,340 +214,274 @@ try {
                     trim($data['email']),
                     trim($data['departement']),
                     (float)$data['tarif_horaire'],
-                    isset($data['telephone']) ? trim($data['telephone']) : null,
-                    isset($data['specialites']) ? trim($data['specialites']) : null,
+                    isset($data['telephone'])   ? trim((string)$data['telephone'])   : null,
+                    isset($data['specialites']) ? trim((string)$data['specialites']) : null,
                     isset($data['actif']) ? (bool)$data['actif'] : true
                 );
-                
+
                 if (!$id) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'Erreur lors de la création du tuteur. Vérifiez que le numéro et l\'email sont uniques.']);
-                    exit;
+                    json_error(
+                        400,
+                        'Erreur lors de la création du tuteur. Vérifiez que le numéro et l\'email sont uniques.'
+                    );
                 }
-                
+
                 $compte = $tuteurModel->getTuteurByIdForAdmin($id);
             }
-            
+
             if (!$compte) {
-                http_response_code(500);
-                echo json_encode(['error' => 'Erreur lors de la récupération du compte créé']);
-                exit;
+                json_error(500, 'Erreur lors de la récupération du compte créé');
             }
-            
+
             $compte['type'] = $compteType;
-            
-            http_response_code(201);
-            echo json_encode([
+
+            json_response(201, [
                 'success' => true,
                 'message' => 'Compte créé avec succès',
-                'compte' => $compte
+                'compte'  => $compte,
             ]);
-            exit; // Utiliser exit au lieu de break pour éviter toute sortie supplémentaire
-            
-        case 'PUT':
-            // Mettre à jour un compte ou un service
-            $input = file_get_contents('php://input');
-            $data = json_decode($input, true);
-            
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                http_response_code(400);
-                echo json_encode(['error' => 'Format JSON invalide dans la requête']);
-                exit;
-            }
-            
-            // Vérifier si c'est une modification de service
-            if (isset($data['resource']) && $data['resource'] === 'service') {
-                if (!isset($data['id']) || empty($data['id'])) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'id du service est requis']);
-                    exit;
+        }
+
+        /* === PUT : modification compte ou service === */
+        case 'PUT': {
+            $data = get_json_body();
+
+            // 1) Modification de service
+            if (($data['resource'] ?? null) === 'service') {
+                if (empty($data['id'] ?? '')) {
+                    json_error(400, 'id du service est requis');
                 }
-                
+
                 $serviceModel = new Service($pdo);
-                $serviceId = $data['id'];
-                
-                // Vérifier que le service existe
+                $serviceId    = (string)$data['id'];
+
                 $service = $serviceModel->getServiceById($serviceId);
                 if (!$service) {
-                    http_response_code(404);
-                    echo json_encode(['error' => 'Service non trouvé']);
-                    exit;
+                    json_error(404, 'Service non trouvé');
                 }
-                
-                // Modifier le service
-                $description = isset($data['description']) ? trim($data['description']) : null;
-                $nom = isset($data['nom']) ? trim($data['nom']) : null;
-                $prix = isset($data['prix']) ? (float)$data['prix'] : null;
-                $dureeMinute = isset($data['duree_minute']) ? (int)$data['duree_minute'] : null;
-                
+
+                $description  = isset($data['description'])  ? trim((string)$data['description'])  : null;
+                $nom          = isset($data['nom'])          ? trim((string)$data['nom'])          : null;
+                $prix         = isset($data['prix'])         ? (float)$data['prix']                : null;
+                $dureeMinute  = isset($data['duree_minute']) ? (int)$data['duree_minute']          : null;
+
                 $success = $serviceModel->modifierService($serviceId, $description, $nom, $prix, $dureeMinute);
-                
+
                 if (!$success) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'Erreur lors de la modification du service']);
-                    exit;
+                    json_error(400, 'Erreur lors de la modification du service');
                 }
-                
-                // Récupérer le service mis à jour
+
                 $service = $serviceModel->getServiceById($serviceId);
-                
-                http_response_code(200);
-                echo json_encode([
+
+                json_response(200, [
                     'success' => true,
                     'message' => 'Service modifié avec succès',
-                    'service' => $service
+                    'service' => $service,
                 ]);
-                exit;
             }
-            
-            // Sinon, c'est une modification de compte
-            if (!isset($data['id']) || empty($data['id'])) {
-                http_response_code(400);
-                echo json_encode(['error' => 'id est requis']);
-                exit;
+
+            // 2) Modification de compte
+            if (empty($data['id'] ?? '')) {
+                json_error(400, 'id est requis');
             }
-            
-            if (!isset($data['type']) || !in_array($data['type'], ['etudiant', 'tuteur'])) {
-                http_response_code(400);
-                echo json_encode(['error' => 'type est requis et doit être "etudiant" ou "tuteur"']);
-                exit;
+
+            if (
+                !isset($data['type'])
+                || !in_array($data['type'], ['etudiant', 'tuteur'], true)
+            ) {
+                json_error(400, 'type est requis et doit être "etudiant" ou "tuteur"');
             }
-            
-            $compteId = $data['id'];
+
+            $compteId   = (string)$data['id'];
             $compteType = $data['type'];
-            
-            // Récupérer le compte existant (même si inactif - pour admin)
+
+            // Récupérer le compte existant
             if ($compteType === 'etudiant') {
                 $compte = $etudiantModel->getEtudiantByIdForAdmin($compteId);
                 if (!$compte) {
-                    http_response_code(404);
-                    echo json_encode(['error' => 'Étudiant non trouvé']);
-                    exit;
+                    json_error(404, 'Étudiant non trouvé');
                 }
             } else {
                 $compte = $tuteurModel->getTuteurByIdForAdmin($compteId);
                 if (!$compte) {
-                    http_response_code(404);
-                    echo json_encode(['error' => 'Tuteur non trouvé']);
-                    exit;
+                    json_error(404, 'Tuteur non trouvé');
                 }
             }
-            
-            // Si seulement actif est fourni, utiliser updateActif (compatibilité)
-            // Vérifier si on a seulement id, type et actif (pas de modification complète)
-            $hasFullUpdate = isset($data['nom']) || isset($data['numero_etudiant']) || isset($data['numero_employe']);
-            
+
+            // Cas simple : on ne met à jour que "actif"
+            $hasFullUpdate = isset($data['nom']) ||
+                             isset($data['numero_etudiant']) ||
+                             isset($data['numero_employe']);
+
             if (isset($data['actif']) && !$hasFullUpdate) {
                 $actif = (bool)$data['actif'];
-                
+
                 if ($compteType === 'etudiant') {
                     $success = $etudiantModel->updateActif($compteId, $actif);
                 } else {
                     $success = $tuteurModel->updateActif($compteId, $actif);
                 }
-                
+
                 if (!$success) {
-                    http_response_code(500);
-                    echo json_encode(['error' => 'Erreur lors de la mise à jour du statut']);
-                    exit;
+                    json_error(500, 'Erreur lors de la mise à jour du statut');
                 }
-                
-                // Récupérer le compte mis à jour
+
                 if ($compteType === 'etudiant') {
                     $compte = $etudiantModel->getEtudiantByIdForAdmin($compteId);
                 } else {
                     $compte = $tuteurModel->getTuteurByIdForAdmin($compteId);
                 }
-                
+
+                if (!$compte) {
+                    json_error(500, 'Erreur lors de la récupération du compte mis à jour');
+                }
+
                 $compte['type'] = $compteType;
-                
-                http_response_code(200);
-                echo json_encode([
+
+                json_response(200, [
                     'success' => true,
                     'message' => 'Statut mis à jour avec succès',
-                    'compte' => $compte
+                    'compte'  => $compte,
                 ]);
-                exit;
-            } else {
-                // Modification complète des informations
-                if ($compteType === 'etudiant') {
-                    // Validation des champs requis pour étudiant
-                    if (!isset($data['numero_etudiant']) || empty(trim($data['numero_etudiant']))) {
-                        http_response_code(400);
-                        echo json_encode(['error' => 'numero_etudiant est requis']);
-                        exit;
-                    }
-                    if (!isset($data['nom']) || empty(trim($data['nom']))) {
-                        http_response_code(400);
-                        echo json_encode(['error' => 'nom est requis']);
-                        exit;
-                    }
-                    if (!isset($data['prenom']) || empty(trim($data['prenom']))) {
-                        http_response_code(400);
-                        echo json_encode(['error' => 'prenom est requis']);
-                        exit;
-                    }
-                    if (!isset($data['email']) || empty(trim($data['email']))) {
-                        http_response_code(400);
-                        echo json_encode(['error' => 'email est requis']);
-                        exit;
-                    }
-                    
-                    $success = $etudiantModel->modifierEtudiant(
-                        $compteId,
-                        trim($data['numero_etudiant']),
-                        trim($data['nom']),
-                        trim($data['prenom']),
-                        trim($data['email']),
-                        isset($data['telephone']) ? trim($data['telephone']) : null,
-                        isset($data['niveau']) ? trim($data['niveau']) : null,
-                        isset($data['specialite']) ? trim($data['specialite']) : null,
-                        isset($data['annee_etude']) ? (int)$data['annee_etude'] : null,
-                        isset($data['actif']) ? (bool)$data['actif'] : true
-                    );
-                } else {
-                    // Validation des champs requis pour tuteur
-                    if (!isset($data['numero_employe']) || empty(trim($data['numero_employe']))) {
-                        http_response_code(400);
-                        echo json_encode(['error' => 'numero_employe est requis']);
-                        exit;
-                    }
-                    if (!isset($data['nom']) || empty(trim($data['nom']))) {
-                        http_response_code(400);
-                        echo json_encode(['error' => 'nom est requis']);
-                        exit;
-                    }
-                    if (!isset($data['prenom']) || empty(trim($data['prenom']))) {
-                        http_response_code(400);
-                        echo json_encode(['error' => 'prenom est requis']);
-                        exit;
-                    }
-                    if (!isset($data['email']) || empty(trim($data['email']))) {
-                        http_response_code(400);
-                        echo json_encode(['error' => 'email est requis']);
-                        exit;
-                    }
-                    if (!isset($data['departement']) || empty(trim($data['departement']))) {
-                        http_response_code(400);
-                        echo json_encode(['error' => 'departement est requis']);
-                        exit;
-                    }
-                    if (!isset($data['tarif_horaire'])) {
-                        http_response_code(400);
-                        echo json_encode(['error' => 'tarif_horaire est requis']);
-                        exit;
-                    }
-                    
-                    $evaluation = null;
-                    if (isset($data['evaluation']) && $data['evaluation'] !== '') {
-                        $evalValue = (float)$data['evaluation'];
-                        if ($evalValue >= 0 && $evalValue <= 5) {
-                            $evaluation = $evalValue;
-                        }
-                    }
-                    
-                    $success = $tuteurModel->modifierTuteur(
-                        $compteId,
-                        trim($data['numero_employe']),
-                        trim($data['nom']),
-                        trim($data['prenom']),
-                        trim($data['email']),
-                        trim($data['departement']),
-                        (float)$data['tarif_horaire'],
-                        isset($data['telephone']) ? trim($data['telephone']) : null,
-                        isset($data['specialites']) ? trim($data['specialites']) : null,
-                        isset($data['actif']) ? (bool)$data['actif'] : true,
-                        $evaluation
-                    );
-                }
-                
-                if (!$success) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'Erreur lors de la modification du compte. Vérifiez que le numéro et l\'email sont uniques.']);
-                    exit;
-                }
             }
-            
-            // Récupérer le compte mis à jour (même si inactif - pour admin)
+
+            // Cas : modification complète
+            if ($compteType === 'etudiant') {
+                if (empty(trim($data['numero_etudiant'] ?? ''))) {
+                    json_error(400, 'numero_etudiant est requis');
+                }
+                if (empty(trim($data['nom'] ?? ''))) {
+                    json_error(400, 'nom est requis');
+                }
+                if (empty(trim($data['prenom'] ?? ''))) {
+                    json_error(400, 'prenom est requis');
+                }
+                if (empty(trim($data['email'] ?? ''))) {
+                    json_error(400, 'email est requis');
+                }
+
+                $success = $etudiantModel->modifierEtudiant(
+                    $compteId,
+                    trim($data['numero_etudiant']),
+                    trim($data['nom']),
+                    trim($data['prenom']),
+                    trim($data['email']),
+                    isset($data['telephone'])  ? trim((string)$data['telephone'])  : null,
+                    isset($data['niveau'])     ? trim((string)$data['niveau'])     : null,
+                    isset($data['specialite']) ? trim((string)$data['specialite']) : null,
+                    isset($data['annee_etude']) ? (int)$data['annee_etude']        : null,
+                    isset($data['actif']) ? (bool)$data['actif'] : true
+                );
+            } else {
+                if (empty(trim($data['numero_employe'] ?? ''))) {
+                    json_error(400, 'numero_employe est requis');
+                }
+                if (empty(trim($data['nom'] ?? ''))) {
+                    json_error(400, 'nom est requis');
+                }
+                if (empty(trim($data['prenom'] ?? ''))) {
+                    json_error(400, 'prenom est requis');
+                }
+                if (empty(trim($data['email'] ?? ''))) {
+                    json_error(400, 'email est requis');
+                }
+                if (empty(trim($data['departement'] ?? ''))) {
+                    json_error(400, 'departement est requis');
+                }
+                if (!isset($data['tarif_horaire'])) {
+                    json_error(400, 'tarif_horaire est requis');
+                }
+
+                $evaluation = null;
+                if (isset($data['evaluation']) && $data['evaluation'] !== '') {
+                    $evalValue = (float)$data['evaluation'];
+                    if ($evalValue >= 0 && $evalValue <= 5) {
+                        $evaluation = $evalValue;
+                    }
+                }
+
+                $success = $tuteurModel->modifierTuteur(
+                    $compteId,
+                    trim($data['numero_employe']),
+                    trim($data['nom']),
+                    trim($data['prenom']),
+                    trim($data['email']),
+                    trim($data['departement']),
+                    (float)$data['tarif_horaire'],
+                    isset($data['telephone'])   ? trim((string)$data['telephone'])   : null,
+                    isset($data['specialites']) ? trim((string)$data['specialites']) : null,
+                    isset($data['actif']) ? (bool)$data['actif'] : true,
+                    $evaluation
+                );
+            }
+
+            if (!$success) {
+                json_error(
+                    400,
+                    'Erreur lors de la modification du compte. Vérifiez que le numéro et l\'email sont uniques.'
+                );
+            }
+
             if ($compteType === 'etudiant') {
                 $compte = $etudiantModel->getEtudiantByIdForAdmin($compteId);
             } else {
                 $compte = $tuteurModel->getTuteurByIdForAdmin($compteId);
             }
-            
+
             if (!$compte) {
-                http_response_code(500);
-                echo json_encode(['error' => 'Erreur lors de la récupération du compte mis à jour']);
-                exit;
+                json_error(500, 'Erreur lors de la récupération du compte mis à jour');
             }
-            
+
             $compte['type'] = $compteType;
-            
-            // Nettoyer le buffer une dernière fois avant la réponse finale
-            http_response_code(200);
-            echo json_encode([
+
+            json_response(200, [
                 'success' => true,
                 'message' => 'Compte mis à jour avec succès',
-                'compte' => $compte
+                'compte'  => $compte,
             ]);
-            exit;
-            
-        case 'DELETE':
-            // Gérer les actions sur les rendez-vous (annulation)
-            $input = file_get_contents('php://input');
-            $data = json_decode($input, true);
-            
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                http_response_code(400);
-                echo json_encode(['error' => 'Format JSON invalide dans la requête']);
-                break;
-            }
-            
+        }
+
+        /* === DELETE : annulation rendez-vous === */
+        case 'DELETE': {
+            $data    = get_json_body();
             $resource = $data['resource'] ?? null;
-            $action = $data['action'] ?? null;
-            $id = $data['id'] ?? null;
-            
+            $action   = $data['action']   ?? null;
+            $id       = $data['id']       ?? null;
+
             if ($resource === 'rendez-vous' && $action === 'annuler' && $id) {
                 $rendezVousModel = new RendezVous($pdo);
-                $raison = $data['raison'] ?? null;
-                
+                $raison          = $data['raison'] ?? null;
+
                 $success = $rendezVousModel->annulerRendezVous($id, $raison);
-                
+
                 if ($success) {
-                    http_response_code(200);
-                    echo json_encode([
+                    json_response(200, [
                         'success' => true,
-                        'message' => 'Rendez-vous annulé avec succès'
-                    ]);
-                } else {
-                    http_response_code(400);
-                    echo json_encode([
-                        'error' => 'Impossible d\'annuler le rendez-vous. Il est peut-être déjà annulé ou terminé.'
+                        'message' => 'Rendez-vous annulé avec succès',
                     ]);
                 }
-            } else {
-                http_response_code(400);
-                echo json_encode(['error' => 'Paramètres invalides pour l\'annulation']);
+
+                json_error(
+                    400,
+                    'Impossible d\'annuler le rendez-vous. Il est peut-être déjà annulé ou terminé.'
+                );
             }
-            break;
-            
+
+            json_error(400, 'Paramètres invalides pour l\'annulation');
+        }
+
+        /* === Méthode non supportée === */
         default:
-            http_response_code(405);
-            echo json_encode(['error' => 'Méthode non autorisée']);
-            break;
+            json_error(405, 'Méthode non autorisée');
     }
-    
+
 } catch (PDOException $e) {
-    http_response_code(500);
     error_log("Erreur PDO API admin.php: " . $e->getMessage());
-    echo json_encode(['error' => 'Erreur base de données']);
+    json_error(500, 'Erreur base de données');
 } catch (Exception $e) {
-    http_response_code(500);
     error_log("Erreur API admin.php: " . $e->getMessage());
-    echo json_encode(['error' => 'Erreur serveur']);
+    json_error(500, 'Erreur serveur');
 } catch (Error $e) {
-    // Capturer les erreurs fatales PHP 7+
-    http_response_code(500);
     error_log("Erreur fatale API admin.php: " . $e->getMessage());
-    echo json_encode(['error' => 'Erreur serveur']);
+    json_error(500, 'Erreur serveur');
 }
