@@ -1,8 +1,12 @@
 <?php
 /**
- * API endpoint pour gérer les disponibilités des tuteurs
- * TutoPlus - Système de tutorat
+ * API disponibilite.php
+ * - GET    : liste des disponibilités du tuteur (format FullCalendar)
+ * - POST   : création d'une disponibilité
+ * - PUT    : modification d'une disponibilité
+ * - DELETE : suppression d'une disponibilité (sauf si RESERVE)
  */
+
 
 session_start();
 
