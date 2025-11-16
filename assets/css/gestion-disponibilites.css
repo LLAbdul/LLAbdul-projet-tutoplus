@@ -349,12 +349,25 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: white !important;
 }
 
 /* S'assurer que les couleurs des événements sont bien appliquées */
 .fc-event {
   cursor: pointer;
   border-radius: 3px;
+}
+
+/* S'assurer que les événements sont visibles en mode mois */
+.fc-daygrid-event {
+  min-height: 18px;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.fc-event-main {
+  color: white !important;
 }
 
 .fc-timegrid-event {
@@ -364,6 +377,10 @@
 
 .fc-timegrid-event:hover {
   opacity: 0.9;
+}
+
+.fc-timegrid-event-main {
+  color: white !important;
 }
 
 /* Empêcher la coupure des dates dans les en-têtes - maximum 2 lignes */
