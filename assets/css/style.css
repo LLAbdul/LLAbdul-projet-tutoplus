@@ -827,6 +827,7 @@ footer p {
 @media (min-width: 769px) and (max-width: 1024px) {
   .header-content {
     gap: 2rem;
+    position: relative;
   }
 
   .container {
@@ -843,8 +844,112 @@ footer p {
     font-size: 1.75rem;
   }
 
+  .header-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    max-width: calc(100% - 200px);
+    pointer-events: none;
+  }
+
+  .header-center a {
+    pointer-events: auto;
+  }
+
   .header-center .subtitle {
     font-size: 0.8125rem;
+  }
+
+  .header-right {
+    gap: 0;
+    justify-content: flex-end;
+    align-items: center;
+    min-width: 50px;
+  }
+
+  /* Masquer les infos utilisateur et boutons */
+  .user-info {
+    display: none !important;
+  }
+
+  /* Masquer les boutons pour utilisateurs connectés, mais garder le bouton de connexion */
+  .header-right .btn-login-link[href="historique.php"],
+  .header-right .btn-login-link[href="index.php"],
+  .header-right .btn-login-link[href="gestion_disponibilites.php"],
+  .header-right .btn-logout {
+    display: none !important;
+  }
+
+  /* Afficher le bouton de connexion avec icône Bootstrap */
+  .header-right .btn-login-link[href="login.php"] {
+    display: flex !important;
+    padding: 0.5rem;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    font-size: 0;
+    position: relative;
+    text-indent: -9999px;
+    overflow: hidden;
+    background: var(--accent-color);
+    color: var(--text-white);
+    border: none;
+  }
+
+  .header-right .btn-login-link[href="login.php"]::before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='%23ffffff' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    text-indent: 0;
+    z-index: 1;
+  }
+
+  /* Afficher le menu dropdown */
+  .user-menu-dropdown {
+    display: block;
+  }
+
+  /* Styles pour le bouton avec initiales */
+  .user-initial-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    color: var(--text-white);
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+    line-height: 1;
+  }
+
+  .user-initial-btn:hover {
+    background: var(--accent-light);
+    transform: scale(1.05);
+  }
+
+  .user-initial-btn.active {
+    background: var(--accent-light);
+    box-shadow: 0 2px 8px rgba(204, 0, 0, 0.3);
   }
 
   .services-grid {
@@ -870,10 +975,115 @@ footer p {
 
   .header-content {
     gap: 1.5rem;
+    position: relative;
+  }
+
+  .header-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    max-width: calc(100% - 200px);
+    pointer-events: none;
+  }
+
+  .header-center a {
+    pointer-events: auto;
+  }
+
+  .header-right {
+    gap: 0;
+    justify-content: flex-end;
+    align-items: center;
+    min-width: 50px;
+  }
+
+  /* Masquer les infos utilisateur et boutons sur laptop */
+  .user-info {
+    display: none !important;
+  }
+
+  /* Masquer les boutons pour utilisateurs connectés, mais garder le bouton de connexion */
+  .header-right .btn-login-link[href="historique.php"],
+  .header-right .btn-login-link[href="index.php"],
+  .header-right .btn-login-link[href="gestion_disponibilites.php"],
+  .header-right .btn-logout {
+    display: none !important;
+  }
+
+  /* Afficher le bouton de connexion avec icône Bootstrap sur laptop */
+  .header-right .btn-login-link[href="login.php"] {
+    display: flex !important;
+    padding: 0.5rem;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    font-size: 0;
+    position: relative;
+    text-indent: -9999px;
+    overflow: hidden;
+    background: var(--accent-color);
+    color: var(--text-white);
+    border: none;
+  }
+
+  .header-right .btn-login-link[href="login.php"]::before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='%23ffffff' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    text-indent: 0;
+    z-index: 1;
+  }
+
+  /* Afficher le menu dropdown sur laptop */
+  .user-menu-dropdown {
+    display: block;
+  }
+
+  /* Styles pour le bouton avec initiales sur laptop */
+  .user-initial-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    color: var(--text-white);
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+    line-height: 1;
+  }
+
+  .user-initial-btn:hover {
+    background: var(--accent-light);
+    transform: scale(1.05);
+  }
+
+  .user-initial-btn.active {
+    background: var(--accent-light);
+    box-shadow: 0 2px 8px rgba(204, 0, 0, 0.3);
   }
 }
 
-@media (max-width: 768px) {
+@media (min-width: 482px) and (max-width: 768px) {
   header {
     padding: 1.25rem 0;
     position: relative;
@@ -896,10 +1106,6 @@ footer p {
 
   .college-logo {
     margin-right: 0.5rem;
-  }
-
-  .user-info {
-    margin-right: 0.25rem;
   }
 
   /* Afficher le logo court du Collège Ahuntsic sur tablette */
@@ -928,41 +1134,66 @@ footer p {
     top: 50%;
     transform: translate(-50%, -50%);
     width: auto;
-    max-width: none;
+    max-width: calc(100% - 200px);
     margin: 0;
     text-align: center;
-    pointer-events: auto;
+    pointer-events: none;
     z-index: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+  }
+
+  .header-center a {
+    pointer-events: auto;
   }
 
   .header-right {
     order: 3;
     margin-left: auto;
-    gap: 0.5rem;
+    gap: 0;
+    flex-wrap: nowrap;
     justify-content: flex-end;
+    align-items: center;
     z-index: 2;
+    min-width: 50px;
   }
 
-  /* Transformer le bouton Connexion en icône sur tablette */
-  .btn-login-link {
+  /* Masquer les infos utilisateur et boutons sur tablette */
+  .user-info {
+    display: none !important;
+  }
+
+  /* Masquer les boutons pour utilisateurs connectés, mais garder le bouton de connexion */
+  .header-right .btn-login-link[href="historique.php"],
+  .header-right .btn-login-link[href="index.php"],
+  .header-right .btn-login-link[href="gestion_disponibilites.php"],
+  .header-right .btn-logout {
+    display: none !important;
+  }
+
+  /* Afficher le bouton de connexion avec icône Bootstrap sur tablette */
+  .header-right .btn-login-link[href="login.php"] {
+    display: flex !important;
     padding: 0.5rem;
     width: 40px;
     height: 40px;
     min-width: 40px;
+    max-width: 40px;
     border-radius: 50%;
-    display: flex !important;
     align-items: center;
     justify-content: center;
     font-size: 0;
     position: relative;
     text-indent: -9999px;
     overflow: hidden;
+    background: var(--accent-color);
+    color: var(--text-white);
+    border: none;
   }
 
-  .btn-login-link::before {
+  .header-right .btn-login-link[href="login.php"]::before {
     content: "";
     width: 20px;
     height: 20px;
@@ -976,49 +1207,41 @@ footer p {
     background-repeat: no-repeat;
     background-position: center;
     text-indent: 0;
+    z-index: 1;
   }
 
-  .btn-login-link[href="historique.php"]::before {
-    content: "📅";
-    font-size: 1.25rem;
-    line-height: 1;
-    background-image: none;
+  /* Afficher le menu dropdown sur tablette (482px-768px) */
+  .user-menu-dropdown {
+    display: block;
   }
 
-  .btn-login-link[href="gestion_disponibilites.php"]::before {
-    content: "📆";
-    font-size: 1.25rem;
-    line-height: 1;
-    background-image: none;
-  }
-
-  /* Transformer le bouton Déconnexion en icône sur tablette */
-  .btn-logout {
-    padding: 0.5rem;
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    border-radius: 50%;
+  /* Styles pour le bouton avec initiales sur tablette (482px-768px) */
+  .user-initial-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0;
-    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    color: var(--text-white);
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+    line-height: 1;
   }
 
-  .btn-logout::before {
-    content: "";
-    width: 20px;
-    height: 20px;
-    display: block;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='%23212529' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z'/%3E%3Cpath fill-rule='evenodd' d='M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z'/%3E%3C/svg%3E");
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
+  .user-initial-btn:hover {
+    background: var(--accent-light);
+    transform: scale(1.05);
   }
 
-  .user-info {
-    max-width: 150px;
+  .user-initial-btn.active {
+    background: var(--accent-light);
+    box-shadow: 0 2px 8px rgba(204, 0, 0, 0.3);
   }
 
   header h1 {
@@ -1282,11 +1505,12 @@ footer p {
     background: var(--accent-color);
     color: var(--text-white);
     border: none;
-    font-size: 1.125rem;
+    font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     z-index: 10;
+    line-height: 1;
   }
 
   .user-initial-btn:hover {
@@ -1463,13 +1687,13 @@ select:hover:not(:focus-visible) {
   text-align: center;
 }
 
-@media (max-width: 481px) {
+@media (max-width: 1400px) {
   .user-menu-dropdown {
     display: block;
   }
 }
 
-@media (min-width: 482px) {
+@media (min-width: 1401px) {
   .user-menu-dropdown {
     display: none !important;
   }
