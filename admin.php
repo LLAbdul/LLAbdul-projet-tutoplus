@@ -101,17 +101,7 @@ $cacheBuster = time();
 
             <!-- Section Gestion des Comptes -->
             <div class="admin-tab-content active" id="tab-comptes">
-                <!-- Barre d'actions -->
-                <div class="admin-actions">
-                    <button class="btn-add-compte" id="btnAddCompte" type="button">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                        Ajouter un compte
-                    </button>
-                </div>
-
-                <!-- Filtres pour les comptes -->
+                <!-- Filtres et actions pour les comptes -->
                 <div class="admin-filters">
                     <button class="filter-btn active" data-filter="all" type="button">
                         Tous
@@ -127,6 +117,12 @@ $cacheBuster = time();
                     </button>
                     <button class="filter-btn" data-filter="inactifs" type="button">
                         Inactifs
+                    </button>
+                    <button class="btn-add-compte" id="btnAddCompte" type="button">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Ajouter un compte
                     </button>
                 </div>
 
