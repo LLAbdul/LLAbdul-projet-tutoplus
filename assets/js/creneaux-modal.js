@@ -1,52 +1,56 @@
 // Script pour gérer le modal de sélection de créneaux
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('creneauxModal');
     const modalBody = document.getElementById('creneauxModalBody');
     const modalClose = document.querySelector('.creneaux-modal-close');
     const modalOverlay = document.querySelector('.creneaux-modal-overlay');
     const btnPlusCreneaux = document.querySelectorAll('.btn-plus-creneaux');
-    
-    // Variable pour stocker le serviceId actuel
+
+    if (!modal || !modalBody) return;
+
     let currentServiceId = null;
 
-    // Ouvrir le modal
-    btnPlusCreneaux.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const serviceId = this.getAttribute('data-service-id');
-            openModal(serviceId);
-        });
-    });
-
-    // Fermer le modal
     function closeModal() {
         modal.classList.remove('active');
         document.body.style.overflow = '';
     }
-    
-    // Rendre closeModal accessible globalement
+
     window.closeCreneauxModal = closeModal;
 
-    modalClose.addEventListener('click', closeModal);
-    modalOverlay.addEventListener('click', closeModal);
+    btnPlusCreneaux.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const serviceId = btn.getAttribute('data-service-id');
+            if (!serviceId) {
+                console.error('Service ID manquant sur le bouton');
+                return;
+            }
+            openModal(serviceId);
+        });
+    });
 
-    // Fermer avec Escape
-    document.addEventListener('keydown', function(e) {
+    if (modalClose) {
+        modalClose.addEventListener('click', closeModal);
+    }
+
+    if (modalOverlay) {
+        modalOverlay.addEventListener('click', closeModal);
+    }
+
+    document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && modal.classList.contains('active')) {
             closeModal();
         }
     });
 
-    // Ouvrir le modal et charger les créneaux
     async function openModal(serviceId) {
-        currentServiceId = serviceId; // Stocker le serviceId actuel
+        currentServiceId = serviceId;
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
         modalBody.innerHTML = '<div style="text-align: center; padding: 3rem;">Chargement...</div>';
 
         try {
-            const response = await fetch(`api/creneaux.php?service_id=${serviceId}`);
-            const data = await response.json();
+            const data = await fetchCreneaux(serviceId);
 
             if (data.error) {
                 modalBody.innerHTML = `<div style="text-align: center; padding: 3rem; color: var(--accent-color);">${data.error}</div>`;
@@ -59,33 +63,36 @@ document.addEventListener('DOMContentLoaded', function() {
             modalBody.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--accent-color);">Erreur lors du chargement des créneaux</div>';
         }
     }
-    
-    // Fonction pour rafraîchir les créneaux (accessible globalement)
-    window.refreshCreneaux = async function() {
-        if (currentServiceId && modal.classList.contains('active')) {
-            try {
-                const response = await fetch(`api/creneaux.php?service_id=${currentServiceId}`);
-                const data = await response.json();
 
-                if (data.error) {
-                    console.error('Erreur lors du rafraîchissement:', data.error);
-                    return;
-                }
+    async function fetchCreneaux(serviceId) {
+        const response = await fetch(`api/creneaux.php?service_id=${encodeURIComponent(serviceId)}`);
+        const data = await response.json();
+        return data;
+    }
 
-                renderCreneaux(data.service, data.creneaux);
-            } catch (error) {
-                console.error('Erreur lors du rafraîchissement des créneaux:', error);
+    window.refreshCreneaux = async function () {
+        if (!currentServiceId || !modal.classList.contains('active')) return;
+
+        try {
+            const data = await fetchCreneaux(currentServiceId);
+
+            if (data.error) {
+                console.error('Erreur lors du rafraîchissement:', data.error);
+                return;
             }
+
+            renderCreneaux(data.service, data.creneaux);
+        } catch (error) {
+            console.error('Erreur lors du rafraîchissement des créneaux:', error);
         }
     };
 
-    // Rendre les créneaux dans le modal
     function renderCreneaux(service, creneauxParDate) {
         const dates = Object.keys(creneauxParDate);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        let html = `
+        const content = `
             <div class="creneaux-container">
                 <div class="creneaux-left">
                     <div class="calendar-widget">
@@ -131,9 +138,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="time-slots-section">
                         <h2 class="time-slots-title">Choisir une heure</h2>
                         <div class="time-slots-list" id="timeSlotsList">
-                            ${dates.length === 0 ? 
-                                '<div class="no-slots"><p>Aucun créneau disponible pour ce service.</p></div>' :
-                                generateTimeSlotsHTML(creneauxParDate)
+                            ${
+                                dates.length === 0
+                                    ? '<div class="no-slots"><p>Aucun créneau disponible pour ce service.</p></div>'
+                                    : generateTimeSlotsHTML(creneauxParDate)
                             }
                         </div>
                     </div>
@@ -146,16 +154,15 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
 
-        modalBody.innerHTML = html;
+        modalBody.innerHTML = content;
 
-        // Initialiser le calendrier
         initCalendar(dates, today);
         initTimeSlots();
     }
 
-    // Générer le HTML des créneaux
     function generateTimeSlotsHTML(creneauxParDate) {
         let html = '';
+
         Object.keys(creneauxParDate).sort().forEach(date => {
             const creneaux = creneauxParDate[date];
             const dateObj = new Date(date);
@@ -169,44 +176,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="date-group" data-date="${date}">
                     <h3 class="date-group-title">${dateFormatted}</h3>
                     <div class="time-slots-grid">
-                        ${creneaux.map(creneau => {
-                            const heureDebut = formatTime(creneau.heure_debut);
-                            const heureFin = formatTime(creneau.heure_fin);
-                            return `
-                                <label class="time-slot-item" data-creneau-id="${creneau.id}" 
-                                       data-date="${date}">
-                                    <input type="radio" name="creneau" value="${creneau.id}" 
-                                           class="time-slot-radio" 
-                                           data-date-debut="${creneau.date_debut}"
-                                           data-date-fin="${creneau.date_fin}">
-                                    <span class="time-slot-text">${heureDebut} - ${heureFin}</span>
-                                </label>
-                            `;
-                        }).join('')}
+                        ${creneaux
+                            .map(creneau => {
+                                const heureDebut = formatTime(creneau.heure_debut);
+                                const heureFin = formatTime(creneau.heure_fin);
+                                return `
+                                    <label class="time-slot-item" 
+                                           data-creneau-id="${creneau.id}" 
+                                           data-date="${date}">
+                                        <input type="radio" 
+                                               name="creneau" 
+                                               value="${creneau.id}" 
+                                               class="time-slot-radio" 
+                                               data-date-debut="${creneau.date_debut}"
+                                               data-date-fin="${creneau.date_fin}">
+                                        <span class="time-slot-text">${heureDebut} - ${heureFin}</span>
+                                    </label>
+                                `;
+                            })
+                            .join('')}
                     </div>
                 </div>
             `;
         });
+
         return html;
     }
 
-    // Formater l'heure (HH:mm -> h:mm AM/PM)
     function formatTime(time24) {
         const [hours, minutes] = time24.split(':');
-        const hour = parseInt(hours);
+        const hour = parseInt(hours, 10);
         const ampm = hour >= 12 ? 'PM' : 'AM';
         const hour12 = hour % 12 || 12;
         return `${hour12}:${minutes} ${ampm}`;
     }
 
-    // Obtenir le mois et l'année formatés
     function getMonthYear(date) {
-        const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-            'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+        const months = [
+            'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+            'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+        ];
         return `${months[date.getMonth()]} ${date.getFullYear()}`;
     }
 
-    // Initialiser le calendrier
     function initCalendar(availableDates, currentDate) {
         const calendarDays = document.getElementById('calendarDays');
         const currentMonthYear = document.getElementById('currentMonthYear');
@@ -228,14 +240,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             calendarDays.innerHTML = '';
 
-            // Jours vides
             for (let i = 1; i < firstDayOfWeek; i++) {
                 const emptyDay = document.createElement('div');
                 emptyDay.className = 'calendar-day';
                 calendarDays.appendChild(emptyDay);
             }
 
-            // Jours du mois
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
@@ -245,9 +255,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 const dayElement = document.createElement('div');
                 dayElement.className = 'calendar-day';
                 dayElement.textContent = day;
-                dayElement.setAttribute('data-date', dayDateStr);
+                dayElement.dataset.date = dayDateStr;
 
-                if (formatDateForComparison(dayDate) === formatDateForComparison(today)) {
+                if (dayDateStr === formatDateForComparison(today)) {
                     dayElement.classList.add('calendar-day-today');
                 }
 
@@ -266,48 +276,45 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        prevMonthBtn.addEventListener('click', () => {
-            currentMonth.setMonth(currentMonth.getMonth() - 1);
-            renderCalendar();
-        });
+        if (prevMonthBtn) {
+            prevMonthBtn.addEventListener('click', () => {
+                currentMonth.setMonth(currentMonth.getMonth() - 1);
+                renderCalendar();
+            });
+        }
 
-        nextMonthBtn.addEventListener('click', () => {
-            currentMonth.setMonth(currentMonth.getMonth() + 1);
-            renderCalendar();
-        });
+        if (nextMonthBtn) {
+            nextMonthBtn.addEventListener('click', () => {
+                currentMonth.setMonth(currentMonth.getMonth() + 1);
+                renderCalendar();
+            });
+        }
 
         renderCalendar();
     }
 
-    // Formater la date pour comparaison
     function formatDateForComparison(date) {
         const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
+        const month = `${date.getMonth() + 1}`.padStart(2, '0');
+        const day = `${date.getDate()}`.padStart(2, '0');
         return `${year}-${month}-${day}`;
     }
 
-    // Sélectionner une date dans le calendrier
     function selectDateInCalendar(dateStr, dayElement) {
-        document.querySelectorAll('.calendar-day-selected').forEach(el => {
-            el.classList.remove('calendar-day-selected');
-        });
+        document
+            .querySelectorAll('.calendar-day-selected')
+            .forEach(el => el.classList.remove('calendar-day-selected'));
+
         dayElement.classList.add('calendar-day-selected');
     }
 
-    // Filtrer les créneaux par date
     function filterTimeSlotsByDate(dateStr) {
         document.querySelectorAll('.date-group').forEach(group => {
             const groupDate = group.getAttribute('data-date');
-            if (groupDate === dateStr) {
-                group.style.display = 'block';
-            } else {
-                group.style.display = 'none';
-            }
+            group.style.display = groupDate === dateStr ? 'block' : 'none';
         });
     }
 
-    // Initialiser les créneaux horaires
     function initTimeSlots() {
         const timeSlotRadios = document.querySelectorAll('.time-slot-radio');
         const summarySelected = document.getElementById('summarySelected');
@@ -319,28 +326,31 @@ document.addEventListener('DOMContentLoaded', function() {
         let selectedCreneau = null;
 
         timeSlotRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.checked) {
-                    const timeSlotItem = this.closest('.time-slot-item');
-                    selectCreneau(timeSlotItem, this);
-                }
+            radio.addEventListener('change', () => {
+                if (!radio.checked) return;
+                const timeSlotItem = radio.closest('.time-slot-item');
+                if (!timeSlotItem) return;
+                selectCreneau(timeSlotItem, radio);
             });
         });
 
         function selectCreneau(item, radio) {
-            document.querySelectorAll('.time-slot-item').forEach(el => {
-                el.classList.remove('selected');
-            });
+            document
+                .querySelectorAll('.time-slot-item')
+                .forEach(el => el.classList.remove('selected'));
 
             item.classList.add('selected');
             selectedCreneau = item;
 
             const dateDebut = radio.getAttribute('data-date-debut');
             const dateFin = radio.getAttribute('data-date-fin');
-            updateSummary(dateDebut, dateFin);
-            btnNext.disabled = false;
 
-            // Sélectionner la date dans le calendrier
+            updateSummary(dateDebut, dateFin);
+
+            if (btnNext) {
+                btnNext.disabled = false;
+            }
+
             const creneauDate = item.getAttribute('data-date');
             if (creneauDate) {
                 const dayElement = document.querySelector(`.calendar-day[data-date="${creneauDate}"]`);
@@ -372,177 +382,190 @@ document.addEventListener('DOMContentLoaded', function() {
                 hour12: false
             });
 
-            selectedDateTime.textContent = `${dateStr} ${heureDebut} - ${heureFin}`;
-            summarySelected.style.display = 'flex';
-            summaryEmpty.style.display = 'none';
+            if (selectedDateTime) {
+                selectedDateTime.textContent = `${dateStr} ${heureDebut} - ${heureFin}`;
+            }
+
+            if (summarySelected && summaryEmpty) {
+                summarySelected.style.display = 'flex';
+                summaryEmpty.style.display = 'block';
+                summaryEmpty.style.display = 'none';
+            }
         }
 
-        removeSelection.addEventListener('click', function() {
-            document.querySelectorAll('.time-slot-item').forEach(el => {
-                el.classList.remove('selected');
-                const radio = el.querySelector('.time-slot-radio');
-                if (radio) radio.checked = false;
+        if (removeSelection) {
+            removeSelection.addEventListener('click', () => {
+                document
+                    .querySelectorAll('.time-slot-item')
+                    .forEach(el => {
+                        el.classList.remove('selected');
+                        const radio = el.querySelector('.time-slot-radio');
+                        if (radio) radio.checked = false;
+                    });
+
+                document
+                    .querySelectorAll('.calendar-day-selected')
+                    .forEach(el => el.classList.remove('calendar-day-selected'));
+
+                selectedCreneau = null;
+
+                if (summarySelected && summaryEmpty) {
+                    summarySelected.style.display = 'none';
+                    summaryEmpty.style.display = 'block';
+                }
+
+                if (btnNext) {
+                    btnNext.disabled = true;
+                }
+
+                document
+                    .querySelectorAll('.date-group')
+                    .forEach(group => {
+                        group.style.display = 'block';
+                    });
             });
+        }
 
-            document.querySelectorAll('.calendar-day-selected').forEach(el => {
-                el.classList.remove('calendar-day-selected');
+        if (btnNext) {
+            btnNext.addEventListener('click', () => {
+                if (!selectedCreneau) {
+                    alert('Veuillez sélectionner un créneau avant de continuer');
+                    return;
+                }
+
+                if (btnNext.disabled) return;
+
+                const radio = selectedCreneau.querySelector('.time-slot-radio');
+                const creneauId = radio?.value;
+
+                if (!creneauId) {
+                    alert('Erreur : Aucun créneau sélectionné');
+                    return;
+                }
+
+                reserverCreneau(creneauId);
             });
-
-            selectedCreneau = null;
-            summarySelected.style.display = 'none';
-            summaryEmpty.style.display = 'block';
-            btnNext.disabled = true;
-
-            document.querySelectorAll('.date-group').forEach(group => {
-                group.style.display = 'block';
-            });
-        });
-
-        btnNext.addEventListener('click', function() {
-            if (!selectedCreneau) {
-                alert('Veuillez sélectionner un créneau avant de continuer');
-                return;
-            }
-            
-            if (this.disabled) {
-                return;
-            }
-            
-            const creneauId = selectedCreneau.querySelector('.time-slot-radio').value;
-            if (!creneauId) {
-                alert('Erreur : Aucun créneau sélectionné');
-                return;
-            }
-            
-            reserverCreneau(creneauId);
-        });
+        }
     }
-
 });
 
 /*
     Réserve un créneau en appelant l'API
-    creneauId : ID du créneau à réserver
 */
 async function reserverCreneau(creneauId) {
-    // Vérifier que l'étudiant est connecté (vérification côté client)
-    // Note: L'API vérifie aussi côté serveur, mais cette vérification évite une requête inutile
     if (!creneauId || creneauId.trim() === '') {
         showReservationError('Aucun créneau sélectionné');
         return;
     }
-    
+
     const btnNext = document.getElementById('btnNext');
     let originalText = '';
-    
-    // Afficher l'indicateur de chargement
+
     if (btnNext) {
         originalText = btnNext.textContent || 'Étape suivante';
         btnNext.disabled = true;
         btnNext.textContent = 'Réservation en cours...';
     }
-    
+
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // Timeout de 10 secondes
-        
-        // Récupérer l'état du switch de notification
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
         const notificationToggle = document.getElementById('notificationToggle');
         const notificationEnabled = notificationToggle ? notificationToggle.checked : false;
-        
+
         const response = await fetch('api/reservations.php', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 disponibilite_id: creneauId,
                 notification_enabled: notificationEnabled
             }),
             signal: controller.signal
         });
-        
+
         clearTimeout(timeoutId);
-        
+
         let data;
         try {
             data = await response.json();
-        } catch (e) {
+        } catch {
             throw new Error('Erreur lors de la lecture de la réponse du serveur');
         }
-        
+
         if (!response.ok) {
             throw new Error(data.error || 'Erreur lors de la réservation');
         }
-        
-        // Afficher la confirmation avec les données
-        if (data.disponibilite) {
-            const dispo = data.disponibilite;
-            
-            // Vérifier que les données essentielles sont présentes
-            if (!dispo.date_debut || !dispo.date_fin) {
-                throw new Error('Données de réservation incomplètes');
-            }
-            
-            const dateDebut = new Date(dispo.date_debut);
-            const dateFin = new Date(dispo.date_fin);
-            
-            // Vérifier que les dates sont valides
-            if (isNaN(dateDebut.getTime()) || isNaN(dateFin.getTime())) {
-                throw new Error('Format de date invalide');
-            }
-            
-            const heureDebut = dateDebut.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false });
-            const heureFin = dateFin.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false });
-            
-            const confirmationData = {
-                date: formatDateForConfirmation(dispo.date_debut.split(' ')[0]),
-                heure: `${heureDebut} - ${heureFin}`,
-                tuteur: `${dispo.tuteur_prenom || ''} ${dispo.tuteur_nom || ''}`.trim() || 'Tuteur non spécifié',
-                service: dispo.service_nom || 'Service général',
-                notificationEnabled: notificationEnabled
-            };
-            
-            fillConfirmationData(confirmationData);
-            
-            // Rafraîchir la liste des créneaux pour retirer le créneau réservé
-            if (typeof window.refreshCreneaux === 'function') {
-                await window.refreshCreneaux();
-            }
-            
-            // Fermer le modal des créneaux
-            if (typeof window.closeCreneauxModal === 'function') {
-                window.closeCreneauxModal();
-            }
-            
-            // Ouvrir le modal de confirmation
-            openConfirmationModal();
-        } else {
+
+        if (!data.disponibilite) {
             throw new Error('Données de réservation manquantes dans la réponse');
         }
-        
+
+        const dispo = data.disponibilite;
+
+        if (!dispo.date_debut || !dispo.date_fin) {
+            throw new Error('Données de réservation incomplètes');
+        }
+
+        const dateDebut = new Date(dispo.date_debut);
+        const dateFin = new Date(dispo.date_fin);
+
+        if (isNaN(dateDebut.getTime()) || isNaN(dateFin.getTime())) {
+            throw new Error('Format de date invalide');
+        }
+
+        const heureDebut = dateDebut.toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+
+        const heureFin = dateFin.toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+
+        const confirmationData = {
+            date: formatDateForConfirmation(dispo.date_debut.split(' ')[0]),
+            heure: `${heureDebut} - ${heureFin}`,
+            tuteur: `${dispo.tuteur_prenom || ''} ${dispo.tuteur_nom || ''}`.trim() || 'Tuteur non spécifié',
+            service: dispo.service_nom || 'Service général',
+            notificationEnabled
+        };
+
+        fillConfirmationData(confirmationData);
+
+        if (typeof window.refreshCreneaux === 'function') {
+            await window.refreshCreneaux();
+        }
+
+        if (typeof window.closeCreneauxModal === 'function') {
+            window.closeCreneauxModal();
+        }
+
+        openConfirmationModal();
     } catch (error) {
         console.error('Erreur lors de la réservation:', error);
-        
-        // Gérer les différents types d'erreurs
+
         let errorMessage = error.message;
-        
+
         if (error.name === 'AbortError') {
             errorMessage = 'La requête a pris trop de temps. Veuillez réessayer.';
-        } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        } else if (
+            error.message.includes('Failed to fetch') ||
+            error.message.includes('NetworkError')
+        ) {
             errorMessage = 'Erreur de connexion. Vérifiez votre connexion internet et réessayez.';
         } else if (!errorMessage || errorMessage === 'Error') {
             errorMessage = 'Une erreur inattendue s\'est produite. Veuillez réessayer.';
         }
-        
-        // Afficher l'erreur à l'utilisateur
+
         showReservationError(errorMessage);
     } finally {
-        // Réinitialiser le bouton seulement si la réservation a échoué
-        // Si la réservation a réussi, le modal sera fermé donc pas besoin de réinitialiser
         const btnNextStillExists = document.getElementById('btnNext');
+
         if (btnNextStillExists && btnNextStillExists.parentElement) {
-            // Vérifier si le modal est toujours ouvert (réservation échouée)
             const modal = document.getElementById('creneauxModal');
             if (modal && modal.classList.contains('active')) {
                 btnNextStillExists.disabled = false;
@@ -554,38 +577,68 @@ async function reserverCreneau(creneauId) {
 
 /*
     Affiche un message d'erreur pour la réservation
-    message : Message d'erreur à afficher
 */
 function showReservationError(message) {
-    // Créer ou récupérer le conteneur de notifications
     let container = document.getElementById('notification-container');
     if (!container) {
         container = document.createElement('div');
         container.id = 'notification-container';
         container.className = 'notification-container';
-        container.style.cssText = 'position: fixed; top: 100px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 1rem; max-width: 400px;';
+        container.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 400px;
+        `;
         document.body.appendChild(container);
     }
-    
-    // Créer la notification d'erreur
+
     const notification = document.createElement('div');
     notification.className = 'notification notification-error';
-    notification.style.cssText = 'padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: flex; align-items: center; gap: 1rem; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; animation: slideInRight 0.3s ease;';
-    
+    notification.style.cssText = `
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+        animation: slideInRight 0.3s ease;
+    `;
+
     notification.innerHTML = `
         <span style="font-size: 1.5rem; flex-shrink: 0;">✕</span>
         <span style="flex: 1; font-size: 0.9375rem; font-weight: 500;">${message}</span>
-        <button type="button" onclick="this.parentElement.remove()" style="background: transparent; border: none; color: inherit; font-size: 1.25rem; cursor: pointer; padding: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; opacity: 0.7;">&times;</button>
+        <button type="button" style="
+            background: transparent;
+            border: none;
+            color: inherit;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+        ">&times;</button>
     `;
-    
+
+    const closeBtn = notification.querySelector('button');
+    closeBtn.addEventListener('click', () => notification.remove());
+
     container.appendChild(notification);
-    
-    // Supprimer automatiquement après 5 secondes
+
     setTimeout(() => {
-        if (notification.parentElement) {
-            notification.style.animation = 'slideInRight 0.3s reverse';
-            setTimeout(() => notification.remove(), 300);
-        }
+        if (!notification.parentElement) return;
+        notification.style.animation = 'slideInRight 0.3s reverse';
+        setTimeout(() => notification.remove(), 300);
     }, 5000);
 }
-
