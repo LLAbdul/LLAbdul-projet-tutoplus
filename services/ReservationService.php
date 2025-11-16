@@ -88,6 +88,22 @@ class ReservationService
                 return false;
             }
 
+            // Vérifier qu'il n'existe pas déjà un rendez-vous pour cette demande
+            // En vérifiant dans la base de données directement
+            try {
+                $stmt = $this->pdo->prepare("SELECT id FROM rendez_vous WHERE demande_id = :demande_id LIMIT 1");
+                $stmt->bindParam(':demande_id', $demandeId, PDO::PARAM_STR);
+                $stmt->execute();
+                $rendezVousExistant = $stmt->fetch();
+                if ($rendezVousExistant) {
+                    $this->logError("Un rendez-vous existe déjà pour cette demande (ID: $demandeId)");
+                    return false;
+                }
+            } catch (PDOException $e) {
+                $this->logError("Erreur lors de la vérification du rendez-vous existant : " . $e->getMessage());
+                // Continuer même en cas d'erreur de vérification
+            }
+
             // Vérifier qu'une disponibilité est associée
             if ($demande['disponibilite_id'] === null) {
                 $this->logError("Aucune disponibilité associée à la demande (ID: $demandeId)");
@@ -96,12 +112,6 @@ class ReservationService
 
             $disponibiliteId = $demande['disponibilite_id'];
 
-            // Vérifier que la disponibilité est toujours disponible
-            if (!$this->verifierDisponibilite($disponibiliteId)) {
-                $this->logError("La disponibilité n'est plus disponible (ID: $disponibiliteId)");
-                return false;
-            }
-
             // Récupérer la disponibilité
             $disponibilite = $this->disponibiliteModel->getDisponibiliteById($disponibiliteId);
             if (!$disponibilite) {
@@ -109,21 +119,51 @@ class ReservationService
                 return false;
             }
 
-            // Réserver la disponibilité
-            $reserveOk = $this->disponibiliteModel->modifierDisponibilite(
-                $disponibiliteId,
-                $disponibilite['date_debut'],
-                $disponibilite['date_fin'],
-                self::STATUT_DISPO_RESERVE,
-                null,                               // serviceId
-                null,                               // prix
-                null,                               // notes
-                $demande['etudiant_id']            // etudiant_id
-            );
+            // Vérifier que la disponibilité est soit DISPONIBLE, soit RESERVE par le même étudiant
+            // (elle peut être déjà RESERVE si elle a été réservée lors de la création de la demande)
+            $statutValide = false;
+            if ($disponibilite['statut'] === self::STATUT_DISPO_DISPONIBLE) {
+                $statutValide = true;
+            } elseif ($disponibilite['statut'] === self::STATUT_DISPO_RESERVE) {
+                // Vérifier que c'est bien réservé par le même étudiant que la demande
+                if ($disponibilite['etudiant_id'] === $demande['etudiant_id']) {
+                    $statutValide = true;
+                } else {
+                    $this->logError("La disponibilité est déjà réservée par un autre étudiant (ID: $disponibiliteId)");
+                    return false;
+                }
+            }
 
-            if (!$reserveOk) {
-                $this->logError("Impossible de réserver la disponibilité (ID: $disponibiliteId)");
+            if (!$statutValide) {
+                $this->logError("La disponibilité n'est pas disponible (statut: " . ($disponibilite['statut'] ?? 'N/A') . ", ID: $disponibiliteId)");
                 return false;
+            }
+
+            // Vérifier que la date n'est pas passée
+            $dateDebut = new DateTime($disponibilite['date_debut']);
+            $now = new DateTime();
+            if ($dateDebut < $now) {
+                $this->logError("La disponibilité est dans le passé (ID: $disponibiliteId)");
+                return false;
+            }
+
+            // S'assurer que la disponibilité est bien réservée (si elle ne l'est pas déjà)
+            if ($disponibilite['statut'] !== self::STATUT_DISPO_RESERVE || $disponibilite['etudiant_id'] !== $demande['etudiant_id']) {
+                $reserveOk = $this->disponibiliteModel->modifierDisponibilite(
+                    $disponibiliteId,
+                    $disponibilite['date_debut'],
+                    $disponibilite['date_fin'],
+                    self::STATUT_DISPO_RESERVE,
+                    null,                               // serviceId
+                    null,                               // prix
+                    null,                               // notes
+                    $demande['etudiant_id']            // etudiant_id
+                );
+
+                if (!$reserveOk) {
+                    $this->logError("Impossible de réserver la disponibilité (ID: $disponibiliteId)");
+                    return false;
+                }
             }
 
             // Accepter la demande
