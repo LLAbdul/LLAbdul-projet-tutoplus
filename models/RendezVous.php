@@ -237,6 +237,32 @@ class RendezVous
         }
     }
 
+    // Retourne : tableau de tous les rendez-vous (pour admin)
+    public function getAllRendezVous(): array
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT 
+                    rv.id, rv.demande_id, rv.etudiant_id, rv.tuteur_id, rv.service_id, rv.disponibilite_id,
+                    rv.date_heure, rv.statut, rv.duree, rv.lieu, rv.notes, rv.prix, rv.date_creation,
+                    e.nom AS etudiant_nom, e.prenom AS etudiant_prenom, e.email AS etudiant_email,
+                    t.nom AS tuteur_nom, t.prenom AS tuteur_prenom, t.email AS tuteur_email,
+                    s.nom AS service_nom, s.categorie AS service_categorie
+                FROM rendez_vous rv
+                LEFT JOIN etudiants e ON rv.etudiant_id = e.id
+                LEFT JOIN tuteurs   t ON rv.tuteur_id = t.id
+                LEFT JOIN services  s ON rv.service_id = s.id
+                ORDER BY rv.date_heure DESC
+            ");
+            $stmt->execute();
+
+            return $stmt->fetchAll() ?: [];
+        } catch (PDOException $e) {
+            $this->logError("getAllRendezVous : " . $e->getMessage());
+            return [];
+        }
+    }
+
     // Paramètre : id rendez-vous
     // Retourne : true si statut mis à jour (EN_COURS/A_VENIR)
     public function confirmerRendezVous(string $id): bool
