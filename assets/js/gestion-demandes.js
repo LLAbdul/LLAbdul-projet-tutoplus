@@ -220,3 +220,99 @@ async function loadDemandes() {
         showError('Erreur lors du chargement des demandes. Veuillez réessayer plus tard.');
     }
 }
+
+// Fonction pour accepter une demande
+async function accepterDemande(demandeId) {
+    try {
+        // Désactiver les boutons
+        const buttons = document.querySelectorAll(`[onclick*="${demandeId}"]`);
+        buttons.forEach(btn => btn.disabled = true);
+
+        const response = await fetch('api/demandes.php', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: demandeId,
+                action: 'accepter'
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Erreur lors de l\'acceptation de la demande');
+        }
+
+        showToast(data.message || 'Demande acceptée avec succès', 'success');
+        
+        // Recharger les demandes après un court délai
+        setTimeout(() => {
+            loadDemandes();
+        }, 1000);
+
+    } catch (error) {
+        console.error('Erreur lors de l\'acceptation de la demande:', error);
+        showToast(error.message || 'Erreur lors de l\'acceptation de la demande', 'error');
+        
+        // Réactiver les boutons
+        const buttons = document.querySelectorAll(`[onclick*="${demandeId}"]`);
+        buttons.forEach(btn => btn.disabled = false);
+    }
+}
+
+// Fonction pour refuser une demande
+async function refuserDemande(demandeId) {
+    // Demander une raison (optionnel)
+    const raison = prompt('Raison du refus (optionnel) :');
+    
+    try {
+        // Désactiver les boutons
+        const buttons = document.querySelectorAll(`[onclick*="${demandeId}"]`);
+        buttons.forEach(btn => btn.disabled = true);
+
+        const body = {
+            id: demandeId,
+            action: 'refuser'
+        };
+
+        if (raison && raison.trim()) {
+            body.raison = raison.trim();
+        }
+
+        const response = await fetch('api/demandes.php', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Erreur lors du refus de la demande');
+        }
+
+        showToast(data.message || 'Demande refusée avec succès', 'success');
+        
+        // Recharger les demandes après un court délai
+        setTimeout(() => {
+            loadDemandes();
+        }, 1000);
+
+    } catch (error) {
+        console.error('Erreur lors du refus de la demande:', error);
+        showToast(error.message || 'Erreur lors du refus de la demande', 'error');
+        
+        // Réactiver les boutons
+        const buttons = document.querySelectorAll(`[onclick*="${demandeId}"]`);
+        buttons.forEach(btn => btn.disabled = false);
+    }
+}
+
+// Initialisation au chargement de la page
+document.addEventListener('DOMContentLoaded', () => {
+    loadDemandes();
+});
