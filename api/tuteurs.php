@@ -1,7 +1,7 @@
 <?php
 /**
- * API endpoint pour récupérer la liste des tuteurs actifs
- * TutoPlus - Système de tutorat
+ * API tuteurs.php
+ * - GET : liste des tuteurs actifs (id, nom, prenom, departement, etc.)
  */
 
 session_start();
