@@ -188,6 +188,9 @@ class RendezVous
     public function getRendezVousByEtudiantId(string $etudiantId): array
     {
         try {
+            // Mettre à jour automatiquement les statuts avant de récupérer
+            $this->updateStatutsAutomatiques();
+            
             $stmt = $this->pdo->prepare("
                 SELECT 
                     rv.id, rv.demande_id, rv.etudiant_id, rv.tuteur_id, rv.service_id, rv.disponibilite_id,
@@ -215,6 +218,9 @@ class RendezVous
     public function getRendezVousByTuteurId(string $tuteurId): array
     {
         try {
+            // Mettre à jour automatiquement les statuts avant de récupérer
+            $this->updateStatutsAutomatiques();
+            
             $stmt = $this->pdo->prepare("
                 SELECT 
                     rv.id, rv.demande_id, rv.etudiant_id, rv.tuteur_id, rv.service_id, rv.disponibilite_id,
@@ -237,10 +243,58 @@ class RendezVous
         }
     }
 
+    // Met à jour automatiquement les statuts des rendez-vous basés sur la date/heure
+    // Retourne : nombre de rendez-vous mis à jour
+    public function updateStatutsAutomatiques(): int
+    {
+        try {
+            $now = new DateTime();
+            $nowStr = $now->format('Y-m-d H:i:s');
+            
+            $aVenir = self::STATUT_A_VENIR;
+            $enCours = self::STATUT_EN_COURS;
+            $termine = self::STATUT_TERMINE;
+            
+            // Mettre à jour les rendez-vous A_VENIR dont la date est passée -> EN_COURS
+            $stmt1 = $this->pdo->prepare("
+                UPDATE rendez_vous 
+                SET statut = :en_cours
+                WHERE statut = :a_venir 
+                AND date_heure <= :now
+            ");
+            $stmt1->bindParam(':en_cours', $enCours, PDO::PARAM_STR);
+            $stmt1->bindParam(':a_venir', $aVenir, PDO::PARAM_STR);
+            $stmt1->bindParam(':now', $nowStr, PDO::PARAM_STR);
+            $stmt1->execute();
+            $updated1 = $stmt1->rowCount();
+            
+            // Mettre à jour les rendez-vous EN_COURS dont la date + durée est passée -> TERMINE
+            $stmt2 = $this->pdo->prepare("
+                UPDATE rendez_vous 
+                SET statut = :termine
+                WHERE statut = :en_cours 
+                AND DATE_ADD(date_heure, INTERVAL duree MINUTE) <= :now
+            ");
+            $stmt2->bindParam(':termine', $termine, PDO::PARAM_STR);
+            $stmt2->bindParam(':en_cours', $enCours, PDO::PARAM_STR);
+            $stmt2->bindParam(':now', $nowStr, PDO::PARAM_STR);
+            $stmt2->execute();
+            $updated2 = $stmt2->rowCount();
+            
+            return $updated1 + $updated2;
+        } catch (PDOException $e) {
+            $this->logError("updateStatutsAutomatiques : " . $e->getMessage());
+            return 0;
+        }
+    }
+
     // Retourne : tableau de tous les rendez-vous (pour admin)
     public function getAllRendezVous(): array
     {
         try {
+            // Mettre à jour automatiquement les statuts avant de récupérer
+            $this->updateStatutsAutomatiques();
+            
             $stmt = $this->pdo->prepare("
                 SELECT 
                     rv.id, rv.demande_id, rv.etudiant_id, rv.tuteur_id, rv.service_id, rv.disponibilite_id,
@@ -373,15 +427,17 @@ class RendezVous
     {
         try {
             $statutTermine = self::STATUT_TERMINE;
+            $aVenir        = self::STATUT_A_VENIR;
             $enCours       = self::STATUT_EN_COURS;
 
             $stmt = $this->pdo->prepare("
                 UPDATE rendez_vous 
                 SET statut = :statut_termine
-                WHERE id = :id AND statut = :en_cours
+                WHERE id = :id AND statut IN (:a_venir, :en_cours)
             ");
             $stmt->bindParam(':id',             $id,           PDO::PARAM_STR);
             $stmt->bindParam(':statut_termine', $statutTermine, PDO::PARAM_STR);
+            $stmt->bindParam(':a_venir',        $aVenir,       PDO::PARAM_STR);
             $stmt->bindParam(':en_cours',       $enCours,      PDO::PARAM_STR);
 
             $stmt->execute();
