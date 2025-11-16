@@ -33,8 +33,8 @@ async function loadStatistiques() {
             throw new Error(data.error);
         }
 
-        // TODO: Afficher les statistiques générales
-        // displayStatistiquesGenerales(data.generales);
+        // Afficher les statistiques générales
+        displayStatistiquesGenerales(data.generales);
 
         // TODO: Créer le graphique
         // createRendezVousChart(data.rendez_vous_par_statut);
@@ -48,4 +48,12 @@ async function loadStatistiques() {
         errorText.textContent = 'Erreur lors du chargement des statistiques. Veuillez réessayer.';
         errorMessage.style.display = 'block';
     }
+}
+
+// Afficher les statistiques générales
+function displayStatistiquesGenerales(stats) {
+    document.getElementById('totalRendezVous').textContent = stats.total_rendez_vous || 0;
+    document.getElementById('totalTuteurs').textContent = stats.total_tuteurs || 0;
+    document.getElementById('totalEtudiants').textContent = stats.total_etudiants || 0;
+    document.getElementById('rendezVousTermines').textContent = stats.rendez_vous_termines || 0;
 }
