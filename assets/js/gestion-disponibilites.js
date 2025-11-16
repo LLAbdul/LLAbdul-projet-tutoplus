@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
         },
         editable: true,
         selectable: true,
@@ -27,6 +27,243 @@ document.addEventListener('DOMContentLoaded', function() {
         slotDuration: '00:30:00',
         allDaySlot: false,
         height: 'auto',
+        // Format du titre sera défini dans chaque vue
+        // Configuration des vues
+        views: {
+            dayGridMonth: {
+                // Éviter les chevauchements d'événements en mode mois
+                eventMaxStack: 3,
+                eventOrder: 'start,-duration,title',
+                // Format du titre pour la vue mois : "Novembre 2025"
+                titleFormat: function(arg) {
+                    try {
+                        if (!arg) {
+                            return '';
+                        }
+                        // FullCalendar passe des objets DateMarker, utiliser marker ou toDate()
+                        let dateObj = null;
+                        if (arg.start) {
+                            dateObj = arg.start.marker || (typeof arg.start.toDate === 'function' ? arg.start.toDate() : arg.start);
+                        } else if (arg.date) {
+                            dateObj = arg.date.marker || (typeof arg.date.toDate === 'function' ? arg.date.toDate() : arg.date);
+                        }
+                        
+                        if (!dateObj) {
+                            return '';
+                        }
+                        
+                        const date = new Date(dateObj);
+                        if (isNaN(date.getTime())) {
+                            return '';
+                        }
+                        
+                        const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                                      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+                        const month = months[date.getMonth()];
+                        const year = date.getFullYear();
+                        return month + ' ' + year;
+                    } catch (e) {
+                        console.error('Erreur titleFormat mois:', e);
+                        return '';
+                    }
+                },
+                // Format des en-têtes de colonnes pour la vue mois
+                columnHeaderFormat: function(arg) {
+                    try {
+                        const windowWidth = window.innerWidth;
+                        if (windowWidth <= 473) {
+                            if (arg && arg.date) {
+                                // FullCalendar passe des objets DateMarker, utiliser marker
+                                const dateObj = arg.date.marker || (typeof arg.date.toDate === 'function' ? arg.date.toDate() : arg.date);
+                                const date = new Date(dateObj);
+                                if (!isNaN(date.getTime())) {
+                                    const days = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
+                                    return days[date.getDay()];
+                                }
+                            }
+                            return arg && arg.text ? arg.text : '';
+                        } else {
+                            // Retourner un objet de format pour les écrans plus grands
+                            const dateObj = arg && arg.date ? (arg.date.marker || (typeof arg.date.toDate === 'function' ? arg.date.toDate() : arg.date)) : null;
+                            if (dateObj) {
+                                const date = new Date(dateObj);
+                                if (!isNaN(date.getTime())) {
+                                    return { weekday: 'short' };
+                                }
+                            }
+                            return { weekday: 'short' };
+                        }
+                    } catch (e) {
+                        return { weekday: 'short' };
+                    }
+                }
+            },
+            timeGridWeek: {
+                // Format du titre pour la vue semaine : "16 – 22 novembre 2025"
+                titleFormat: function(arg) {
+                    try {
+                        if (!arg) {
+                            return '';
+                        }
+                        // FullCalendar passe des objets DateMarker, utiliser marker ou toDate()
+                        let startObj = null;
+                        let endObj = null;
+                        
+                        if (arg.start) {
+                            startObj = arg.start.marker || (typeof arg.start.toDate === 'function' ? arg.start.toDate() : arg.start);
+                        }
+                        if (arg.end) {
+                            endObj = arg.end.marker || (typeof arg.end.toDate === 'function' ? arg.end.toDate() : arg.end);
+                        }
+                        
+                        if (!startObj || !endObj) {
+                            return '';
+                        }
+                        
+                        const startDate = new Date(startObj);
+                        const endDate = new Date(endObj);
+                        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                            return '';
+                        }
+                        
+                        const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 
+                                      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+                        const startDay = startDate.getDate();
+                        const endDay = endDate.getDate();
+                        const month = months[startDate.getMonth()];
+                        const year = startDate.getFullYear();
+                        return startDay + ' – ' + endDay + ' ' + month + ' ' + year;
+                    } catch (e) {
+                        console.error('Erreur titleFormat semaine:', e);
+                        return '';
+                    }
+                },
+                // Format des en-têtes de colonnes pour la vue semaine
+                columnHeaderFormat: function(arg) {
+                    try {
+                        const windowWidth = window.innerWidth;
+                        if (windowWidth <= 473) {
+                            if (arg && arg.date) {
+                                // FullCalendar passe des objets DateMarker, utiliser marker
+                                const dateObj = arg.date.marker || (typeof arg.date.toDate === 'function' ? arg.date.toDate() : arg.date);
+                                const date = new Date(dateObj);
+                                if (!isNaN(date.getTime())) {
+                                    const days = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
+                                    return days[date.getDay()];
+                                }
+                            }
+                            return arg && arg.text ? arg.text : '';
+                        } else {
+                            return { weekday: 'short', day: 'numeric' };
+                        }
+                    } catch (e) {
+                        return { weekday: 'short', day: 'numeric' };
+                    }
+                }
+            },
+            timeGridDay: {
+                // Format du titre pour la vue jour : "16 novembre 2025"
+                titleFormat: function(arg) {
+                    try {
+                        if (!arg) {
+                            return '';
+                        }
+                        // FullCalendar passe des objets DateMarker, utiliser marker ou toDate()
+                        let dateObj = null;
+                        if (arg.start) {
+                            dateObj = arg.start.marker || (typeof arg.start.toDate === 'function' ? arg.start.toDate() : arg.start);
+                        } else if (arg.date) {
+                            dateObj = arg.date.marker || (typeof arg.date.toDate === 'function' ? arg.date.toDate() : arg.date);
+                        }
+                        
+                        if (!dateObj) {
+                            return '';
+                        }
+                        
+                        const date = new Date(dateObj);
+                        if (isNaN(date.getTime())) {
+                            return '';
+                        }
+                        
+                        const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 
+                                      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+                        const day = date.getDate();
+                        const month = months[date.getMonth()];
+                        const year = date.getFullYear();
+                        return day + ' ' + month + ' ' + year;
+                    } catch (e) {
+                        console.error('Erreur titleFormat jour:', e);
+                        return '';
+                    }
+                },
+                // Format des en-têtes de colonnes pour la vue jour
+                columnHeaderFormat: function(arg) {
+                    try {
+                        const windowWidth = window.innerWidth;
+                        if (windowWidth <= 473) {
+                            if (arg && arg.date) {
+                                // FullCalendar passe des objets DateMarker, utiliser marker
+                                const dateObj = arg.date.marker || (typeof arg.date.toDate === 'function' ? arg.date.toDate() : arg.date);
+                                const date = new Date(dateObj);
+                                if (!isNaN(date.getTime())) {
+                                    const days = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
+                                    return days[date.getDay()];
+                                }
+                            }
+                            return arg && arg.text ? arg.text : '';
+                        } else {
+                            return { weekday: 'short', day: 'numeric' };
+                        }
+                    } catch (e) {
+                        return { weekday: 'short', day: 'numeric' };
+                    }
+                }
+            },
+            listWeek: {
+                // Vue liste pour voir les réservations
+                // Format du titre pour la vue liste : "16 – 22 novembre 2025"
+                titleFormat: function(arg) {
+                    try {
+                        if (!arg) {
+                            return '';
+                        }
+                        // FullCalendar passe des objets DateMarker, utiliser marker ou toDate()
+                        let startObj = null;
+                        let endObj = null;
+                        
+                        if (arg.start) {
+                            startObj = arg.start.marker || (typeof arg.start.toDate === 'function' ? arg.start.toDate() : arg.start);
+                        }
+                        if (arg.end) {
+                            endObj = arg.end.marker || (typeof arg.end.toDate === 'function' ? arg.end.toDate() : arg.end);
+                        }
+                        
+                        if (!startObj || !endObj) {
+                            return '';
+                        }
+                        
+                        const startDate = new Date(startObj);
+                        const endDate = new Date(endObj);
+                        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                            return '';
+                        }
+                        
+                        const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 
+                                      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+                        const startDay = startDate.getDate();
+                        const endDay = endDate.getDate();
+                        const month = months[startDate.getMonth()];
+                        const year = startDate.getFullYear();
+                        return startDay + ' – ' + endDay + ' ' + month + ' ' + year;
+                    } catch (e) {
+                        console.error('Erreur titleFormat liste:', e);
+                        return '';
+                    }
+                },
+                listDayFormat: { weekday: 'long', day: 'numeric', month: 'long' },
+                listDaySideFormat: false
+            }
+        },
         
         // Empêcher la sélection sur plusieurs jours
         selectAllow: function(selectInfo) {
@@ -84,8 +321,46 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Fonction pour ajuster le format des en-têtes de colonnes et du titre
+    function adjustColumnHeaderFormat() {
+        // Le format du titre et des colonnes est déjà défini dans la configuration initiale
+        // Cette fonction est appelée après le rendu initial pour s'assurer que tout est bien appliqué
+        // Pas besoin de re-rendre, les formats sont déjà appliqués
+    }
+    
     // Afficher le calendrier
-    calendar.render();
+    try {
+        calendar.render();
+    } catch (error) {
+        console.error('Erreur lors du rendu du calendrier:', error);
+    }
+    
+    // Ajuster le format après le rendu initial (avec un délai pour s'assurer que le calendrier est prêt)
+    setTimeout(function() {
+        try {
+            adjustColumnHeaderFormat();
+        } catch (error) {
+            console.error('Erreur lors de l\'ajustement du format:', error);
+        }
+    }, 200);
+    
+    // Ajuster le format lors du changement de vue
+    calendar.on('viewDidMount', function() {
+        try {
+            adjustColumnHeaderFormat();
+        } catch (error) {
+            console.error('Erreur lors du changement de vue:', error);
+        }
+    });
+    
+    // Ajuster le format des en-têtes de colonnes lors du redimensionnement
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            adjustColumnHeaderFormat();
+        }, 250);
+    });
     
     // Variables globales pour le modal et le calendrier
     window.calendar = calendar;
@@ -510,4 +785,5 @@ function showNotification(message, type = 'info') {
         }
     }, 5000);
 }
+
 
