@@ -187,6 +187,23 @@ $cacheBuster       = time();
                     </div>
 
                 <?php elseif (isset($_SESSION['admin_id'])): ?>
+                    <!-- Menu burger pour PC -->
+                    <button class="burger-menu-btn-desktop" id="burgerMenuBtnDesktop" aria-label="Menu" type="button">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <div class="burger-menu-desktop" id="burgerMenuDesktop">
+                        <a href="index.php#services" class="burger-menu-link">Services</a>
+                        <a href="admin.php" class="burger-menu-link">Administration</a>
+                        <a href="logout.php" class="burger-menu-link burger-menu-link-logout">
+                            <span>Déconnexion</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-left" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z"/>
+                                <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z"/>
+                            </svg>
+                        </a>
+                    </div>
                     <div class="user-info">
                         <span class="user-name">
                             Système Admin
@@ -195,13 +212,35 @@ $cacheBuster       = time();
                             <?= htmlspecialchars($_SESSION['admin_numero'] ?? 'ADMIN', ENT_QUOTES, 'UTF-8') ?>
                         </span>
                     </div>
-                    <a href="admin.php" class="btn-login-link" style="margin-right: 0.5rem;">Administration</a>
                     <a href="logout.php" class="btn-logout-quick" aria-label="Déconnexion" title="Déconnexion">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box-arrow-left" viewBox="0 0 16 16">
                             <path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z"/>
                             <path fill-rule="evenodd" d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z"/>
                         </svg>
                     </a>
+
+                    <!-- Menu dropdown pour mobile -->
+                    <div class="user-menu-dropdown">
+                        <button
+                            class="user-initial-btn"
+                            id="userMenuBtn"
+                            aria-label="Menu utilisateur"
+                            type="button"
+                        >
+                            <?= strtoupper(substr($_SESSION['admin_prenom'] ?? 'A', 0, 1) . substr($_SESSION['admin_nom'] ?? 'D', 0, 1)) ?>
+                        </button>
+                        <div class="user-dropdown-menu" id="userDropdownMenu">
+                            <a href="index.php#services" class="dropdown-menu-link">
+                                <span>Services</span>
+                            </a>
+                            <a href="admin.php" class="dropdown-menu-link">
+                                <span>Administration</span>
+                            </a>
+                            <a href="logout.php" class="dropdown-menu-link dropdown-menu-link-logout">
+                                <span>Déconnexion</span>
+                            </a>
+                        </div>
+                    </div>
                 <?php else: ?>
                     <a href="login.php" class="btn-login-link">Connexion</a>
                 <?php endif; ?>

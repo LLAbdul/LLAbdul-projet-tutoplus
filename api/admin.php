@@ -8,9 +8,6 @@
  * - DELETE : (non implémenté pour l'instant)
  */
 
-// Démarrer le buffer de sortie pour capturer toute sortie non désirée
-ob_start();
-
 // Désactiver l'affichage des erreurs pour éviter qu'elles polluent le JSON
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
@@ -28,7 +25,6 @@ header('Content-Type: application/json');
 
 // Vérifier que l'administrateur est connecté
 if (!isset($_SESSION['admin_id'])) {
-    ob_clean();
     http_response_code(401);
     echo json_encode(['error' => 'Non autorisé - Administrateur non connecté']);
     exit;
@@ -44,7 +40,6 @@ try {
     // Gérer les différentes méthodes HTTP
     switch ($method) {
         case 'GET':
-            ob_clean(); // Nettoyer le buffer avant la réponse
             // Déterminer la ressource demandée (comptes ou rendez-vous)
             $resource = $_GET['resource'] ?? 'comptes';
             
@@ -115,20 +110,17 @@ try {
             break;
             
         case 'POST':
-            ob_clean(); // Nettoyer le buffer avant la réponse
             // Créer un nouveau compte
             $input = file_get_contents('php://input');
             $data = json_decode($input, true);
             
             if (json_last_error() !== JSON_ERROR_NONE) {
-                ob_clean();
                 http_response_code(400);
                 echo json_encode(['error' => 'Format JSON invalide dans la requête']);
                 exit;
             }
             
             if (!isset($data['type']) || !in_array($data['type'], ['etudiant', 'tuteur'])) {
-                ob_clean();
                 http_response_code(400);
                 echo json_encode(['error' => 'type est requis et doit être "etudiant" ou "tuteur"']);
                 exit;
@@ -139,25 +131,21 @@ try {
             if ($compteType === 'etudiant') {
                 // Validation des champs requis pour étudiant
                 if (!isset($data['numero_etudiant']) || empty(trim($data['numero_etudiant']))) {
-                    ob_clean();
                     http_response_code(400);
                     echo json_encode(['error' => 'numero_etudiant est requis']);
                     exit;
                 }
                 if (!isset($data['nom']) || empty(trim($data['nom']))) {
-                    ob_clean();
                     http_response_code(400);
                     echo json_encode(['error' => 'nom est requis']);
                     exit;
                 }
                 if (!isset($data['prenom']) || empty(trim($data['prenom']))) {
-                    ob_clean();
                     http_response_code(400);
                     echo json_encode(['error' => 'prenom est requis']);
                     exit;
                 }
                 if (!isset($data['email']) || empty(trim($data['email']))) {
-                    ob_clean();
                     http_response_code(400);
                     echo json_encode(['error' => 'email est requis']);
                     exit;
@@ -176,7 +164,6 @@ try {
                 );
                 
                 if (!$id) {
-                    ob_clean();
                     http_response_code(400);
                     echo json_encode(['error' => 'Erreur lors de la création de l\'étudiant. Vérifiez que le numéro et l\'email sont uniques.']);
                     exit;
@@ -186,37 +173,31 @@ try {
             } else {
                 // Validation des champs requis pour tuteur
                 if (!isset($data['numero_employe']) || empty(trim($data['numero_employe']))) {
-                    ob_clean();
                     http_response_code(400);
                     echo json_encode(['error' => 'numero_employe est requis']);
                     exit;
                 }
                 if (!isset($data['nom']) || empty(trim($data['nom']))) {
-                    ob_clean();
                     http_response_code(400);
                     echo json_encode(['error' => 'nom est requis']);
                     exit;
                 }
                 if (!isset($data['prenom']) || empty(trim($data['prenom']))) {
-                    ob_clean();
                     http_response_code(400);
                     echo json_encode(['error' => 'prenom est requis']);
                     exit;
                 }
                 if (!isset($data['email']) || empty(trim($data['email']))) {
-                    ob_clean();
                     http_response_code(400);
                     echo json_encode(['error' => 'email est requis']);
                     exit;
                 }
                 if (!isset($data['departement']) || empty(trim($data['departement']))) {
-                    ob_clean();
                     http_response_code(400);
                     echo json_encode(['error' => 'departement est requis']);
                     exit;
                 }
                 if (!isset($data['tarif_horaire'])) {
-                    ob_clean();
                     http_response_code(400);
                     echo json_encode(['error' => 'tarif_horaire est requis']);
                     exit;
@@ -235,7 +216,6 @@ try {
                 );
                 
                 if (!$id) {
-                    ob_clean();
                     http_response_code(400);
                     echo json_encode(['error' => 'Erreur lors de la création du tuteur. Vérifiez que le numéro et l\'email sont uniques.']);
                     exit;
@@ -245,7 +225,6 @@ try {
             }
             
             if (!$compte) {
-                ob_clean();
                 http_response_code(500);
                 echo json_encode(['error' => 'Erreur lors de la récupération du compte créé']);
                 exit;
@@ -253,8 +232,6 @@ try {
             
             $compte['type'] = $compteType;
             
-            // Nettoyer le buffer une dernière fois avant la réponse finale
-            ob_clean();
             http_response_code(201);
             echo json_encode([
                 'success' => true,
@@ -264,13 +241,11 @@ try {
             exit; // Utiliser exit au lieu de break pour éviter toute sortie supplémentaire
             
         case 'PUT':
-            ob_clean(); // Nettoyer le buffer avant la réponse
             // Mettre à jour un compte ou un service
             $input = file_get_contents('php://input');
             $data = json_decode($input, true);
             
             if (json_last_error() !== JSON_ERROR_NONE) {
-                ob_clean();
                 http_response_code(400);
                 echo json_encode(['error' => 'Format JSON invalide dans la requête']);
                 exit;
@@ -279,7 +254,6 @@ try {
             // Vérifier si c'est une modification de service
             if (isset($data['resource']) && $data['resource'] === 'service') {
                 if (!isset($data['id']) || empty($data['id'])) {
-                    ob_clean();
                     http_response_code(400);
                     echo json_encode(['error' => 'id du service est requis']);
                     exit;
@@ -291,7 +265,6 @@ try {
                 // Vérifier que le service existe
                 $service = $serviceModel->getServiceById($serviceId);
                 if (!$service) {
-                    ob_clean();
                     http_response_code(404);
                     echo json_encode(['error' => 'Service non trouvé']);
                     exit;
@@ -306,7 +279,6 @@ try {
                 $success = $serviceModel->modifierService($serviceId, $description, $nom, $prix, $dureeMinute);
                 
                 if (!$success) {
-                    ob_clean();
                     http_response_code(400);
                     echo json_encode(['error' => 'Erreur lors de la modification du service']);
                     exit;
@@ -315,7 +287,6 @@ try {
                 // Récupérer le service mis à jour
                 $service = $serviceModel->getServiceById($serviceId);
                 
-                ob_clean();
                 http_response_code(200);
                 echo json_encode([
                     'success' => true,
@@ -327,14 +298,12 @@ try {
             
             // Sinon, c'est une modification de compte
             if (!isset($data['id']) || empty($data['id'])) {
-                ob_clean();
                 http_response_code(400);
                 echo json_encode(['error' => 'id est requis']);
                 exit;
             }
             
             if (!isset($data['type']) || !in_array($data['type'], ['etudiant', 'tuteur'])) {
-                ob_clean();
                 http_response_code(400);
                 echo json_encode(['error' => 'type est requis et doit être "etudiant" ou "tuteur"']);
                 exit;
@@ -347,7 +316,6 @@ try {
             if ($compteType === 'etudiant') {
                 $compte = $etudiantModel->getEtudiantByIdForAdmin($compteId);
                 if (!$compte) {
-                    ob_clean();
                     http_response_code(404);
                     echo json_encode(['error' => 'Étudiant non trouvé']);
                     exit;
@@ -355,7 +323,6 @@ try {
             } else {
                 $compte = $tuteurModel->getTuteurByIdForAdmin($compteId);
                 if (!$compte) {
-                    ob_clean();
                     http_response_code(404);
                     echo json_encode(['error' => 'Tuteur non trouvé']);
                     exit;
@@ -376,7 +343,6 @@ try {
                 }
                 
                 if (!$success) {
-                    ob_clean();
                     http_response_code(500);
                     echo json_encode(['error' => 'Erreur lors de la mise à jour du statut']);
                     exit;
@@ -391,7 +357,6 @@ try {
                 
                 $compte['type'] = $compteType;
                 
-                ob_clean();
                 http_response_code(200);
                 echo json_encode([
                     'success' => true,
@@ -404,25 +369,21 @@ try {
                 if ($compteType === 'etudiant') {
                     // Validation des champs requis pour étudiant
                     if (!isset($data['numero_etudiant']) || empty(trim($data['numero_etudiant']))) {
-                        ob_clean();
                         http_response_code(400);
                         echo json_encode(['error' => 'numero_etudiant est requis']);
                         exit;
                     }
                     if (!isset($data['nom']) || empty(trim($data['nom']))) {
-                        ob_clean();
                         http_response_code(400);
                         echo json_encode(['error' => 'nom est requis']);
                         exit;
                     }
                     if (!isset($data['prenom']) || empty(trim($data['prenom']))) {
-                        ob_clean();
                         http_response_code(400);
                         echo json_encode(['error' => 'prenom est requis']);
                         exit;
                     }
                     if (!isset($data['email']) || empty(trim($data['email']))) {
-                        ob_clean();
                         http_response_code(400);
                         echo json_encode(['error' => 'email est requis']);
                         exit;
@@ -443,37 +404,31 @@ try {
                 } else {
                     // Validation des champs requis pour tuteur
                     if (!isset($data['numero_employe']) || empty(trim($data['numero_employe']))) {
-                        ob_clean();
                         http_response_code(400);
                         echo json_encode(['error' => 'numero_employe est requis']);
                         exit;
                     }
                     if (!isset($data['nom']) || empty(trim($data['nom']))) {
-                        ob_clean();
                         http_response_code(400);
                         echo json_encode(['error' => 'nom est requis']);
                         exit;
                     }
                     if (!isset($data['prenom']) || empty(trim($data['prenom']))) {
-                        ob_clean();
                         http_response_code(400);
                         echo json_encode(['error' => 'prenom est requis']);
                         exit;
                     }
                     if (!isset($data['email']) || empty(trim($data['email']))) {
-                        ob_clean();
                         http_response_code(400);
                         echo json_encode(['error' => 'email est requis']);
                         exit;
                     }
                     if (!isset($data['departement']) || empty(trim($data['departement']))) {
-                        ob_clean();
                         http_response_code(400);
                         echo json_encode(['error' => 'departement est requis']);
                         exit;
                     }
                     if (!isset($data['tarif_horaire'])) {
-                        ob_clean();
                         http_response_code(400);
                         echo json_encode(['error' => 'tarif_horaire est requis']);
                         exit;
@@ -503,7 +458,6 @@ try {
                 }
                 
                 if (!$success) {
-                    ob_clean();
                     http_response_code(400);
                     echo json_encode(['error' => 'Erreur lors de la modification du compte. Vérifiez que le numéro et l\'email sont uniques.']);
                     exit;
@@ -518,7 +472,6 @@ try {
             }
             
             if (!$compte) {
-                ob_clean();
                 http_response_code(500);
                 echo json_encode(['error' => 'Erreur lors de la récupération du compte mis à jour']);
                 exit;
@@ -527,7 +480,6 @@ try {
             $compte['type'] = $compteType;
             
             // Nettoyer le buffer une dernière fois avant la réponse finale
-            ob_clean();
             http_response_code(200);
             echo json_encode([
                 'success' => true,
@@ -537,7 +489,6 @@ try {
             exit;
             
         case 'DELETE':
-            ob_clean(); // Nettoyer le buffer avant la réponse
             // Gérer les actions sur les rendez-vous (annulation)
             $input = file_get_contents('php://input');
             $data = json_decode($input, true);
@@ -577,31 +528,22 @@ try {
             break;
             
         default:
-            ob_clean(); // Nettoyer le buffer avant la réponse
             http_response_code(405);
             echo json_encode(['error' => 'Méthode non autorisée']);
             break;
     }
     
 } catch (PDOException $e) {
-    // Nettoyer le buffer de sortie en cas d'erreur
-    ob_clean();
     http_response_code(500);
     error_log("Erreur PDO API admin.php: " . $e->getMessage());
     echo json_encode(['error' => 'Erreur base de données']);
 } catch (Exception $e) {
-    // Nettoyer le buffer de sortie en cas d'erreur
-    ob_clean();
     http_response_code(500);
     error_log("Erreur API admin.php: " . $e->getMessage());
     echo json_encode(['error' => 'Erreur serveur']);
 } catch (Error $e) {
     // Capturer les erreurs fatales PHP 7+
-    ob_clean();
     http_response_code(500);
     error_log("Erreur fatale API admin.php: " . $e->getMessage());
     echo json_encode(['error' => 'Erreur serveur']);
 }
-
-// Le buffer sera automatiquement fermé par PHP à la fin du script
-
