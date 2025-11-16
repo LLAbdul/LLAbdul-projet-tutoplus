@@ -105,6 +105,9 @@ $cacheBuster = time();
                             <a href="gestion_disponibilites.php" class="dropdown-menu-link">
                                 <span>Mes Disponibilités</span>
                             </a>
+                            <a href="gestion_demandes.php" class="dropdown-menu-link">
+                                <span>Mes Demandes</span>
+                            </a>
                             <a href="logout.php" class="dropdown-menu-link dropdown-menu-link-logout">
                                 <span>Déconnexion</span>
                             </a>
