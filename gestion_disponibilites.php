@@ -68,6 +68,20 @@ $serviceParDefaut = !empty($services) ? $services[0] : null;
                             <span class="user-number"><?php echo htmlspecialchars($_SESSION['tuteur_numero']); ?></span>
                         </div>
                         <a href="logout.php" class="btn-logout">Déconnexion</a>
+                        <!-- Menu dropdown pour mobile -->
+                        <div class="user-menu-dropdown">
+                            <button class="user-initial-btn" id="userMenuBtn" aria-label="Menu utilisateur">
+                                <?php echo strtoupper(substr($_SESSION['tuteur_prenom'], 0, 1) . substr($_SESSION['tuteur_nom'], 0, 1)); ?>
+                            </button>
+                            <div class="user-dropdown-menu" id="userDropdownMenu">
+                                <a href="gestion_disponibilites.php" class="dropdown-menu-link">
+                                    <span>Mes Disponibilités</span>
+                                </a>
+                                <a href="logout.php" class="dropdown-menu-link dropdown-menu-link-logout">
+                                    <span>Déconnexion</span>
+                                </a>
+                            </div>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -175,6 +189,7 @@ $serviceParDefaut = !empty($services) ? $services[0] : null;
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/locales/fr-ca.js"></script>
     <script src="assets/js/gestion-disponibilites.js"></script>
+    <script src="assets/js/user-dropdown-menu.js"></script>
 </body>
 </html>
 
