@@ -3,6 +3,8 @@
  * - Gestion de l'affichage des comptes (étudiants et tuteurs)
  * - Filtrage des comptes
  * - Activation/désactivation des comptes
+ * - Gestion de l'affichage des rendez-vous
+ * - Filtrage des rendez-vous par statut
  */
 
 // === Constantes ===
@@ -13,6 +15,9 @@ const ADMIN_API_URL = 'api/admin.php';
 
 let allComptes = [];
 let currentFilter = 'all';
+
+let allRendezVous = [];
+let currentRendezVousFilter = 'all';
 
 // === Fonctions utilitaires ===
 
@@ -52,6 +57,56 @@ function formatDateTime(dateString) {
     });
 }
 
+function formatTime(dateString) {
+    const date = toValidDate(dateString);
+    if (!date) return 'N/A';
+    return date.toLocaleTimeString('fr-CA', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+}
+
+function formatDuration(minutes) {
+    if (minutes == null || minutes < 0) return '-';
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours === 0) return `${mins}min`;
+    if (mins === 0) return `${hours}h`;
+    return `${hours}h ${mins}min`;
+}
+
+function formatPrice(price) {
+    if (price == null || price === '') return '-';
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(numPrice)) return String(price);
+    return numPrice.toFixed(2).replace('.', ',') + ' $';
+}
+
+const STATUT_LABELS = {
+    A_VENIR: 'À venir',
+    EN_COURS: 'En cours',
+    TERMINE: 'Terminé',
+    ANNULE: 'Annulé',
+    REPORTE: 'Reporté'
+};
+
+const STATUT_CLASSES = {
+    A_VENIR: 'a-venir',
+    EN_COURS: 'en-cours',
+    TERMINE: 'termine',
+    ANNULE: 'annule',
+    REPORTE: 'reporte'
+};
+
+function formatStatut(statut) {
+    return STATUT_LABELS[statut] || statut || '';
+}
+
+function formatStatutClass(statut) {
+    return STATUT_CLASSES[statut] || '';
+}
+
 // === Fonctions d'affichage et de notification ===
 
 function showError(message) {
@@ -65,6 +120,22 @@ function showError(message) {
 
 function hideError() {
     const errorDiv = document.getElementById('errorMessage');
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
+    }
+}
+
+function showErrorRendezVous(message) {
+    const errorDiv = document.getElementById('errorMessageRendezVous');
+    const errorText = document.getElementById('errorTextRendezVous');
+    if (errorDiv && errorText) {
+        errorText.textContent = message;
+        errorDiv.style.display = 'block';
+    }
+}
+
+function hideErrorRendezVous() {
+    const errorDiv = document.getElementById('errorMessageRendezVous');
     if (errorDiv) {
         errorDiv.style.display = 'none';
     }
@@ -340,16 +411,155 @@ async function toggleCompteActif(compteId, compteType, actif) {
 // === Initialiser les filtres ===
 
 function initFilters() {
-    const filterButtons = document.querySelectorAll('.filter-btn');
+    const tabComptes = document.getElementById('tab-comptes');
+    if (!tabComptes) return;
+    
+    const filterButtons = tabComptes.querySelectorAll('.filter-btn');
     filterButtons.forEach(button => {
         button.addEventListener('click', () => {
-            // Retirer la classe active de tous les boutons
+            // Retirer la classe active de tous les boutons dans cette section
             filterButtons.forEach(btn => btn.classList.remove('active'));
             // Ajouter la classe active au bouton cliqué
             button.classList.add('active');
             // Filtrer les comptes
             const filter = button.getAttribute('data-filter');
             filterComptes(filter);
+        });
+    });
+}
+
+// === Gestion des rendez-vous ===
+
+function createRendezVousCard(rv) {
+    const card = document.createElement('div');
+    card.className = 'rendez-vous-card';
+    
+    const statutLabel = formatStatut(rv.statut);
+    const statutClass = formatStatutClass(rv.statut);
+    
+    const etudiantNom = `${escapeHtml(rv.etudiant_prenom || '')} ${escapeHtml(rv.etudiant_nom || '')}`.trim() || 'N/A';
+    const tuteurNom = `${escapeHtml(rv.tuteur_prenom || '')} ${escapeHtml(rv.tuteur_nom || '')}`.trim() || 'N/A';
+    const serviceNom = escapeHtml(rv.service_nom || 'Non spécifié');
+    
+    card.innerHTML = `
+        <div class="rendez-vous-card-header">
+            <div class="rendez-vous-date-time">
+                <div class="rendez-vous-date">${formatDate(rv.date_heure)}</div>
+                <div class="rendez-vous-time">${formatTime(rv.date_heure)} (${formatDuration(rv.duree)})</div>
+            </div>
+            <span class="rendez-vous-statut ${statutClass}">${statutLabel}</span>
+        </div>
+        <div class="rendez-vous-card-body">
+            <div class="rendez-vous-info">
+                <span class="rendez-vous-info-label">Étudiant:</span>
+                <span class="rendez-vous-info-value">${etudiantNom}</span>
+            </div>
+            <div class="rendez-vous-info">
+                <span class="rendez-vous-info-label">Tuteur:</span>
+                <span class="rendez-vous-info-value">${tuteurNom}</span>
+            </div>
+            <div class="rendez-vous-info">
+                <span class="rendez-vous-info-label">Service:</span>
+                <span class="rendez-vous-info-value">${serviceNom}</span>
+            </div>
+            <div class="rendez-vous-info">
+                <span class="rendez-vous-info-label">Prix:</span>
+                <span class="rendez-vous-info-value">${formatPrice(rv.prix)}</span>
+            </div>
+            ${rv.notes ? `
+            <div class="rendez-vous-notes">
+                <div class="rendez-vous-notes-label">Notes:</div>
+                <div class="rendez-vous-notes-content">${escapeHtml(rv.notes)}</div>
+            </div>
+            ` : ''}
+        </div>
+    `;
+    
+    return card;
+}
+
+async function loadRendezVous() {
+    const loadingIndicator = document.getElementById('loadingIndicatorRendezVous');
+    const errorMessage = document.getElementById('errorMessageRendezVous');
+    const noRendezVous = document.getElementById('noRendezVous');
+    const rendezVousList = document.getElementById('rendezVousList');
+    
+    if (loadingIndicator) loadingIndicator.style.display = 'block';
+    if (errorMessage) errorMessage.style.display = 'none';
+    if (noRendezVous) noRendezVous.style.display = 'none';
+    if (rendezVousList) rendezVousList.style.display = 'none';
+    
+    try {
+        const response = await fetch(`${ADMIN_API_URL}?resource=rendez-vous`);
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        allRendezVous = Array.isArray(data) ? data : [];
+        
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+        
+        displayRendezVous();
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement des rendez-vous:', error);
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+        showErrorRendezVous('Erreur lors du chargement des rendez-vous: ' + error.message);
+    }
+}
+
+function filterRendezVous(filter) {
+    currentRendezVousFilter = filter;
+    displayRendezVous();
+}
+
+function displayRendezVous() {
+    const rendezVousList = document.getElementById('rendezVousList');
+    const noRendezVous = document.getElementById('noRendezVous');
+    
+    if (!rendezVousList) return;
+    
+    let filteredRendezVous = allRendezVous;
+    
+    if (currentRendezVousFilter !== 'all') {
+        filteredRendezVous = allRendezVous.filter(rv => rv.statut === currentRendezVousFilter);
+    }
+    
+    rendezVousList.innerHTML = '';
+    
+    if (filteredRendezVous.length === 0) {
+        if (noRendezVous) noRendezVous.style.display = 'block';
+        rendezVousList.style.display = 'none';
+        return;
+    }
+    
+    if (noRendezVous) noRendezVous.style.display = 'none';
+    rendezVousList.style.display = 'flex';
+    
+    filteredRendezVous.forEach(rv => {
+        const card = createRendezVousCard(rv);
+        rendezVousList.appendChild(card);
+    });
+}
+
+function initRendezVousFilters() {
+    const tabRendezVous = document.getElementById('tab-rendez-vous');
+    if (!tabRendezVous) return;
+    
+    const filterButtons = tabRendezVous.querySelectorAll('.filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            const filter = button.getAttribute('data-filter');
+            filterRendezVous(filter);
         });
     });
 }
@@ -373,6 +583,11 @@ function initTabs() {
             const targetContent = document.getElementById(`tab-${targetTab}`);
             if (targetContent) {
                 targetContent.classList.add('active');
+                
+                // Charger les rendez-vous si on clique sur l'onglet rendez-vous
+                if (targetTab === 'rendez-vous' && allRendezVous.length === 0) {
+                    loadRendezVous();
+                }
             }
         });
     });
@@ -383,5 +598,6 @@ function initTabs() {
 document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initFilters();
+    initRendezVousFilters();
     loadComptes();
 });
