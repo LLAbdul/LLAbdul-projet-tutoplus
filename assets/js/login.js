@@ -1,8 +1,17 @@
 // Gestion du switch entre étudiant et tuteur
-document.querySelectorAll('.switch-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const type = this.dataset.type;
-        window.location.href = 'login.php?type=' + type;
+document.addEventListener('DOMContentLoaded', () => {
+    const switchButtons = document.querySelectorAll('.switch-btn');
+
+    if (!switchButtons.length) return;
+
+    switchButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const type = btn.dataset.type;
+            if (!type) return;
+
+            const url = new URL('login.php', window.location.origin);
+            url.searchParams.set('type', type);
+            window.location.href = url.toString();
+        });
     });
 });
-
