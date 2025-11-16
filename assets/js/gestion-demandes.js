@@ -60,3 +60,39 @@ function getStatutClass(statut) {
     };
     return classes[statut] || '';
 }
+
+// Fonction pour afficher une notification toast
+function showToast(message, type = 'success') {
+    // Supprimer les notifications existantes
+    const existingToasts = document.querySelectorAll('.toast-notification');
+    existingToasts.forEach(toast => toast.remove());
+
+    // Créer la notification
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+        <div class="toast-notification-message">${escapeHtml(message)}</div>
+    `;
+
+    document.body.appendChild(toast);
+
+    // Supprimer après 5 secondes
+    setTimeout(() => {
+        toast.style.animation = 'slideInRight 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+}
+
+// Fonction pour afficher une erreur
+function showError(message) {
+    errorText.textContent = message;
+    errorMessage.style.display = 'block';
+    loadingIndicator.style.display = 'none';
+    noDemandes.style.display = 'none';
+    demandesList.style.display = 'none';
+}
+
+// Fonction pour cacher l'erreur
+function hideError() {
+    errorMessage.style.display = 'none';
+}
