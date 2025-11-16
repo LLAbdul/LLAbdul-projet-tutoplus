@@ -1,8 +1,12 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/UtilisateurTrait.php';
+
 class Etudiant
 {
+    use UtilisateurTrait;
+    
     private PDO $pdo;
 
     // Paramètre : instance PDO
@@ -61,20 +65,7 @@ class Etudiant
     // Retourne : true si succès, false sinon
     public function updateDerniereConnexion(string $id): bool
     {
-        try {
-            $stmt = $this->pdo->prepare("
-                UPDATE etudiants 
-                SET derniere_connexion = NOW() 
-                WHERE id = :id
-            ");
-            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
-            $stmt->execute();
-
-            return $stmt->rowCount() > 0;
-        } catch (PDOException $e) {
-            error_log("Erreur Etudiant::updateDerniereConnexion : " . $e->getMessage());
-            return false;
-        }
+        return $this->updateDerniereConnexionForTable($id, 'etudiants');
     }
 
     // Paramètres : aucun
@@ -186,10 +177,7 @@ class Etudiant
             }
 
             // Vérifier si l'email existe déjà
-            $stmtCheck = $this->pdo->prepare("SELECT id FROM etudiants WHERE email = :email");
-            $stmtCheck->bindParam(':email', $email, PDO::PARAM_STR);
-            $stmtCheck->execute();
-            if ($stmtCheck->fetch()) {
+            if ($this->emailExiste($email, 'etudiants')) {
                 error_log("Erreur Etudiant::creerEtudiant : email déjà existant");
                 return false;
             }
@@ -306,16 +294,4 @@ class Etudiant
         }
     }
 
-    // Générer un UUID v4
-    private function generateUUID(): string
-    {
-        return sprintf(
-            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
-        );
-    }
 }

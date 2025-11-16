@@ -1,8 +1,12 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/UtilisateurTrait.php';
+
 class Tuteur
 {
+    use UtilisateurTrait;
+    
     private PDO $pdo;
 
     // Paramètre : instance PDO
@@ -63,20 +67,7 @@ class Tuteur
     // Retourne : true si succès
     public function updateDerniereConnexion(string $id): bool
     {
-        try {
-            $stmt = $this->pdo->prepare("
-                UPDATE tuteurs 
-                SET derniere_connexion = NOW() 
-                WHERE id = :id
-            ");
-            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
-            $stmt->execute();
-
-            return $stmt->rowCount() > 0;
-        } catch (PDOException $e) {
-            error_log("Erreur Tuteur::updateDerniereConnexion : " . $e->getMessage());
-            return false;
-        }
+        return $this->updateDerniereConnexionForTable($id, 'tuteurs');
     }
 
     // Paramètres : aucun
@@ -216,10 +207,7 @@ class Tuteur
             }
 
             // Vérifier si l'email existe déjà
-            $stmtCheck = $this->pdo->prepare("SELECT id FROM tuteurs WHERE email = :email");
-            $stmtCheck->bindParam(':email', $email, PDO::PARAM_STR);
-            $stmtCheck->execute();
-            if ($stmtCheck->fetch()) {
+            if ($this->emailExiste($email, 'tuteurs')) {
                 error_log("Erreur Tuteur::creerTuteur : email déjà existant");
                 return false;
             }
@@ -320,11 +308,7 @@ class Tuteur
             }
 
             // Vérifier si l'email existe déjà (sauf pour ce tuteur)
-            $stmtCheck = $this->pdo->prepare("SELECT id FROM tuteurs WHERE email = :email AND id != :id");
-            $stmtCheck->bindParam(':email', $email, PDO::PARAM_STR);
-            $stmtCheck->bindParam(':id', $id, PDO::PARAM_STR);
-            $stmtCheck->execute();
-            if ($stmtCheck->fetch()) {
+            if ($this->emailExiste($email, 'tuteurs', $id)) {
                 error_log("Erreur Tuteur::modifierTuteur : email déjà utilisé");
                 return false;
             }
@@ -402,19 +386,6 @@ class Tuteur
             error_log("Erreur Tuteur::modifierTuteur (exception générale) : " . $e->getMessage());
             return false;
         }
-    }
-
-    // Générer un UUID v4
-    private function generateUUID(): string
-    {
-        return sprintf(
-            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
-        );
     }
 
     // Méthodes du UML que je vais implémenter plus tard

@@ -1,8 +1,12 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/UtilisateurTrait.php';
+
 class Administrateur
 {
+    use UtilisateurTrait;
+    
     private PDO $pdo;
 
     // Paramètre : instance PDO
@@ -61,20 +65,7 @@ class Administrateur
     // Retourne : true si succès, false sinon
     public function updateDerniereConnexion(string $id): bool
     {
-        try {
-            $stmt = $this->pdo->prepare("
-                UPDATE administrateurs 
-                SET derniere_connexion = NOW() 
-                WHERE id = :id
-            ");
-            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
-            $stmt->execute();
-
-            return $stmt->rowCount() > 0;
-        } catch (PDOException $e) {
-            error_log("Erreur Administrateur::updateDerniereConnexion : " . $e->getMessage());
-            return false;
-        }
+        return $this->updateDerniereConnexionForTable($id, 'administrateurs');
     }
 
     // Paramètres : aucun
