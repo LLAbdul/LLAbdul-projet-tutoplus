@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', function() {
         slotDuration: '00:30:00',
         allDaySlot: false,
         height: 'auto',
-        // Format du titre sera défini dans chaque vue
         // Configuration des vues
         views: {
             dayGridMonth: {
@@ -68,35 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 },
                 // Format des en-têtes de colonnes pour la vue mois
-                columnHeaderFormat: function(arg) {
-                    try {
-                        const windowWidth = window.innerWidth;
-                        if (windowWidth <= 473) {
-                            if (arg && arg.date) {
-                                // FullCalendar passe des objets DateMarker, utiliser marker
-                                const dateObj = arg.date.marker || (typeof arg.date.toDate === 'function' ? arg.date.toDate() : arg.date);
-                                const date = new Date(dateObj);
-                                if (!isNaN(date.getTime())) {
-                                    const days = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
-                                    return days[date.getDay()];
-                                }
-                            }
-                            return arg && arg.text ? arg.text : '';
-                        } else {
-                            // Retourner un objet de format pour les écrans plus grands
-                            const dateObj = arg && arg.date ? (arg.date.marker || (typeof arg.date.toDate === 'function' ? arg.date.toDate() : arg.date)) : null;
-                            if (dateObj) {
-                                const date = new Date(dateObj);
-                                if (!isNaN(date.getTime())) {
-                                    return { weekday: 'short' };
-                                }
-                            }
-                            return { weekday: 'short' };
-                        }
-                    } catch (e) {
-                        return { weekday: 'short' };
-                    }
-                }
+                columnHeaderFormat: { weekday: 'short' }
             },
             timeGridWeek: {
                 // Format du titre pour la vue semaine : "16 – 22 novembre 2025"
@@ -139,27 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 },
                 // Format des en-têtes de colonnes pour la vue semaine
-                columnHeaderFormat: function(arg) {
-                    try {
-                        const windowWidth = window.innerWidth;
-                        if (windowWidth <= 473) {
-                            if (arg && arg.date) {
-                                // FullCalendar passe des objets DateMarker, utiliser marker
-                                const dateObj = arg.date.marker || (typeof arg.date.toDate === 'function' ? arg.date.toDate() : arg.date);
-                                const date = new Date(dateObj);
-                                if (!isNaN(date.getTime())) {
-                                    const days = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
-                                    return days[date.getDay()];
-                                }
-                            }
-                            return arg && arg.text ? arg.text : '';
-                        } else {
-                            return { weekday: 'short', day: 'numeric' };
-                        }
-                    } catch (e) {
-                        return { weekday: 'short', day: 'numeric' };
-                    }
-                }
+                columnHeaderFormat: { weekday: 'short', day: 'numeric' }
             },
             timeGridDay: {
                 // Format du titre pour la vue jour : "16 novembre 2025"
@@ -197,27 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 },
                 // Format des en-têtes de colonnes pour la vue jour
-                columnHeaderFormat: function(arg) {
-                    try {
-                        const windowWidth = window.innerWidth;
-                        if (windowWidth <= 473) {
-                            if (arg && arg.date) {
-                                // FullCalendar passe des objets DateMarker, utiliser marker
-                                const dateObj = arg.date.marker || (typeof arg.date.toDate === 'function' ? arg.date.toDate() : arg.date);
-                                const date = new Date(dateObj);
-                                if (!isNaN(date.getTime())) {
-                                    const days = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam'];
-                                    return days[date.getDay()];
-                                }
-                            }
-                            return arg && arg.text ? arg.text : '';
-                        } else {
-                            return { weekday: 'short', day: 'numeric' };
-                        }
-                    } catch (e) {
-                        return { weekday: 'short', day: 'numeric' };
-                    }
-                }
+                columnHeaderFormat: { weekday: 'short', day: 'numeric' }
             },
             listWeek: {
                 // Vue liste pour voir les réservations
@@ -282,7 +213,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     return response.json();
                 })
                 .then(data => {
-                    successCallback(data);
+                    // S'assurer que les couleurs sont bien définies pour tous les événements
+                    const events = data.map(event => {
+                        // Utiliser la couleur de l'API ou déterminer selon le statut
+                        let color = event.color;
+                        if (!color) {
+                            const statut = event.extendedProps?.statut;
+                            if (statut === 'RESERVE') {
+                                color = '#dc3545'; // Rouge
+                            } else if (statut === 'BLOQUE') {
+                                color = '#6c757d'; // Gris
+                            } else {
+                                color = '#28a745'; // Vert
+                            }
+                        }
+                        return {
+                            ...event,
+                            backgroundColor: color,
+                            borderColor: color,
+                            textColor: '#ffffff'
+                        };
+                    });
+                    successCallback(events);
                 })
                 .catch(error => {
                     console.error('Erreur:', error);
@@ -305,6 +257,16 @@ document.addEventListener('DOMContentLoaded', function() {
             calendar.unselect();
         },
         
+        // Gérer le clic sur une date/heure (pour mobile/tablette)
+        dateClick: function(info) {
+            // Sur mobile/tablette, ouvrir le modal avec une durée par défaut (1 heure)
+            if (info.view.type === 'timeGridWeek' || info.view.type === 'timeGridDay') {
+                const start = info.date;
+                const end = new Date(start.getTime() + 60 * 60 * 1000); // +1 heure
+                openModalCreate(start, end);
+            }
+        },
+        
         // Gérer le clic sur un événement existant (modification)
         eventClick: function(info) {
             openModalEdit(info.event);
@@ -318,15 +280,38 @@ document.addEventListener('DOMContentLoaded', function() {
         // Gérer le redimensionnement d'un événement (modification de durée)
         eventResize: function(info) {
             updateDisponibilite(info.event);
+        },
+        
+        // Forcer l'application des couleurs après le rendu des événements (uniquement en mode mois)
+        eventDidMount: function(info) {
+            // Appliquer les couleurs uniquement en mode mois (dayGridMonth)
+            if (info.view.type === 'dayGridMonth') {
+                const event = info.event;
+                let color = event.backgroundColor || event.borderColor || event.extendedProps?.color;
+                if (!color) {
+                    // Fallback selon le statut
+                    const statut = event.extendedProps?.statut;
+                    if (statut === 'RESERVE') {
+                        color = '#dc3545'; // Rouge
+                    } else if (statut === 'BLOQUE') {
+                        color = '#6c757d'; // Gris
+                    } else {
+                        color = '#28a745'; // Vert
+                    }
+                }
+                if (color && info.el) {
+                    // Forcer l'application des couleurs via les styles inline
+                    info.el.style.setProperty('background-color', color, 'important');
+                    info.el.style.setProperty('border-color', color, 'important');
+                    info.el.style.setProperty('color', '#ffffff', 'important');
+                    // S'assurer que l'élément est visible
+                    info.el.style.setProperty('display', 'block', 'important');
+                    info.el.style.setProperty('opacity', '1', 'important');
+                    info.el.style.setProperty('visibility', 'visible', 'important');
+                }
+            }
         }
     });
-    
-    // Fonction pour ajuster le format des en-têtes de colonnes et du titre
-    function adjustColumnHeaderFormat() {
-        // Le format du titre et des colonnes est déjà défini dans la configuration initiale
-        // Cette fonction est appelée après le rendu initial pour s'assurer que tout est bien appliqué
-        // Pas besoin de re-rendre, les formats sont déjà appliqués
-    }
     
     // Afficher le calendrier
     try {
@@ -334,33 +319,6 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (error) {
         console.error('Erreur lors du rendu du calendrier:', error);
     }
-    
-    // Ajuster le format après le rendu initial (avec un délai pour s'assurer que le calendrier est prêt)
-    setTimeout(function() {
-        try {
-            adjustColumnHeaderFormat();
-        } catch (error) {
-            console.error('Erreur lors de l\'ajustement du format:', error);
-        }
-    }, 200);
-    
-    // Ajuster le format lors du changement de vue
-    calendar.on('viewDidMount', function() {
-        try {
-            adjustColumnHeaderFormat();
-        } catch (error) {
-            console.error('Erreur lors du changement de vue:', error);
-        }
-    });
-    
-    // Ajuster le format des en-têtes de colonnes lors du redimensionnement
-    let resizeTimer;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function() {
-            adjustColumnHeaderFormat();
-        }, 250);
-    });
     
     // Variables globales pour le modal et le calendrier
     window.calendar = calendar;
