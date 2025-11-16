@@ -155,3 +155,44 @@ function createCompteCard(compte) {
     return card;
 }
 
+// Charger les comptes depuis l'API
+async function loadComptes() {
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const errorMessage = document.getElementById('errorMessage');
+    const noComptes = document.getElementById('noComptes');
+    const comptesList = document.getElementById('comptesList');
+    
+    // Afficher le chargement
+    if (loadingIndicator) loadingIndicator.style.display = 'block';
+    if (errorMessage) errorMessage.style.display = 'none';
+    if (noComptes) noComptes.style.display = 'none';
+    if (comptesList) comptesList.style.display = 'none';
+    
+    try {
+        const response = await fetch('api/admin.php');
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        allComptes = Array.isArray(data) ? data : [];
+        
+        // Masquer le chargement
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+        
+        // Afficher les comptes filtrés
+        displayComptes();
+        
+    } catch (error) {
+        console.error('Erreur lors du chargement des comptes:', error);
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+        showError('Erreur lors du chargement des comptes: ' + error.message);
+    }
+}
+
