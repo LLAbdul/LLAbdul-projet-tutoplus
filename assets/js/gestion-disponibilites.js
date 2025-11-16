@@ -1,4 +1,70 @@
-// Configuration et gestion du calendrier des disponibilités
+const DISPONIBILITES_API_URL = 'api/disponibilites.php';
+const MIN_DURATION_MINUTES = 30;
+
+// === Helpers génériques ===
+
+// Différence en minutes entre 2 dates
+function getDiffMinutes(start, end) {
+    return (end - start) / (1000 * 60);
+}
+
+// Vérifie si deux dates sont le même jour (en fonction locale)
+function isSameDay(a, b) {
+    return a.toDateString() === b.toDateString();
+}
+
+// Couleurs selon statut
+const STATUT_COLORS = {
+    RESERVE: '#dc3545',   // Rouge
+    BLOQUE:  '#6c757d',   // Gris
+    DISPONIBLE: '#28a745' // Vert
+};
+
+// Récupérer la couleur d'un statut
+function getStatutColor(statut) {
+    if (!statut) return STATUT_COLORS.DISPONIBLE;
+    return STATUT_COLORS[statut] || STATUT_COLORS.DISPONIBLE;
+}
+
+// Récupérer la couleur d'un événement (API + fallback statut)
+function getEventColor(event) {
+    if (event.color) return event.color;
+
+    const statut = event.extendedProps?.statut || event.statut;
+    return getStatutColor(statut);
+}
+
+// Formater une date pour <input type="datetime-local">
+function formatDateTimeLocal(date) {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+// Formater un objet Date pour l'API (format: YYYY-MM-DD HH:mm:ss)
+function formatDateForAPI(date) {
+    const d = date instanceof Date ? date : new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const seconds = String(d.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+// Formater une string datetime-local pour l'API
+function formatDateTimeForAPI(dateTimeLocal) {
+    const d = new Date(dateTimeLocal);
+    return formatDateForAPI(d);
+}
+
+// === Initialisation du calendrier ===
+
 document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendrier-disponibilites');
     
@@ -7,7 +73,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    // Initialiser FullCalendar
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'timeGridWeek',
         locale: 'fr-ca',
@@ -36,7 +101,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     year: 'numeric',
                     month: 'long'
                 },
-                // Format des en-têtes de colonnes pour la vue mois
                 columnHeaderFormat: { weekday: 'short' }
             },
             timeGridWeek: {
@@ -46,7 +110,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     month: 'long',
                     year: 'numeric'
                 },
-                // Format des en-têtes de colonnes pour la vue semaine
                 columnHeaderFormat: { weekday: 'short', day: 'numeric' }
             },
             timeGridDay: {
@@ -56,7 +119,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     month: 'long',
                     year: 'numeric'
                 },
-                // Format des en-têtes de colonnes pour la vue jour
                 columnHeaderFormat: { weekday: 'short', day: 'numeric' }
             },
             listWeek: {
@@ -73,14 +135,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Empêcher la sélection sur plusieurs jours
         selectAllow: function(selectInfo) {
-            const startDay = selectInfo.start.toDateString();
-            const endDay = selectInfo.end.toDateString();
-            return startDay === endDay;
+            return isSameDay(selectInfo.start, selectInfo.end);
         },
         
         // Charger les disponibilités existantes
         events: function(fetchInfo, successCallback, failureCallback) {
-            fetch('api/disponibilites.php')
+            fetch(DISPONIBILITES_API_URL)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Erreur lors du chargement des disponibilités');
@@ -88,20 +148,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     return response.json();
                 })
                 .then(data => {
-                    // S'assurer que les couleurs sont bien définies pour tous les événements
                     const events = data.map(event => {
-                        // Utiliser la couleur de l'API ou déterminer selon le statut
-                        let color = event.color;
-                        if (!color) {
-                            const statut = event.extendedProps?.statut;
-                            if (statut === 'RESERVE') {
-                                color = '#dc3545'; // Rouge
-                            } else if (statut === 'BLOQUE') {
-                                color = '#6c757d'; // Gris
-                            } else {
-                                color = '#28a745'; // Vert
-                            }
-                        }
+                        const color = getEventColor(event);
                         return {
                             ...event,
                             backgroundColor: color,
@@ -119,22 +167,16 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Gérer la sélection d'une plage horaire (création de créneau)
         select: function(selectInfo) {
-            // La validation est déjà faite par selectAllow, mais on vérifie quand même par sécurité
-            const startDay = selectInfo.start.toDateString();
-            const endDay = selectInfo.end.toDateString();
-            
-            if (startDay !== endDay) {
+            if (!isSameDay(selectInfo.start, selectInfo.end)) {
                 calendar.unselect();
                 return;
             }
-            
             openModalCreate(selectInfo.start, selectInfo.end);
             calendar.unselect();
         },
         
         // Gérer le clic sur une date/heure (pour mobile/tablette)
         dateClick: function(info) {
-            // Sur mobile/tablette, ouvrir le modal avec une durée par défaut (1 heure)
             if (info.view.type === 'timeGridWeek' || info.view.type === 'timeGridDay') {
                 const start = info.date;
                 const end = new Date(start.getTime() + 60 * 60 * 1000); // +1 heure
@@ -157,29 +199,19 @@ document.addEventListener('DOMContentLoaded', function() {
             updateDisponibilite(info.event);
         },
         
-        // Forcer l'application des couleurs après le rendu des événements (uniquement en mode mois)
+        // Forcer l'application des couleurs en mode mois
         eventDidMount: function(info) {
-            // Appliquer les couleurs uniquement en mode mois (dayGridMonth)
             if (info.view.type === 'dayGridMonth') {
                 const event = info.event;
                 let color = event.backgroundColor || event.borderColor || event.extendedProps?.color;
                 if (!color) {
-                    // Fallback selon le statut
-                    const statut = event.extendedProps?.statut;
-                    if (statut === 'RESERVE') {
-                        color = '#dc3545'; // Rouge
-                    } else if (statut === 'BLOQUE') {
-                        color = '#6c757d'; // Gris
-                    } else {
-                        color = '#28a745'; // Vert
-                    }
+                    const statut = event.extendedProps?.statut || event.statut;
+                    color = getStatutColor(statut);
                 }
                 if (color && info.el) {
-                    // Forcer l'application des couleurs via les styles inline
                     info.el.style.setProperty('background-color', color, 'important');
                     info.el.style.setProperty('border-color', color, 'important');
                     info.el.style.setProperty('color', '#ffffff', 'important');
-                    // S'assurer que l'élément est visible
                     info.el.style.setProperty('display', 'block', 'important');
                     info.el.style.setProperty('opacity', '1', 'important');
                     info.el.style.setProperty('visibility', 'visible', 'important');
@@ -208,40 +240,31 @@ document.addEventListener('DOMContentLoaded', function() {
     initModal();
 });
 
-// Fonction pour ouvrir le modal de création
+// === Gestion des modals ===
+
 function openModalCreate(start, end) {
     const modal = document.getElementById('modal-disponibilite');
     const form = document.getElementById('form-disponibilite');
     const title = document.getElementById('modal-title');
     const submitBtn = document.getElementById('modal-submit');
     
-    // Réinitialiser le formulaire
     form.reset();
     document.getElementById('disponibilite-id').value = '';
     title.textContent = 'Créer une disponibilité';
     submitBtn.textContent = 'Créer';
     document.getElementById('modal-delete').style.display = 'none';
     
-    // Formater les dates pour datetime-local (format: YYYY-MM-DDTHH:mm)
-    const startStr = formatDateTimeLocal(start);
-    const endStr = formatDateTimeLocal(end);
+    document.getElementById('date-debut').value = formatDateTimeLocal(start);
+    document.getElementById('date-fin').value = formatDateTimeLocal(end);
     
-    document.getElementById('date-debut').value = startStr;
-    document.getElementById('date-fin').value = endStr;
-    
-    // Définir le statut par défaut et gérer l'affichage des champs
     document.getElementById('statut').value = 'DISPONIBLE';
     toggleFieldsByStatut();
-    
-    // Pré-remplir le service et le prix par défaut
     updatePrixFromService();
     
-    // Afficher le modal
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 
-// Fonction pour fermer le modal
 function closeModal() {
     const modal = document.getElementById('modal-disponibilite');
     const form = document.getElementById('form-disponibilite');
@@ -250,7 +273,6 @@ function closeModal() {
     document.body.style.overflow = '';
     document.getElementById('modal-error').style.display = 'none';
     
-    // Réinitialiser le formulaire et réafficher tous les champs
     form.reset();
     document.getElementById('disponibilite-id').value = '';
     const serviceGroup = document.getElementById('service-id').closest('.form-group');
@@ -259,50 +281,34 @@ function closeModal() {
     prixGroup.style.display = 'block';
 }
 
-// Fonction pour formater une date en format datetime-local
-function formatDateTimeLocal(date) {
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-}
-
-// Fonction pour gérer l'affichage des champs selon le statut
+// Affichage des champs selon statut
 function toggleFieldsByStatut() {
     const statut = document.getElementById('statut').value;
     const serviceGroup = document.getElementById('service-id').closest('.form-group');
     const prixGroup = document.getElementById('prix').closest('.form-group');
     
     if (statut === 'BLOQUE') {
-        // Cacher et désactiver les champs service et prix
         serviceGroup.style.display = 'none';
         prixGroup.style.display = 'none';
         document.getElementById('service-id').value = '';
         document.getElementById('prix').value = '';
     } else {
-        // Afficher les champs service et prix
         serviceGroup.style.display = 'block';
         prixGroup.style.display = 'block';
-        // Si le service est vide, réinitialiser avec le service par défaut
         const serviceSelect = document.getElementById('service-id');
         if (!serviceSelect.value) {
-            // Sélectionner le premier service (service par défaut)
-            const firstOption = serviceSelect.options[1]; // Index 0 est "Aucun service spécifique"
+            const firstOption = serviceSelect.options[1]; // 0 = "Aucun service spécifique"
             if (firstOption) {
                 serviceSelect.value = firstOption.value;
                 updatePrixFromService();
             }
         } else {
-            // Mettre à jour le prix selon le service sélectionné
             updatePrixFromService();
         }
     }
 }
 
-// Fonction pour mettre à jour le prix selon le service sélectionné
+// Mettre à jour le prix selon le service sélectionné
 function updatePrixFromService() {
     const serviceSelect = document.getElementById('service-id');
     const prixInput = document.getElementById('prix');
@@ -310,15 +316,13 @@ function updatePrixFromService() {
     
     if (selectedOption && selectedOption.value) {
         const prix = selectedOption.getAttribute('data-prix');
-        if (prix) {
-            prixInput.value = parseFloat(prix).toFixed(2);
-        }
+        prixInput.value = prix ? parseFloat(prix).toFixed(2) : '';
     } else {
         prixInput.value = '';
     }
 }
 
-// Fonction pour initialiser les événements du modal
+// Initialiser les événements du modal
 function initModal() {
     const modal = document.getElementById('modal-disponibilite');
     const closeBtn = document.getElementById('modal-close');
@@ -328,25 +332,21 @@ function initModal() {
     const statutSelect = document.getElementById('statut');
     const serviceSelect = document.getElementById('service-id');
     
-    // Fermer le modal
     closeBtn.addEventListener('click', closeModal);
     cancelBtn.addEventListener('click', closeModal);
     overlay.addEventListener('click', closeModal);
     
-    // Gérer l'affichage des champs selon le statut
     statutSelect.addEventListener('change', toggleFieldsByStatut);
-    
-    // Mettre à jour le prix quand le service change
     serviceSelect.addEventListener('change', updatePrixFromService);
     
-    // Soumettre le formulaire
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         submitDisponibilite();
     });
 }
 
-// Fonction pour ouvrir le modal de modification
+// === CRUD Disponibilités ===
+
 function openModalEdit(event) {
     const modal = document.getElementById('modal-disponibilite');
     const form = document.getElementById('form-disponibilite');
@@ -354,7 +354,6 @@ function openModalEdit(event) {
     const submitBtn = document.getElementById('modal-submit');
     const deleteBtn = document.getElementById('modal-delete');
     
-    // Récupérer les données de l'événement
     const id = event.id;
     const start = event.start;
     const end = event.end || event.start;
@@ -364,13 +363,11 @@ function openModalEdit(event) {
     const prix = extendedProps.prix || '';
     const notes = extendedProps.notes || '';
     
-    // Pré-remplir le formulaire
     form.reset();
     document.getElementById('disponibilite-id').value = id;
     title.textContent = 'Modifier une disponibilité';
     submitBtn.textContent = 'Modifier';
     
-    // Afficher le bouton de suppression si le créneau n'est pas réservé
     if (statut !== 'RESERVE') {
         deleteBtn.style.display = 'block';
         deleteBtn.onclick = function() {
@@ -380,33 +377,25 @@ function openModalEdit(event) {
         deleteBtn.style.display = 'none';
     }
     
-    // Formater les dates pour datetime-local
-    const startStr = formatDateTimeLocal(start);
-    const endStr = formatDateTimeLocal(end);
-    
-    document.getElementById('date-debut').value = startStr;
-    document.getElementById('date-fin').value = endStr;
+    document.getElementById('date-debut').value = formatDateTimeLocal(start);
+    document.getElementById('date-fin').value = formatDateTimeLocal(end);
     document.getElementById('service-id').value = serviceId;
     document.getElementById('prix').value = prix;
     document.getElementById('statut').value = statut;
     document.getElementById('notes').value = notes;
     
-    // Gérer l'affichage des champs selon le statut
     toggleFieldsByStatut();
     
-    // Afficher le modal
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 
-// Fonction pour soumettre le formulaire (créer ou modifier une disponibilité)
 function submitDisponibilite() {
     const form = document.getElementById('form-disponibilite');
     const formData = new FormData(form);
     const errorDiv = document.getElementById('modal-error');
     const id = formData.get('id');
     
-    // Récupérer les valeurs du formulaire
     const dateDebut = formData.get('date_debut');
     const dateFin = formData.get('date_fin');
     const serviceId = formData.get('service_id');
@@ -414,28 +403,22 @@ function submitDisponibilite() {
     const statut = formData.get('statut');
     const notes = formData.get('notes');
     
-    // Validation côté client : durée minimum 30 minutes
     const debut = new Date(dateDebut);
     const fin = new Date(dateFin);
-    const diffMinutes = (fin - debut) / (1000 * 60);
+    const diffMinutes = getDiffMinutes(debut, fin);
     
-    if (diffMinutes < 30) {
-        errorDiv.textContent = 'La durée minimum doit être de 30 minutes';
+    if (diffMinutes < MIN_DURATION_MINUTES) {
+        errorDiv.textContent = `La durée minimum doit être de ${MIN_DURATION_MINUTES} minutes`;
         errorDiv.style.display = 'block';
         return;
     }
     
-    // Validation : vérifier que les dates sont dans la même journée
-    const startDay = debut.toDateString();
-    const endDay = fin.toDateString();
-    
-    if (startDay !== endDay) {
+    if (!isSameDay(debut, fin)) {
         errorDiv.textContent = 'Vous ne pouvez créer une disponibilité que dans la même journée';
         errorDiv.style.display = 'block';
         return;
     }
     
-    // Préparer les données
     const data = {
         date_debut: formatDateTimeForAPI(dateDebut),
         date_fin: formatDateTimeForAPI(dateFin),
@@ -445,14 +428,12 @@ function submitDisponibilite() {
         notes: notes || null
     };
     
-    // Déterminer la méthode HTTP et l'URL
     const method = id ? 'PUT' : 'POST';
     if (id) {
         data.id = id;
     }
     
-    // Envoyer la requête
-    fetch('api/disponibilites.php', {
+    fetch(DISPONIBILITES_API_URL, {
         method: method,
         headers: {
             'Content-Type': 'application/json'
@@ -462,10 +443,8 @@ function submitDisponibilite() {
     .then(response => response.json())
     .then(result => {
         if (result.success) {
-            // Afficher message de succès
             const message = id ? 'Disponibilité modifiée avec succès' : 'Disponibilité créée avec succès';
             showNotification(message, 'success');
-            // Recharger les événements du calendrier
             window.calendar.refetchEvents();
             closeModal();
         } else {
@@ -480,35 +459,26 @@ function submitDisponibilite() {
     });
 }
 
-// Fonction pour mettre à jour une disponibilité après déplacement ou redimensionnement
 function updateDisponibilite(event) {
     const id = event.id;
     const start = event.start;
     const end = event.end || event.start;
     const extendedProps = event.extendedProps || {};
     
-    // Validation côté client : durée minimum 30 minutes
-    const diffMinutes = (end - start) / (1000 * 60);
+    const diffMinutes = getDiffMinutes(start, end);
     
-    if (diffMinutes < 30) {
-        // Annuler le changement si la durée est inférieure à 30 minutes
+    if (diffMinutes < MIN_DURATION_MINUTES) {
         event.revert();
-        showNotification('La durée minimum doit être de 30 minutes', 'error');
+        showNotification(`La durée minimum doit être de ${MIN_DURATION_MINUTES} minutes`, 'error');
         return;
     }
     
-    // Validation : vérifier que les dates sont dans la même journée
-    const startDay = start.toDateString();
-    const endDay = end.toDateString();
-    
-    if (startDay !== endDay) {
-        // Annuler le changement si les dates sont sur plusieurs jours
+    if (!isSameDay(start, end)) {
         event.revert();
         showNotification('Vous ne pouvez créer une disponibilité que dans la même journée', 'error');
         return;
     }
     
-    // Préparer les données
     const data = {
         id: id,
         date_debut: formatDateForAPI(start),
@@ -519,8 +489,7 @@ function updateDisponibilite(event) {
         notes: extendedProps.notes || null
     };
     
-    // Envoyer la requête PUT
-    fetch('api/disponibilites.php', {
+    fetch(DISPONIBILITES_API_URL, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
@@ -530,7 +499,6 @@ function updateDisponibilite(event) {
     .then(response => response.json())
     .then(result => {
         if (!result.success) {
-            // Annuler le changement en cas d'erreur
             event.revert();
             showNotification(result.error || 'Erreur lors de la modification de la disponibilité', 'error');
         } else {
@@ -544,31 +512,12 @@ function updateDisponibilite(event) {
     });
 }
 
-// Fonction pour formater une date pour l'API (format: YYYY-MM-DD HH:mm:ss)
-function formatDateTimeForAPI(dateTimeLocal) {
-    const d = new Date(dateTimeLocal);
-    return formatDateForAPI(d);
-}
-
-// Fonction pour formater un objet Date pour l'API (format: YYYY-MM-DD HH:mm:ss)
-function formatDateForAPI(date) {
-    const d = date instanceof Date ? date : new Date(date);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    const seconds = String(d.getSeconds()).padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
-
-// Fonction pour supprimer une disponibilité
 function deleteDisponibilite(id) {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cette disponibilité ?')) {
         return;
     }
     
-    fetch('api/disponibilites.php', {
+    fetch(DISPONIBILITES_API_URL, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json'
@@ -578,9 +527,7 @@ function deleteDisponibilite(id) {
     .then(response => response.json())
     .then(result => {
         if (result.success) {
-            // Afficher message de succès
             showNotification('Disponibilité supprimée avec succès', 'success');
-            // Recharger les événements du calendrier
             window.calendar.refetchEvents();
             closeModal();
         } else {
@@ -593,7 +540,8 @@ function deleteDisponibilite(id) {
     });
 }
 
-// Fonction pour afficher une notification
+// === Notifications ===
+
 function showNotification(message, type = 'info') {
     const container = document.getElementById('notification-container');
     if (!container) return;
@@ -610,7 +558,6 @@ function showNotification(message, type = 'info') {
     
     container.appendChild(notification);
     
-    // Supprimer automatiquement après 5 secondes
     setTimeout(() => {
         if (notification.parentElement) {
             notification.style.animation = 'slideInRight 0.3s reverse';
