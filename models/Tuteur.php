@@ -1,52 +1,68 @@
 <?php
+declare(strict_types=1);
 
-class Tuteur {
-    private $pdo;
-    
-    public function __construct($pdo) {
+class Tuteur
+{
+    private PDO $pdo;
+
+    // Paramètre : instance PDO
+    public function __construct(PDO $pdo)
+    {
         $this->pdo = $pdo;
     }
-    
-    // Récupère un tuteur par son ID
-    public function getTuteurById($id) {
+
+    // Paramètre : id tuteur
+    // Retourne : tableau associatif ou null
+    public function getTuteurById(string $id): ?array
+    {
         try {
             $stmt = $this->pdo->prepare("
-                SELECT id, numero_employe, nom, prenom, email, telephone, 
-                       departement, specialites, tarif_horaire, evaluation, 
-                       nb_seances, actif
+                SELECT 
+                    id, numero_employe, nom, prenom, email, telephone, 
+                    departement, specialites, tarif_horaire, evaluation, 
+                    nb_seances, actif
                 FROM tuteurs 
                 WHERE id = :id AND actif = TRUE
             ");
             $stmt->bindParam(':id', $id, PDO::PARAM_STR);
             $stmt->execute();
-            return $stmt->fetch();
+
+            $row = $stmt->fetch();
+            return $row !== false ? $row : null;
         } catch (PDOException $e) {
-            error_log("Erreur lors de la récupération du tuteur : " . $e->getMessage());
+            error_log("Erreur Tuteur::getTuteurById : " . $e->getMessage());
             return null;
         }
     }
-    
-    // Récupère un tuteur par son numéro d'employé (pour la connexion)
-    public function getTuteurByNumero($numeroEmploye) {
+
+    // Paramètre : numéro employé
+    // Retourne : tableau associatif ou null
+    public function getTuteurByNumero(string $numeroEmploye): ?array
+    {
         try {
             $stmt = $this->pdo->prepare("
-                SELECT id, numero_employe, nom, prenom, email, telephone, 
-                       departement, specialites, tarif_horaire, evaluation, 
-                       nb_seances, actif
+                SELECT 
+                    id, numero_employe, nom, prenom, email, telephone, 
+                    departement, specialites, tarif_horaire, evaluation, 
+                    nb_seances, actif
                 FROM tuteurs 
                 WHERE numero_employe = :numero_employe AND actif = TRUE
             ");
             $stmt->bindParam(':numero_employe', $numeroEmploye, PDO::PARAM_STR);
             $stmt->execute();
-            return $stmt->fetch();
+
+            $row = $stmt->fetch();
+            return $row !== false ? $row : null;
         } catch (PDOException $e) {
-            error_log("Erreur lors de la récupération du tuteur par numéro : " . $e->getMessage());
+            error_log("Erreur Tuteur::getTuteurByNumero : " . $e->getMessage());
             return null;
         }
     }
-    
-    // Met à jour la dernière connexion
-    public function updateDerniereConnexion($id) {
+
+    // Paramètre : id tuteur
+    // Retourne : true si succès
+    public function updateDerniereConnexion(string $id): bool
+    {
         try {
             $stmt = $this->pdo->prepare("
                 UPDATE tuteurs 
@@ -55,52 +71,60 @@ class Tuteur {
             ");
             $stmt->bindParam(':id', $id, PDO::PARAM_STR);
             $stmt->execute();
-            return true;
+
+            return $stmt->rowCount() > 0;
         } catch (PDOException $e) {
-            error_log("Erreur lors de la mise à jour de la dernière connexion : " . $e->getMessage());
+            error_log("Erreur Tuteur::updateDerniereConnexion : " . $e->getMessage());
             return false;
         }
     }
-    
-    // Récupère tous les tuteurs actifs
-    public function getAllActiveTuteurs() {
+
+    // Paramètres : aucun
+    // Retourne : tous les tuteurs actifs
+    public function getAllActiveTuteurs(): array
+    {
         try {
             $stmt = $this->pdo->prepare("
-                SELECT id, numero_employe, nom, prenom, email, telephone, 
-                       departement, specialites, tarif_horaire, evaluation, 
-                       nb_seances, actif
+                SELECT 
+                    id, numero_employe, nom, prenom, email, telephone, 
+                    departement, specialites, tarif_horaire, evaluation, 
+                    nb_seances, actif
                 FROM tuteurs 
                 WHERE actif = TRUE 
                 ORDER BY nom, prenom
             ");
             $stmt->execute();
-            return $stmt->fetchAll();
+
+            return $stmt->fetchAll() ?: [];
         } catch (PDOException $e) {
-            error_log("Erreur lors de la récupération des tuteurs : " . $e->getMessage());
+            error_log("Erreur Tuteur::getAllActiveTuteurs : " . $e->getMessage());
             return [];
         }
     }
-    
-    // Récupère les tuteurs par département
-    public function getTuteursByDepartement($departement) {
+
+    // Paramètre : département
+    // Retourne : tuteurs actifs de ce département
+    public function getTuteursByDepartement(string $departement): array
+    {
         try {
             $stmt = $this->pdo->prepare("
-                SELECT id, numero_employe, nom, prenom, email, telephone, 
-                       departement, specialites, tarif_horaire, evaluation, 
-                       nb_seances, actif
+                SELECT 
+                    id, numero_employe, nom, prenom, email, telephone, 
+                    departement, specialites, tarif_horaire, evaluation, 
+                    nb_seances, actif
                 FROM tuteurs 
                 WHERE departement = :departement AND actif = TRUE 
                 ORDER BY nom, prenom
             ");
             $stmt->bindParam(':departement', $departement, PDO::PARAM_STR);
             $stmt->execute();
-            return $stmt->fetchAll();
+
+            return $stmt->fetchAll() ?: [];
         } catch (PDOException $e) {
-            error_log("Erreur lors de la récupération des tuteurs par département : " . $e->getMessage());
+            error_log("Erreur Tuteur::getTuteursByDepartement : " . $e->getMessage());
             return [];
         }
     }
-    
     // Méthodes du UML que je vais implémenter plus tard
     // +gererDisponibilites(): void
     // +accepterDemande(): void
