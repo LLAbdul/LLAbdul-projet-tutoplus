@@ -400,6 +400,7 @@
   max-height: 2.6em;
   overflow: hidden;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
@@ -414,6 +415,7 @@
     line-height: 1.1;
     max-height: 2.2em;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
