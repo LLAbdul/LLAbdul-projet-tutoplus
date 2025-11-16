@@ -3,68 +3,70 @@
 let confirmationAutoCloseTimeout = null;
 
 /**
+ * Récupère l'élément modal de confirmation
+ */
+function getConfirmationModal() {
+    return document.getElementById('confirmationModal');
+}
+
+/**
  * Ouvre le modal de confirmation
  */
 function openConfirmationModal() {
-    const modal = document.getElementById('confirmationModal');
+    const modal = getConfirmationModal();
     if (!modal) {
         console.error('Modal de confirmation non trouvé dans le DOM');
         return;
     }
-    
+
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
-    
+
     // Annuler l'auto-fermeture précédente si elle existe
-    if (confirmationAutoCloseTimeout) {
+    if (confirmationAutoCloseTimeout !== null) {
         clearTimeout(confirmationAutoCloseTimeout);
     }
-    
+
     // Auto-fermeture après 5 secondes
-    confirmationAutoCloseTimeout = setTimeout(() => {
-        closeConfirmationModal();
-    }, 5000);
+    confirmationAutoCloseTimeout = setTimeout(closeConfirmationModal, 5000);
 }
 
 /**
  * Ferme le modal de confirmation
  */
 function closeConfirmationModal() {
-    const modal = document.getElementById('confirmationModal');
-    if (!modal) {
-        return;
-    }
-    
+    const modal = getConfirmationModal();
+    if (!modal) return;
+
     modal.classList.remove('active');
     document.body.style.overflow = '';
-    
+
     // Annuler l'auto-fermeture si elle est en cours
-    if (confirmationAutoCloseTimeout) {
+    if (confirmationAutoCloseTimeout !== null) {
         clearTimeout(confirmationAutoCloseTimeout);
         confirmationAutoCloseTimeout = null;
     }
 }
 
-/*
-  Remplit les données de confirmation dans le modal 
-  data : Données de la réservation (date, heure, tuteur, service)
-*/
+/**
+ * Remplit les données de confirmation dans le modal
+ * data : { date, heure, tuteur, service, notificationEnabled }
+ */
 function fillConfirmationData(data) {
     if (!data) {
         console.error('Aucune donnée fournie pour la confirmation');
         return;
     }
-    
+
     const dateTimeElement = document.getElementById('confirmation-date-time');
     const tuteurElement = document.getElementById('confirmation-tuteur');
     const serviceElement = document.getElementById('confirmation-service');
-    
-    // Formater et afficher la date et l'heure
+
+    // Date + heure
     if (dateTimeElement) {
         if (data.date && data.heure) {
             dateTimeElement.textContent = `${data.date} de ${data.heure}`;
         } else if (data.dateTime) {
-            // Format alternatif si dateTime est fourni directement
             dateTimeElement.textContent = data.dateTime;
         } else {
             dateTimeElement.textContent = '-';
@@ -73,8 +75,8 @@ function fillConfirmationData(data) {
     } else {
         console.error('Élément confirmation-date-time non trouvé dans le DOM');
     }
-    
-    // Afficher le tuteur
+
+    // Tuteur
     if (tuteurElement) {
         tuteurElement.textContent = data.tuteur || '-';
         if (!data.tuteur) {
@@ -83,8 +85,8 @@ function fillConfirmationData(data) {
     } else {
         console.error('Élément confirmation-tuteur non trouvé dans le DOM');
     }
-    
-    // Afficher le service
+
+    // Service
     if (serviceElement) {
         serviceElement.textContent = data.service || '-';
         if (!data.service) {
@@ -93,11 +95,11 @@ function fillConfirmationData(data) {
     } else {
         console.error('Élément confirmation-service non trouvé dans le DOM');
     }
-    
-    // Afficher l'information de notification si activée
+
+    // Row notification
     const notificationRow = document.getElementById('confirmation-notification-row');
     const notificationElement = document.getElementById('confirmation-notification');
-    
+
     if (notificationRow && notificationElement) {
         if (data.notificationEnabled === true) {
             notificationRow.style.display = 'flex';
@@ -108,100 +110,93 @@ function fillConfirmationData(data) {
     }
 }
 
-/*
-    Formate une date pour l'affichage dans la confirmation
-    dateString : Date au format ISO (YYYY-MM-DD)
-    return : Date formatée (ex: "15 janvier 2025")
+/**
+ * Formate une date pour l'affichage dans la confirmation
+ * dateString : Date au format ISO (YYYY-MM-DD)
  */
 function formatDateForConfirmation(dateString) {
     if (!dateString) return '';
-    
+
     try {
         const date = new Date(dateString);
-        
-        // Vérifier que la date est valide
+
         if (isNaN(date.getTime())) {
             console.error('Date invalide:', dateString);
-            return dateString; // Retourner la date originale si invalide
+            return dateString;
         }
-        
+
         const options = { day: 'numeric', month: 'long', year: 'numeric' };
         return date.toLocaleDateString('fr-FR', options);
     } catch (error) {
         console.error('Erreur lors du formatage de la date:', error);
-        return dateString; // Retourner la date originale en cas d'erreur
+        return dateString;
     }
 }
 
-/*
-    Formate une heure pour l'affichage dans la confirmation
-    timeString : Heure au format HH:mm
-    return : Heure formatée (ex: "14:30")
-*/
+/**
+ * Formate une heure pour l'affichage dans la confirmation
+ * timeString : Heure au format HH:mm
+ */
 function formatTimeForConfirmation(timeString) {
     if (!timeString) return '';
-    
+
     try {
         const [hours, minutes] = timeString.split(':');
-        
-        // Vérifier que les heures et minutes sont valides
+
         if (!hours || !minutes || isNaN(parseInt(hours)) || isNaN(parseInt(minutes))) {
             console.error('Format d\'heure invalide:', timeString);
-            return timeString; // Retourner l'heure originale si invalide
+            return timeString;
         }
-        
-        // Formater avec padding pour les heures/minutes < 10
+
         const formattedHours = hours.padStart(2, '0');
         const formattedMinutes = minutes.padStart(2, '0');
-        
+
         return `${formattedHours}:${formattedMinutes}`;
     } catch (error) {
         console.error('Erreur lors du formatage de l\'heure:', error);
-        return timeString; // Retourner l'heure originale en cas d'erreur
+        return timeString;
     }
 }
 
 // Gestion des événements pour le modal de confirmation
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = getConfirmationModal();
+    if (!modal) return;
+
     const btnClose = document.getElementById('btnConfirmationClose');
-    const modal = document.getElementById('confirmationModal');
-    const overlay = modal ? modal.querySelector('.confirmation-modal-overlay') : null;
-    
-    // Fermer avec le bouton
+    const overlay = modal.querySelector('.confirmation-modal-overlay');
+    const modalContent = modal.querySelector('.confirmation-modal-content');
+
     if (btnClose) {
         btnClose.addEventListener('click', closeConfirmationModal);
     }
-    
-    // Fermer avec l'overlay
+
     if (overlay) {
         overlay.addEventListener('click', closeConfirmationModal);
     }
-    
-    // Fermer avec la touche Escape
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && modal && modal.classList.contains('active')) {
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
             closeConfirmationModal();
         }
     });
-    
-    // Annuler l'auto-fermeture si l'utilisateur interagit avec le modal
+
+    // Annuler l'auto-fermeture si interaction dans le modal
     if (modal) {
-        modal.addEventListener('mouseenter', function() {
-            if (confirmationAutoCloseTimeout) {
+        modal.addEventListener('mouseenter', () => {
+            if (confirmationAutoCloseTimeout !== null) {
                 clearTimeout(confirmationAutoCloseTimeout);
                 confirmationAutoCloseTimeout = null;
             }
         });
-        
-        modal.addEventListener('click', function(e) {
-            // Si l'utilisateur clique dans le modal (pas sur l'overlay), annuler l'auto-fermeture
-            if (e.target.closest('.confirmation-modal-content')) {
-                if (confirmationAutoCloseTimeout) {
+
+        if (modalContent) {
+            modalContent.addEventListener('click', () => {
+                if (confirmationAutoCloseTimeout !== null) {
                     clearTimeout(confirmationAutoCloseTimeout);
                     confirmationAutoCloseTimeout = null;
                 }
-            }
-        });
+            });
+        }
     }
 });
-
