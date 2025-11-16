@@ -253,6 +253,8 @@ function openModalCreate(start, end) {
     title.textContent = 'Créer une disponibilité';
     submitBtn.textContent = 'Créer';
     document.getElementById('modal-delete').style.display = 'none';
+
+    delete form.dataset.originalDisponibilite;
     
     document.getElementById('date-debut').value = formatDateTimeLocal(start);
     document.getElementById('date-fin').value = formatDateTimeLocal(end);
@@ -264,6 +266,7 @@ function openModalCreate(start, end) {
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
+
 
 function closeModal() {
     const modal = document.getElementById('modal-disponibilite');
@@ -282,7 +285,7 @@ function closeModal() {
 }
 
 // Affichage des champs selon statut
-function toggleFieldsByStatut() {
+function toggleFieldsByStatut(preservePrix = false) {
     const statut = document.getElementById('statut').value;
     const serviceGroup = document.getElementById('service-id').closest('.form-group');
     const prixGroup = document.getElementById('prix').closest('.form-group');
@@ -300,10 +303,15 @@ function toggleFieldsByStatut() {
             const firstOption = serviceSelect.options[1]; // 0 = "Aucun service spécifique"
             if (firstOption) {
                 serviceSelect.value = firstOption.value;
-                updatePrixFromService();
+                if (!preservePrix) {
+                    updatePrixFromService();
+                }
             }
         } else {
-            updatePrixFromService();
+            // Ne mettre à jour le prix que si on ne doit pas le préserver (mode création)
+            if (!preservePrix) {
+                updatePrixFromService();
+            }
         }
     }
 }
@@ -360,7 +368,7 @@ function openModalEdit(event) {
     const extendedProps = event.extendedProps || {};
     const statut = extendedProps.statut || 'DISPONIBLE';
     const serviceId = extendedProps.service_id || '';
-    const prix = extendedProps.prix || '';
+    const prix = extendedProps.prix ?? '';
     const notes = extendedProps.notes || '';
     
     form.reset();
@@ -376,19 +384,37 @@ function openModalEdit(event) {
     } else {
         deleteBtn.style.display = 'none';
     }
-    
-    document.getElementById('date-debut').value = formatDateTimeLocal(start);
-    document.getElementById('date-fin').value = formatDateTimeLocal(end);
+
+    const startStr = formatDateTimeLocal(start);
+    const endStr = formatDateTimeLocal(end);
+
+    document.getElementById('date-debut').value = startStr;
+    document.getElementById('date-fin').value = endStr;
     document.getElementById('service-id').value = serviceId;
-    document.getElementById('prix').value = prix;
+    document.getElementById('prix').value = prix !== null && prix !== undefined ? String(prix) : '';
     document.getElementById('statut').value = statut;
     document.getElementById('notes').value = notes;
-    
-    toggleFieldsByStatut();
+
+    // En mode édition, préserver le prix personnalisé (ne pas l'écraser avec le prix du service)
+    toggleFieldsByStatut(true);
+
+    // ✅ Sauvegarder l'état initial directement depuis les champs du formulaire
+    const original = {
+        date_debut: document.getElementById('date-debut').value || '',
+        date_fin: document.getElementById('date-fin').value || '',
+        service_id: document.getElementById('service-id').value || '',
+        prix: document.getElementById('prix').value || '',
+        statut: document.getElementById('statut').value || '',
+        notes: document.getElementById('notes').value || ''
+    };
+    form.dataset.originalDisponibilite = JSON.stringify(original);
     
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
+
+
+
 
 function submitDisponibilite() {
     const form = document.getElementById('form-disponibilite');
@@ -396,12 +422,38 @@ function submitDisponibilite() {
     const errorDiv = document.getElementById('modal-error');
     const id = formData.get('id');
     
-    const dateDebut = formData.get('date_debut');
-    const dateFin = formData.get('date_fin');
-    const serviceId = formData.get('service_id');
-    const prix = formData.get('prix');
-    const statut = formData.get('statut');
-    const notes = formData.get('notes');
+    const dateDebut = formData.get('date_debut') || '';
+    const dateFin = formData.get('date_fin') || '';
+    const serviceId = formData.get('service_id') || '';
+    const prix = formData.get('prix') || '';
+    const statut = formData.get('statut') || '';
+    const notes = formData.get('notes') || '';
+
+    // 🔍 Normalisation simple pour la comparaison
+    const normalize = (v) => (v ?? '').toString().trim();
+
+    if (id && form.dataset.originalDisponibilite) {
+        try {
+            const original = JSON.parse(form.dataset.originalDisponibilite);
+
+            const noChange =
+                normalize(original.date_debut) === normalize(dateDebut) &&
+                normalize(original.date_fin) === normalize(dateFin) &&
+                normalize(original.service_id) === normalize(serviceId) &&
+                normalize(original.prix) === normalize(prix) &&
+                normalize(original.statut) === normalize(statut) &&
+                normalize(original.notes) === normalize(notes);
+
+            if (noChange) {
+                // Comme si on avait cliqué sur "Fermer"
+                errorDiv.style.display = 'none';
+                closeModal();
+                return;
+            }
+        } catch (e) {
+            console.warn('Impossible de parser les données originales de la disponibilité', e);
+        }
+    }
     
     const debut = new Date(dateDebut);
     const fin = new Date(dateFin);
@@ -458,6 +510,8 @@ function submitDisponibilite() {
         errorDiv.style.display = 'block';
     });
 }
+
+
 
 function updateDisponibilite(event) {
     const id = event.id;
