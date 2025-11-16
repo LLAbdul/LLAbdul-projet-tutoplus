@@ -70,7 +70,6 @@ function fillConfirmationData(data) {
             dateTimeElement.textContent = data.dateTime;
         } else {
             dateTimeElement.textContent = '-';
-            console.warn('Date ou heure manquante dans les données de confirmation');
         }
     } else {
         console.error('Élément confirmation-date-time non trouvé dans le DOM');
@@ -79,9 +78,6 @@ function fillConfirmationData(data) {
     // Tuteur
     if (tuteurElement) {
         tuteurElement.textContent = data.tuteur || '-';
-        if (!data.tuteur) {
-            console.warn('Nom du tuteur manquant dans les données de confirmation');
-        }
     } else {
         console.error('Élément confirmation-tuteur non trouvé dans le DOM');
     }
@@ -89,9 +85,6 @@ function fillConfirmationData(data) {
     // Service
     if (serviceElement) {
         serviceElement.textContent = data.service || '-';
-        if (!data.service) {
-            console.warn('Nom du service manquant dans les données de confirmation');
-        }
     } else {
         console.error('Élément confirmation-service non trouvé dans le DOM');
     }
