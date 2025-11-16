@@ -328,6 +328,54 @@ $cacheBuster = time();
     </div>
 </div>
 
+<!-- Modal pour modifier un service -->
+<div id="serviceModal" class="compte-modal">
+    <div class="compte-modal-overlay"></div>
+    <div class="compte-modal-content">
+        <div class="compte-modal-header">
+            <h2 id="serviceModalTitle">Modifier le service</h2>
+            <button class="compte-modal-close" id="serviceModalClose" aria-label="Fermer" type="button">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+        <div class="compte-modal-body">
+            <form id="serviceForm" class="compte-form">
+                <input type="hidden" id="service-id" name="id">
+                <input type="hidden" id="service-tuteur-id" name="tuteur_id">
+                
+                <div class="form-group">
+                    <label for="service-nom" class="form-label">Nom du service</label>
+                    <input type="text" id="service-nom" name="nom" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label for="service-description" class="form-label">Description</label>
+                    <textarea id="service-description" name="description" class="form-textarea" rows="4"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="service-prix" class="form-label">Prix ($)</label>
+                    <input type="number" id="service-prix" name="prix" class="form-input" step="0.01" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="service-duree" class="form-label">Durée (minutes)</label>
+                    <input type="number" id="service-duree" name="duree_minute" class="form-input" min="15" step="15">
+                </div>
+
+                <div id="service-error" class="error-message" style="display: none;"></div>
+
+                <div class="compte-modal-footer">
+                    <button type="button" class="btn-cancel" id="btnServiceCancel">Annuler</button>
+                    <button type="submit" class="btn-submit" id="btnServiceSubmit">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <footer>
     <div class="container">
         <div class="footer-content">
