@@ -1787,10 +1787,59 @@ select:hover:not(:focus-visible) {
   margin-top: 0.25rem;
   padding-top: 0.75rem;
   color: var(--accent-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.burger-menu-link-logout span {
+  flex: 1;
+}
+
+.burger-menu-link-logout svg {
+  flex-shrink: 0;
+  color: var(--accent-color);
 }
 
 .burger-menu-link-logout:hover {
   background: #fee;
+  color: var(--accent-color);
+}
+
+.burger-menu-link-logout:hover svg {
+  color: var(--accent-color);
+}
+
+/* Bouton de déconnexion rapide */
+.btn-logout-quick {
+  display: none;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-dark);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+}
+
+.btn-logout-quick svg {
+  width: 20px;
+  height: 20px;
+}
+
+.btn-logout-quick:hover {
+  background: var(--bg-light);
+  color: var(--accent-color);
+}
+
+.btn-logout-quick:hover svg {
   color: var(--accent-color);
 }
 
@@ -1800,6 +1849,10 @@ select:hover:not(:focus-visible) {
   }
 
   .burger-menu-btn-desktop {
+    display: flex;
+  }
+
+  .btn-logout-quick {
     display: flex;
   }
 
