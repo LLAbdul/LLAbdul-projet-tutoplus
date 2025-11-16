@@ -619,7 +619,15 @@ function openRendezVousConfirmModal(action, rendezVousId) {
     const raisonInput = document.getElementById('raisonAnnulation');
     const submitBtn = document.getElementById('rendezVousConfirmSubmit');
     
-    if (!modal) return;
+    if (!modal) {
+        console.error('Modal rendezVousConfirmModal non trouvé');
+        return;
+    }
+    
+    if (!title || !message || !raisonDiv || !raisonInput || !submitBtn) {
+        console.error('Éléments du modal non trouvés');
+        return;
+    }
     
     pendingRendezVousAction = { action, rendezVousId };
     
@@ -638,13 +646,15 @@ function openRendezVousConfirmModal(action, rendezVousId) {
     }
     
     raisonInput.value = '';
-    modal.style.display = 'block';
+    modal.style.display = 'flex';
+    modal.classList.add('active');
 }
 
 function closeRendezVousConfirmModal() {
     const modal = document.getElementById('rendezVousConfirmModal');
     if (modal) {
         modal.style.display = 'none';
+        modal.classList.remove('active');
         pendingRendezVousAction = null;
     }
 }
@@ -733,34 +743,52 @@ function initRendezVousConfirmModal() {
     
     // Fermer avec Échap
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.style.display === 'block') {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
             closeRendezVousConfirmModal();
         }
     });
 }
 
 async function annulerRendezVous(rendezVousId) {
+    if (!rendezVousId) {
+        console.error('ID de rendez-vous manquant pour annulation');
+        return;
+    }
     openRendezVousConfirmModal('annuler', rendezVousId);
 }
 
 async function terminerRendezVous(rendezVousId) {
+    if (!rendezVousId) {
+        console.error('ID de rendez-vous manquant pour terminaison');
+        return;
+    }
     openRendezVousConfirmModal('terminer', rendezVousId);
 }
 
 // Initialiser les gestionnaires d'événements pour les boutons d'action
 function initRendezVousActions() {
     document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('btn-rendez-vous-annuler')) {
-            const rendezVousId = e.target.getAttribute('data-rendez-vous-id');
+        // Utiliser closest() pour gérer les clics sur les enfants du bouton
+        const annulerBtn = e.target.closest('.btn-rendez-vous-annuler');
+        if (annulerBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const rendezVousId = annulerBtn.getAttribute('data-rendez-vous-id');
             if (rendezVousId) {
                 annulerRendezVous(rendezVousId);
             }
+            return;
         }
-        if (e.target.classList.contains('btn-rendez-vous-terminer')) {
-            const rendezVousId = e.target.getAttribute('data-rendez-vous-id');
+        
+        const terminerBtn = e.target.closest('.btn-rendez-vous-terminer');
+        if (terminerBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const rendezVousId = terminerBtn.getAttribute('data-rendez-vous-id');
             if (rendezVousId) {
                 terminerRendezVous(rendezVousId);
             }
+            return;
         }
     });
 }

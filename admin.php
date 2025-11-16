@@ -421,7 +421,7 @@ $cacheBuster = time();
 </div>
 
 <!-- Modal de confirmation pour annuler/terminer rendez-vous -->
-<div id="rendezVousConfirmModal" class="compte-modal" style="display: none;">
+<div id="rendezVousConfirmModal" class="compte-modal">
     <div class="compte-modal-overlay"></div>
     <div class="compte-modal-content">
         <div class="compte-modal-header">
@@ -434,7 +434,7 @@ $cacheBuster = time();
         </div>
         <div class="compte-modal-body">
             <p id="rendezVousConfirmMessage">Êtes-vous sûr de vouloir effectuer cette action ?</p>
-            <div id="rendezVousConfirmRaison" style="display: none;">
+            <div id="rendezVousConfirmRaison" style="display: none;" class="form-group">
                 <label for="raisonAnnulation" class="form-label">Raison (optionnel) :</label>
                 <textarea id="raisonAnnulation" class="form-textarea" rows="3" placeholder="Ex: Annulé à la demande de l'étudiant"></textarea>
             </div>
