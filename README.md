@@ -4,7 +4,7 @@ Système de tutorat pour le Collège Ahuntsic permettant aux étudiants de déco
 
 ## Équipe
 
-**Chef d'équipe :** Abdul Rahman Zahid
+**Chef d'équipe :** Abdul Rahman Zahid  
 **Développeur :** Adel Tamani  
 **Testeur :** Diane Devi
 
