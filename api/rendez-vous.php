@@ -1,8 +1,10 @@
 <?php
 /**
- * API endpoint pour gérer les rendez-vous confirmés
- * TutoPlus - Système de tutorat
+ * API rendez-vous.php
+ * - GET : liste ou détail des rendez-vous (selon id, filtrable par statut/date)
+ * - PUT : actions sur un rendez-vous (confirmer/annuler/reporter/terminer)
  */
+
 
 session_start();
 
