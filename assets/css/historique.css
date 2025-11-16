@@ -28,6 +28,46 @@
   margin: 0 auto;
 }
 
+/* Filtres de statut */
+.historique-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing);
+  border-bottom: 2px solid var(--border-light);
+}
+
+.filter-btn {
+  padding: 0.5rem 1.25rem;
+  border: 2px solid var(--border-color);
+  background: var(--bg-white);
+  color: var(--text-dark);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.filter-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background: rgba(204, 0, 0, 0.05);
+}
+
+.filter-btn.active {
+  background: var(--accent-color);
+  color: var(--text-white);
+  border-color: var(--accent-color);
+}
+
+.filter-btn.active:hover {
+  background: var(--accent-light);
+  border-color: var(--accent-light);
+}
+
 /* Indicateur de chargement */
 .loading-indicator {
   text-align: center;
@@ -156,6 +196,14 @@
   background-color: #17a2b8;
 }
 
+.rendez-vous-card.pending::before {
+  background-color: #007bff;
+}
+
+.rendez-vous-card.refused::before {
+  background-color: #dc3545;
+}
+
 /* En-tête de la carte */
 .rendez-vous-card-header {
   display: flex;
@@ -219,6 +267,16 @@
   color: #856404;
 }
 
+.rendez-vous-statut.en-attente {
+  background-color: #e7f3ff;
+  color: #004085;
+}
+
+.rendez-vous-statut.refusee {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
 /* Corps de la carte */
 .rendez-vous-card-body {
   display: grid;
@@ -276,6 +334,15 @@
 
   .historique-subtitle {
     font-size: 1rem;
+  }
+
+  .historique-filters {
+    gap: 0.5rem;
+  }
+
+  .filter-btn {
+    padding: 0.4375rem 1rem;
+    font-size: 0.8125rem;
   }
 
   .rendez-vous-card {
