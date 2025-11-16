@@ -151,8 +151,54 @@ $cacheBuster = time();
 
             <!-- Section Gestion des Rendez-vous -->
             <div class="admin-tab-content" id="tab-rendez-vous">
-                <div class="admin-placeholder">
-                    <p>La gestion des rendez-vous sera disponible prochainement.</p>
+                <!-- Filtres pour les rendez-vous -->
+                <div class="admin-filters">
+                    <button class="filter-btn active" data-filter="all" type="button">
+                        Tous
+                    </button>
+                    <button class="filter-btn" data-filter="A_VENIR" type="button">
+                        À venir
+                    </button>
+                    <button class="filter-btn" data-filter="EN_COURS" type="button">
+                        En cours
+                    </button>
+                    <button class="filter-btn" data-filter="TERMINE" type="button">
+                        Terminé
+                    </button>
+                    <button class="filter-btn" data-filter="ANNULE" type="button">
+                        Annulé
+                    </button>
+                    <button class="filter-btn" data-filter="REPORTE" type="button">
+                        Reporté
+                    </button>
+                </div>
+
+                <!-- Zone de chargement -->
+                <div id="loadingIndicatorRendezVous" class="loading-indicator">
+                    <div class="spinner"></div>
+                    <p>Chargement des rendez-vous...</p>
+                </div>
+
+                <!-- Message d'erreur -->
+                <div id="errorMessageRendezVous" class="error-message" style="display: none;">
+                    <p id="errorTextRendezVous"></p>
+                </div>
+
+                <!-- Message si aucun rendez-vous -->
+                <div id="noRendezVous" class="no-rendez-vous" style="display: none;">
+                    <div class="no-rendez-vous-icon" aria-hidden="true">
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="32" cy="32" r="32" fill="#e9ecef"/>
+                            <path d="M32 20V32L40 40" stroke="#6c757d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h3>Aucun rendez-vous</h3>
+                    <p>Aucun rendez-vous trouvé avec les filtres sélectionnés.</p>
+                </div>
+
+                <!-- Liste des rendez-vous -->
+                <div id="rendezVousList" class="rendez-vous-list" style="display: none;">
+                    <!-- Les rendez-vous seront injectés ici par JavaScript -->
                 </div>
             </div>
         </div>
