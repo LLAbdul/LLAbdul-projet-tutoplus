@@ -1,8 +1,12 @@
 <?php
 /**
- * API endpoint pour gérer les messages de contact
- * TutoPlus - Système de tutorat
+ * API messages.php
+ * - GET    : liste ou détail (selon id) des messages d’un utilisateur
+ * - POST   : création d’un message (étudiant → tuteur)
+ * - PUT    : mettre à jour (lu ou statut)
+ * - DELETE : suppression (uniquement par l'expéditeur)
  */
+
 
 session_start();
 
