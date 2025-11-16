@@ -16,7 +16,7 @@ class Service
 
     // Paramètres : aucun
     // Retourne : tous les services actifs avec leur tuteur
-    public function getAllActiveServices(): array
+    public function getAllActiveServices(): array // Testé par Abdul Rahman Zahid le 16/11/2025 Réussi
     {
         try {
             $stmt = $this->pdo->prepare("
