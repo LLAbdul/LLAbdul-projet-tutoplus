@@ -2,10 +2,10 @@
 
 Système de tutorat pour le Collège Ahuntsic permettant aux étudiants de découvrir les services de tutorat, consulter les créneaux horaires disponibles et réserver des séances avec des tuteurs.
 
-## Équipe
+## Equipe de développement
 
 **Chef d'équipe :** Abdul Rahman Zahid  
-**Développeur :** Adel Tamani  
+**Développeur :** Adel Tamani
 **Testeur :** Diane Devi
 
 ---
