@@ -102,6 +102,73 @@ class Tuteur
         }
     }
 
+    // Paramètres : aucun
+    // Retourne : tableau de tous les tuteurs (actifs et inactifs) - pour admin
+    public function getAllTuteurs(): array
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT 
+                    id, numero_employe, nom, prenom, email, telephone, 
+                    departement, specialites, tarif_horaire, evaluation, 
+                    nb_seances, actif, date_creation, derniere_connexion
+                FROM tuteurs 
+                ORDER BY nom, prenom
+            ");
+            $stmt->execute();
+
+            return $stmt->fetchAll() ?: [];
+        } catch (PDOException $e) {
+            error_log("Erreur Tuteur::getAllTuteurs : " . $e->getMessage());
+            return [];
+        }
+    }
+
+    // Paramètres : id tuteur, actif (booléen)
+    // Retourne : true si succès, false sinon
+    public function updateActif(string $id, bool $actif): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                UPDATE tuteurs 
+                SET actif = :actif 
+                WHERE id = :id
+            ");
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmt->bindValue(':actif', $actif ? 1 : 0, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            error_log("Erreur Tuteur::updateActif : " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Paramètre : id tuteur (retourne même si inactif - pour admin)
+    // Retourne : tableau associatif ou null
+    public function getTuteurByIdForAdmin(string $id): ?array
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT 
+                    id, numero_employe, nom, prenom, email, telephone, 
+                    departement, specialites, tarif_horaire, evaluation, 
+                    nb_seances, actif, date_creation, derniere_connexion
+                FROM tuteurs 
+                WHERE id = :id
+            ");
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmt->execute();
+
+            $row = $stmt->fetch();
+            return $row !== false ? $row : null;
+        } catch (PDOException $e) {
+            error_log("Erreur Tuteur::getTuteurByIdForAdmin : " . $e->getMessage());
+            return null;
+        }
+    }
+
     // Paramètre : département
     // Retourne : tuteurs actifs de ce département
     public function getTuteursByDepartement(string $departement): array
