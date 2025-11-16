@@ -420,6 +420,32 @@ $cacheBuster = time();
     </div>
 </div>
 
+<!-- Modal de confirmation pour annuler/terminer rendez-vous -->
+<div id="rendezVousConfirmModal" class="compte-modal" style="display: none;">
+    <div class="compte-modal-overlay"></div>
+    <div class="compte-modal-content">
+        <div class="compte-modal-header">
+            <h3 class="compte-modal-title" id="rendezVousConfirmTitle">Confirmer l'action</h3>
+            <button class="compte-modal-close" id="rendezVousConfirmClose" type="button" aria-label="Fermer">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+        <div class="compte-modal-body">
+            <p id="rendezVousConfirmMessage">Êtes-vous sûr de vouloir effectuer cette action ?</p>
+            <div id="rendezVousConfirmRaison" style="display: none;">
+                <label for="raisonAnnulation" class="form-label">Raison (optionnel) :</label>
+                <textarea id="raisonAnnulation" class="form-textarea" rows="3" placeholder="Ex: Annulé à la demande de l'étudiant"></textarea>
+            </div>
+        </div>
+        <div class="compte-modal-footer">
+            <button type="button" class="btn-cancel" id="rendezVousConfirmCancel">Annuler</button>
+            <button type="button" class="btn-submit" id="rendezVousConfirmSubmit">Confirmer</button>
+        </div>
+    </div>
+</div>
+
 <footer>
     <div class="container">
         <div class="footer-content">
