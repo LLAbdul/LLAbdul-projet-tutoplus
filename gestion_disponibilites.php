@@ -61,7 +61,8 @@ $cacheBuster = time();
     <link rel="stylesheet" href="assets/css/style.css?v=<?= $cacheBuster ?>">
     <link rel="stylesheet" href="assets/css/gestion-disponibilites.css?v=<?= $cacheBuster ?>">
     <link rel="stylesheet" href="assets/css/creneaux-modal.css?v=<?= $cacheBuster ?>">
-    <link rel="stylesheet" href="assets/css/fullcalendar.min.css?v=<?= $cacheBuster ?>">
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
 </head>
 <body>
 <header>
@@ -385,8 +386,8 @@ $cacheBuster = time();
     </div>
 </footer>
 
-<script src="assets/js/fullcalendar.min.js?v=<?= $cacheBuster ?>"></script>
-<script src="assets/js/fullcalendar-locales-fr-ca.js?v=<?= $cacheBuster ?>"></script>
+<!-- FullCalendar -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
 <script src="assets/js/gestion-disponibilites.js?v=<?= $cacheBuster ?>"></script>
 <script src="assets/js/user-dropdown-menu.js?v=<?= $cacheBuster ?>"></script>
 </body>

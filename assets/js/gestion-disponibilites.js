@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'timeGridWeek',
-        locale: 'fr-ca',
+        locale: 'fr',
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
