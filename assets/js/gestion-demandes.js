@@ -8,6 +8,10 @@
 // Constantes
 const DEMANDES_API_URL = 'api/demandes.php';
 
+// État global pour le filtrage
+let allDemandes = [];
+let currentFilter = 'all';
+
 // Éléments DOM
 const loadingIndicator = document.getElementById('loadingIndicator');
 const errorMessage = document.getElementById('errorMessage');
@@ -105,6 +109,36 @@ function hideError() {
     errorMessage.style.display = 'none';
 }
 
+// Fonction pour filtrer les demandes selon le statut sélectionné
+function filterDemandes(demandes, filter) {
+    if (filter === 'all') {
+        return demandes;
+    }
+    return demandes.filter(demande => demande.statut === filter);
+}
+
+// Fonction pour afficher les demandes avec filtrage
+function displayDemandes(demandes) {
+    // Filtrer selon le filtre actif
+    const filteredDemandes = filterDemandes(demandes, currentFilter);
+
+    if (filteredDemandes.length === 0) {
+        // Afficher un message si aucun résultat après filtrage
+        noDemandes.style.display = 'block';
+        noDemandes.querySelector('h3').textContent = 'Aucune demande trouvée';
+        noDemandes.querySelector('p').textContent = 'Aucune demande avec le statut sélectionné.';
+        demandesList.style.display = 'none';
+        return;
+    }
+
+    // Cacher le message "aucune demande"
+    noDemandes.style.display = 'none';
+
+    // Afficher les demandes
+    demandesList.innerHTML = filteredDemandes.map(demande => createDemandeCard(demande)).join('');
+    demandesList.style.display = 'flex';
+}
+
 // Fonction pour créer le HTML d'une carte de demande
 function createDemandeCard(demande) {
     const statutClass = getStatutClass(demande.statut);
@@ -126,13 +160,13 @@ function createDemandeCard(demande) {
                 >
                     Accepter
                 </button>
-                <button 
-                    class="btn-refuser" 
-                    onclick="refuserDemande('${demande.id}')"
-                    type="button"
-                >
-                    Refuser
-                </button>
+                            <button 
+                                class="btn-refuser" 
+                                onclick="openRefusModal('${demande.id}')"
+                                type="button"
+                            >
+                                Refuser
+                            </button>
             </div>
         `;
     }
@@ -222,19 +256,24 @@ async function loadDemandes() {
 
         if (loadingIndicator) loadingIndicator.style.display = 'none';
 
+        // Stocker toutes les demandes pour le filtrage
+        allDemandes = demandes || [];
+
         if (!demandes || !Array.isArray(demandes) || demandes.length === 0) {
             if (noDemandes) noDemandes.style.display = 'block';
             if (demandesList) demandesList.style.display = 'none';
+            // Cacher les filtres s'il n'y a pas de données
+            const filters = document.getElementById('demandesFilters');
+            if (filters) filters.style.display = 'none';
             return;
         }
 
-        if (demandesList) {
-            demandesList.innerHTML = demandes
-                .map(demande => createDemandeCard(demande))
-                .join('');
-            demandesList.style.display = 'flex';
-        }
-        if (noDemandes) noDemandes.style.display = 'none';
+        // Afficher les filtres
+        const filters = document.getElementById('demandesFilters');
+        if (filters) filters.style.display = 'flex';
+
+        // Afficher les demandes avec filtrage
+        displayDemandes(allDemandes);
 
     } catch (error) {
         console.error('Erreur lors du chargement des demandes :', error);
@@ -266,6 +305,7 @@ async function accepterDemande(demandeId) {
 
         showToast(data.message || 'Demande acceptée avec succès', 'success');
 
+        // Recharger les demandes après un court délai
         setTimeout(() => {
             loadDemandes();
         }, 1000);
@@ -277,20 +317,80 @@ async function accepterDemande(demandeId) {
     }
 }
 
+// Variables pour le modal de refus
+let currentRefusDemandeId = null;
+
+// Fonction pour ouvrir le modal de refus (accessible globalement)
+function openRefusModal(demandeId) {
+    currentRefusDemandeId = demandeId;
+    const modal = document.getElementById('refusModal');
+    const raisonTextarea = document.getElementById('refus-raison');
+    const charCount = document.getElementById('refus-char-count');
+    
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Réinitialiser le formulaire
+        if (raisonTextarea) {
+            raisonTextarea.value = '';
+            if (charCount) charCount.textContent = '0';
+        }
+    }
+}
+
+// Rendre la fonction accessible globalement
+window.openRefusModal = openRefusModal;
+
+// Fonction pour fermer le modal de refus
+function closeRefusModal() {
+    const modal = document.getElementById('refusModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        currentRefusDemandeId = null;
+    }
+}
+
+// Fonction pour mettre à jour le compteur de caractères
+function updateRefusCharCount() {
+    const raisonTextarea = document.getElementById('refus-raison');
+    const charCount = document.getElementById('refus-char-count');
+    
+    if (raisonTextarea && charCount) {
+        const count = raisonTextarea.value.length;
+        charCount.textContent = count;
+        
+        if (count > 500) {
+            charCount.style.color = '#dc3545';
+        } else {
+            charCount.style.color = '';
+        }
+    }
+}
+
 // Fonction pour refuser une demande
-async function refuserDemande(demandeId) {
-    const raison = prompt('Raison du refus (optionnel) :');
+async function confirmRefusDemande() {
+    if (!currentRefusDemandeId) return;
+
+    const raisonTextarea = document.getElementById('refus-raison');
+    const raison = raisonTextarea ? raisonTextarea.value.trim() : '';
+
+    if (raison.length > 500) {
+        showToast('La raison ne peut pas dépasser 500 caractères', 'error');
+        return;
+    }
 
     try {
-        setDemandeButtonsDisabled(demandeId, true);
+        setDemandeButtonsDisabled(currentRefusDemandeId, true);
 
         const body = {
-            id: demandeId,
+            id: currentRefusDemandeId,
             action: 'refuser'
         };
 
-        if (raison && raison.trim()) {
-            body.raison = raison.trim();
+        if (raison) {
+            body.raison = raison;
         }
 
         const response = await fetch(DEMANDES_API_URL, {
@@ -307,6 +407,7 @@ async function refuserDemande(demandeId) {
             throw new Error(data.error || 'Erreur lors du refus de la demande');
         }
 
+        closeRefusModal();
         showToast(data.message || 'Demande refusée avec succès', 'success');
 
         setTimeout(() => {
@@ -316,12 +417,69 @@ async function refuserDemande(demandeId) {
     } catch (error) {
         console.error('Erreur lors du refus de la demande :', error);
         showToast(error.message || 'Erreur lors du refus de la demande', 'error');
-        setDemandeButtonsDisabled(demandeId, false);
+        setDemandeButtonsDisabled(currentRefusDemandeId, false);
     }
+}
+
+// Fonction pour initialiser les filtres
+function initFilters() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Retirer la classe active de tous les boutons
+            filterButtons.forEach(b => b.classList.remove('active'));
+            
+            // Ajouter la classe active au bouton cliqué
+            btn.classList.add('active');
+            
+            // Mettre à jour le filtre actif
+            currentFilter = btn.getAttribute('data-filter');
+            
+            // Réafficher les demandes avec le nouveau filtre
+            displayDemandes(allDemandes);
+        });
+    });
 }
 
 // Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', () => {
     if (!loadingIndicator || !demandesList) return;
+    initFilters();
     loadDemandes();
+
+    // Gestion du modal de refus
+    const refusModal = document.getElementById('refusModal');
+    const refusModalClose = document.getElementById('refusModalClose');
+    const refusModalOverlay = refusModal ? refusModal.querySelector('.refus-modal-overlay') : null;
+    const btnRefusCancel = document.getElementById('btnRefusCancel');
+    const btnRefusConfirm = document.getElementById('btnRefusConfirm');
+    const raisonTextarea = document.getElementById('refus-raison');
+
+    if (refusModalClose) {
+        refusModalClose.addEventListener('click', closeRefusModal);
+    }
+
+    if (refusModalOverlay) {
+        refusModalOverlay.addEventListener('click', closeRefusModal);
+    }
+
+    if (btnRefusCancel) {
+        btnRefusCancel.addEventListener('click', closeRefusModal);
+    }
+
+    if (btnRefusConfirm) {
+        btnRefusConfirm.addEventListener('click', confirmRefusDemande);
+    }
+
+    if (raisonTextarea) {
+        raisonTextarea.addEventListener('input', updateRefusCharCount);
+    }
+
+    // Fermer le modal avec la touche Échap
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && refusModal && refusModal.classList.contains('active')) {
+            closeRefusModal();
+        }
+    });
 });

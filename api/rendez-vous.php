@@ -10,6 +10,8 @@ session_start();
 
 require_once '../config/database.php';
 require_once '../models/RendezVous.php';
+require_once '../models/Demande.php';
+require_once '../models/Disponibilite.php';
 
 header('Content-Type: application/json');
 
@@ -64,6 +66,56 @@ try {
                 if (isset($_SESSION['etudiant_id'])) {
                     // Étudiant : voir ses propres rendez-vous
                     $rendezVousList = $rendezVousModel->getRendezVousByEtudiantId($_SESSION['etudiant_id']);
+                    
+                    // Ajouter aussi les demandes en attente et refusées (sans rendez-vous créé)
+                    $demandeModel = new Demande($pdo);
+                    $disponibiliteModel = new Disponibilite($pdo);
+                    $toutesDemandes = $demandeModel->getDemandesByEtudiantId($_SESSION['etudiant_id']);
+                    
+                    // Filtrer pour ne garder que les demandes en attente ou refusées
+                    $demandesAInclure = array_filter($toutesDemandes, function($demande) {
+                        $statut = $demande['statut'] ?? null;
+                        return $statut === 'EN_ATTENTE' || $statut === 'REFUSEE';
+                    });
+                    
+                    foreach ($demandesAInclure as $demande) {
+                        // Vérifier qu'il n'y a pas déjà un rendez-vous pour cette demande
+                        $stmt = $pdo->prepare("SELECT id FROM rendez_vous WHERE demande_id = :demande_id LIMIT 1");
+                        $stmt->bindParam(':demande_id', $demande['id'], PDO::PARAM_STR);
+                        $stmt->execute();
+                        $rendezVousExistant = $stmt->fetch();
+                        
+                        if (!$rendezVousExistant && $demande['disponibilite_id']) {
+                            // Récupérer les informations de la disponibilité
+                            $disponibilite = $disponibiliteModel->getDisponibiliteById($demande['disponibilite_id']);
+                            
+                            if ($disponibilite) {
+                                // Utiliser le statut de la demande (EN_ATTENTE ou REFUSEE)
+                                $statutDemande = $demande['statut'] ?? 'EN_ATTENTE';
+                                
+                                // Créer un objet similaire à un rendez-vous mais avec le statut de la demande
+                                $rendezVousList[] = [
+                                    'id' => null, // Pas encore de rendez-vous
+                                    'demande_id' => $demande['id'],
+                                    'etudiant_id' => $demande['etudiant_id'],
+                                    'tuteur_id' => $demande['tuteur_id'],
+                                    'service_id' => $demande['service_id'],
+                                    'disponibilite_id' => $demande['disponibilite_id'],
+                                    'date_heure' => $disponibilite['date_debut'], // Utiliser la date de début de la disponibilité
+                                    'statut' => $statutDemande, // Statut de la demande (EN_ATTENTE ou REFUSEE)
+                                    'duree' => null, // Sera calculé plus tard
+                                    'lieu' => null,
+                                    'notes' => $demande['motif'] ?? null, // Utiliser motif (qui contient la raison du refus si refusée)
+                                    'prix' => null, // Sera calculé plus tard
+                                    'date_creation' => $demande['date_creation'],
+                                    'tuteur_nom' => $demande['tuteur_nom'] ?? null,
+                                    'tuteur_prenom' => $demande['tuteur_prenom'] ?? null,
+                                    'service_nom' => $demande['service_nom'] ?? null,
+                                    'service_categorie' => $demande['service_categorie'] ?? null
+                                ];
+                            }
+                        }
+                    }
                 } elseif (isset($_SESSION['tuteur_id'])) {
                     // Tuteur : voir ses rendez-vous
                     $rendezVousList = $rendezVousModel->getRendezVousByTuteurId($_SESSION['tuteur_id']);
