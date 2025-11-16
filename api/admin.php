@@ -2,6 +2,7 @@
 /**
  * API admin.php
  * - GET    : liste des comptes (étudiants et tuteurs) ou détails d'un compte
+ *            GET ?resource=rendez-vous : liste de tous les rendez-vous
  * - PUT    : modification d'un compte (activer/désactiver, modifier les informations)
  * - DELETE : (non implémenté pour l'instant)
  */
@@ -11,6 +12,7 @@ session_start();
 require_once '../config/database.php';
 require_once '../models/Etudiant.php';
 require_once '../models/Tuteur.php';
+require_once '../models/RendezVous.php';
 
 header('Content-Type: application/json');
 
@@ -31,50 +33,60 @@ try {
     // Gérer les différentes méthodes HTTP
     switch ($method) {
         case 'GET':
-            // Récupérer les comptes
-            $id = $_GET['id'] ?? null;
-            $type = $_GET['type'] ?? null; // 'etudiant' ou 'tuteur'
+            // Déterminer la ressource demandée (comptes ou rendez-vous)
+            $resource = $_GET['resource'] ?? 'comptes';
             
-            if ($id) {
-                // Récupérer un compte spécifique (même si inactif - pour admin)
-                if ($type === 'etudiant') {
-                    $compte = $etudiantModel->getEtudiantByIdForAdmin($id);
-                } elseif ($type === 'tuteur') {
-                    $compte = $tuteurModel->getTuteurByIdForAdmin($id);
-                } else {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'Type de compte requis (etudiant ou tuteur)']);
-                    break;
-                }
-                
-                if (!$compte) {
-                    http_response_code(404);
-                    echo json_encode(['error' => 'Compte non trouvé']);
-                    break;
-                }
-                
-                // Ajouter le type de compte
-                $compte['type'] = $type;
-                echo json_encode($compte);
+            if ($resource === 'rendez-vous') {
+                // Récupérer tous les rendez-vous
+                $rendezVousModel = new RendezVous($pdo);
+                $rendezVous = $rendezVousModel->getAllRendezVous();
+                echo json_encode($rendezVous);
             } else {
-                // Récupérer la liste de tous les comptes
-                $comptes = [];
+                // Récupérer les comptes
+                $id = $_GET['id'] ?? null;
+                $type = $_GET['type'] ?? null; // 'etudiant' ou 'tuteur'
                 
-                // Récupérer tous les étudiants
-                $etudiants = $etudiantModel->getAllEtudiants();
-                foreach ($etudiants as $etudiant) {
-                    $etudiant['type'] = 'etudiant';
-                    $comptes[] = $etudiant;
+                if ($id) {
+                    // Récupérer un compte spécifique (même si inactif - pour admin)
+                    if ($type === 'etudiant') {
+                        $compte = $etudiantModel->getEtudiantByIdForAdmin($id);
+                    } elseif ($type === 'tuteur') {
+                        $compte = $tuteurModel->getTuteurByIdForAdmin($id);
+                    } else {
+                        http_response_code(400);
+                        echo json_encode(['error' => 'Type de compte requis (etudiant ou tuteur)']);
+                        break;
+                    }
+                    
+                    if (!$compte) {
+                        http_response_code(404);
+                        echo json_encode(['error' => 'Compte non trouvé']);
+                        break;
+                    }
+                    
+                    // Ajouter le type de compte
+                    $compte['type'] = $type;
+                    echo json_encode($compte);
+                } else {
+                    // Récupérer la liste de tous les comptes
+                    $comptes = [];
+                    
+                    // Récupérer tous les étudiants
+                    $etudiants = $etudiantModel->getAllEtudiants();
+                    foreach ($etudiants as $etudiant) {
+                        $etudiant['type'] = 'etudiant';
+                        $comptes[] = $etudiant;
+                    }
+                    
+                    // Récupérer tous les tuteurs
+                    $tuteurs = $tuteurModel->getAllTuteurs();
+                    foreach ($tuteurs as $tuteur) {
+                        $tuteur['type'] = 'tuteur';
+                        $comptes[] = $tuteur;
+                    }
+                    
+                    echo json_encode($comptes);
                 }
-                
-                // Récupérer tous les tuteurs
-                $tuteurs = $tuteurModel->getAllTuteurs();
-                foreach ($tuteurs as $tuteur) {
-                    $tuteur['type'] = 'tuteur';
-                    $comptes[] = $tuteur;
-                }
-                
-                echo json_encode($comptes);
             }
             break;
             
