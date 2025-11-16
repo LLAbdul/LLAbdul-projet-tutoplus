@@ -1,11 +1,12 @@
 <?php
 /**
  * Page login.php
- * - Page de connexion simulée Étudiant / Tuteur
- * - Bascule via ?type=etudiant|tuteur
+ * - Page de connexion simulée Étudiant / Tuteur / Administrateur
+ * - Bascule via ?type=etudiant|tuteur|admin
  * - Redirige si déjà connecté
  *   - Étudiant -> index.php
  *   - Tuteur   -> gestion_disponibilites.php
+ *   - Admin    -> admin.php
  */
 
 session_start();
@@ -19,9 +20,20 @@ if (isset($_SESSION['tuteur_id'])) {
     header('Location: gestion_disponibilites.php');
     exit;
 }
+if (isset($_SESSION['admin_id'])) {
+    header('Location: admin.php');
+    exit;
+}
 
 // Déterminer le type de connexion (par défaut: étudiant)
-$loginType = (isset($_GET['type']) && $_GET['type'] === 'tuteur') ? 'tuteur' : 'etudiant';
+$typeParam = $_GET['type'] ?? 'etudiant';
+if ($typeParam === 'admin') {
+    $loginType = 'admin';
+} elseif ($typeParam === 'tuteur') {
+    $loginType = 'tuteur';
+} else {
+    $loginType = 'etudiant';
+}
 
 $logoAhuntsicFull  = 'https://www.collegeahuntsic.qc.ca/assets/logo-ahuntsic@2x-d26df4e07b2c21fcf37f518dd0ddba254ead36b6184274af4a4f6ca3b47bc838.png';
 $logoAhuntsicShort = 'assets/images/collegeahuntsiclogoshort.png';
@@ -87,16 +99,28 @@ $cacheBuster       = time();
                     >
                         Tuteur
                     </button>
+                    <button
+                        type="button"
+                        class="switch-btn <?= $loginType === 'admin' ? 'active' : '' ?>"
+                        data-type="admin"
+                    >
+                        Admin
+                    </button>
                 </div>
 
                 <h2 class="login-title" id="login-title">
-                    <?= $loginType === 'tuteur' ? 'Connexion Tuteur' : 'Connexion' ?>
+                    <?= $loginType === 'admin' ? 'Connexion Administrateur' : ($loginType === 'tuteur' ? 'Connexion Tuteur' : 'Connexion') ?>
                 </h2>
 
                 <p class="login-subtitle" id="login-subtitle">
-                    <?= $loginType === 'tuteur'
-                        ? 'Entrez votre numéro d\'employé pour vous connecter'
-                        : 'Entrez votre numéro d\'étudiant pour vous connecter'
+                    <?php
+                    if ($loginType === 'admin') {
+                        echo 'Entrez votre numéro d\'administrateur pour vous connecter';
+                    } elseif ($loginType === 'tuteur') {
+                        echo 'Entrez votre numéro d\'employé pour vous connecter';
+                    } else {
+                        echo 'Entrez votre numéro d\'étudiant pour vous connecter';
+                    }
                     ?>
                 </p>
 
@@ -108,7 +132,15 @@ $cacheBuster       = time();
                 <?php endif; ?>
 
                 <form
-                    action="<?= $loginType === 'tuteur' ? 'login_tuteur_process.php' : 'login_process.php' ?>"
+                    action="<?php
+                        if ($loginType === 'admin') {
+                            echo 'login_admin_process.php';
+                        } elseif ($loginType === 'tuteur') {
+                            echo 'login_tuteur_process.php';
+                        } else {
+                            echo 'login_process.php';
+                        }
+                    ?>"
                     method="POST"
                     class="login-form"
                     id="login-form"
@@ -117,15 +149,39 @@ $cacheBuster       = time();
 
                     <div class="form-group">
                         <label for="numero_input" class="form-label" id="numero-label">
-                            <?= $loginType === 'tuteur' ? 'Numéro d\'employé' : 'Numéro d\'étudiant' ?>
+                            <?php
+                            if ($loginType === 'admin') {
+                                echo 'Numéro d\'administrateur';
+                            } elseif ($loginType === 'tuteur') {
+                                echo 'Numéro d\'employé';
+                            } else {
+                                echo 'Numéro d\'étudiant';
+                            }
+                            ?>
                         </label>
 
                         <input
                             type="text"
                             id="numero_input"
-                            name="<?= $loginType === 'tuteur' ? 'numero_employe' : 'numero_etudiant' ?>"
+                            name="<?php
+                                if ($loginType === 'admin') {
+                                    echo 'numero_admin';
+                                } elseif ($loginType === 'tuteur') {
+                                    echo 'numero_employe';
+                                } else {
+                                    echo 'numero_etudiant';
+                                }
+                            ?>"
                             class="form-input"
-                            placeholder="<?= $loginType === 'tuteur' ? 'Ex: T001' : 'Ex: E001' ?>"
+                            placeholder="<?php
+                                if ($loginType === 'admin') {
+                                    echo 'Ex: ADMIN001';
+                                } elseif ($loginType === 'tuteur') {
+                                    echo 'Ex: T001';
+                                } else {
+                                    echo 'Ex: E001';
+                                }
+                            ?>"
                             required
                             autofocus
                             autocomplete="off"
@@ -138,13 +194,15 @@ $cacheBuster       = time();
                 <div class="login-info">
                     <p class="info-text" id="login-info">
                         <strong>Connexion simulée :</strong> Aucune validation Omnivox réelle.
-                        <?php if ($loginType === 'tuteur'): ?>
-                            Utilisez un numéro d'employé de test
-                            (ex: T001, T002, T003, T004, T005, T006).
-                        <?php else: ?>
-                            Utilisez un numéro d'étudiant de test
-                            (ex: E001, E002, E003, E004, E005).
-                        <?php endif; ?>
+                        <?php
+                        if ($loginType === 'admin') {
+                            echo 'Utilisez un numéro d\'administrateur de test (ex: ADMIN001).';
+                        } elseif ($loginType === 'tuteur') {
+                            echo 'Utilisez un numéro d\'employé de test (ex: T001, T002, T003, T004, T005, T006).';
+                        } else {
+                            echo 'Utilisez un numéro d\'étudiant de test (ex: E001, E002, E003, E004, E005).';
+                        }
+                        ?>
                     </p>
                 </div>
 
