@@ -148,28 +148,24 @@ $cacheBuster = time();
             <!-- Statistiques générales -->
             <div class="stats-cards">
                 <div class="stat-card">
-                    <div class="stat-card-icon">📊</div>
                     <div class="stat-card-content">
                         <h3 id="totalRendezVous">0</h3>
                         <p>Rendez-vous total</p>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-card-icon">👥</div>
                     <div class="stat-card-content">
                         <h3 id="totalTuteurs">0</h3>
                         <p>Tuteurs actifs</p>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-card-icon">🎓</div>
                     <div class="stat-card-content">
                         <h3 id="totalEtudiants">0</h3>
                         <p>Étudiants actifs</p>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-card-icon">✅</div>
                     <div class="stat-card-content">
                         <h3 id="rendezVousTermines">0</h3>
                         <p>Rendez-vous terminés</p>
@@ -189,10 +185,12 @@ $cacheBuster = time();
 <footer>
     <div class="container">
         <div class="footer-content">
-            <p>&copy; 2025 TutoPlus - Collège Ahuntsic. Tous droits réservés.</p>
-            <div class="footer-logo">
-                <img src="<?= $logoAhuntsicShort ?>" alt="Collège Ahuntsic" class="footer-logo-img">
-            </div>
+            <p>&copy; <?= date('Y') ?> TutoPlus - Tous droits réservés</p>
+            <img
+                src="<?= $logoAhuntsicFull ?>"
+                alt="Collège Ahuntsic"
+                class="footer-logo"
+            >
         </div>
     </div>
 </footer>

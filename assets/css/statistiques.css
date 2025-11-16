@@ -36,20 +36,12 @@
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.stat-card-icon {
-    font-size: 2.5rem;
-    line-height: 1;
 }
 
 .stat-card-content h3 {
@@ -102,10 +94,6 @@
 
     .stat-card {
         padding: 1rem;
-    }
-
-    .stat-card-icon {
-        font-size: 2rem;
     }
 
     .stat-card-content h3 {
