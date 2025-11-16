@@ -101,11 +101,29 @@ function fillConfirmationData(data) {
     const notificationElement = document.getElementById('confirmation-notification');
 
     if (notificationRow && notificationElement) {
-        if (data.notificationEnabled === true) {
+        if (data.enAttente === true) {
+            // Afficher un message indiquant que la demande est en attente
+            notificationRow.style.display = 'flex';
+            notificationElement.textContent = 'Votre demande est en attente. Le tuteur doit l\'accepter pour confirmer le rendez-vous.';
+        } else if (data.notificationEnabled === true) {
             notificationRow.style.display = 'flex';
             notificationElement.textContent = 'Vous serez notifié(e) 1 jour avant votre rendez-vous';
         } else {
             notificationRow.style.display = 'none';
+        }
+    }
+    
+    // Mettre à jour le titre et sous-titre si la demande est en attente
+    if (data.enAttente === true) {
+        const titleElement = document.querySelector('#confirmationModal .confirmation-title');
+        const subtitleElement = document.querySelector('#confirmationModal .confirmation-subtitle');
+        
+        if (titleElement) {
+            titleElement.textContent = 'Demande envoyée !';
+        }
+        
+        if (subtitleElement) {
+            subtitleElement.textContent = 'Votre demande de rendez-vous a été envoyée au tuteur';
         }
     }
 }
@@ -118,7 +136,10 @@ function formatDateForConfirmation(dateString) {
     if (!dateString) return '';
 
     try {
-        const date = new Date(dateString);
+        // Créer la date en heure locale pour éviter les problèmes de fuseau horaire
+        // dateString est au format "YYYY-MM-DD"
+        const [year, month, day] = dateString.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
 
         if (isNaN(date.getTime())) {
             console.error('Date invalide:', dateString);
