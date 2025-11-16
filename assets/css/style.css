@@ -1120,7 +1120,7 @@ footer p {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 481px) {
   .container {
     padding: 0 var(--spacing);
   }
@@ -1167,13 +1167,19 @@ footer p {
     top: 50%;
     transform: translate(-50%, -50%);
     width: auto;
-    max-width: none;
+    max-width: calc(100% - 200px);
     margin: 0;
     text-align: center;
     z-index: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    pointer-events: none;
+  }
+
+  .header-center a {
+    pointer-events: auto;
   }
 
   header h1 {
@@ -1202,96 +1208,23 @@ footer p {
   /* Ajuster header-right pour qu'il soit visible à droite */
   .header-right {
     order: 2;
-    gap: 0.5rem;
+    gap: 0;
     flex-wrap: nowrap;
     margin-left: auto;
     justify-content: flex-end;
+    align-items: center;
     z-index: 2;
-  }
-
-  /* Transformer le bouton Connexion en icône sur mobile */
-  .header-right .btn-login-link {
-    padding: 0.5rem;
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    max-width: 40px;
-    border-radius: 50%;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    font-size: 0;
-    position: relative;
-    text-indent: -9999px;
-    overflow: hidden;
-    background: var(--accent-color);
-    color: var(--text-white);
-    border: none;
-  }
-
-  .header-right .btn-login-link::before {
-    content: "";
-    width: 20px;
-    height: 20px;
-    display: block;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='%23ffffff' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1'/%3E%3C/svg%3E");
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    text-indent: 0;
-    z-index: 1;
-  }
-
-  .header-right .btn-login-link[href="historique.php"]::before {
-    content: "📅";
-    font-size: 1.25rem;
-    line-height: 1;
-    background-image: none;
-  }
-
-  .header-right .btn-login-link[href="gestion_disponibilites.php"]::before {
-    content: "📆";
-    font-size: 1.25rem;
-    line-height: 1;
-    background-image: none;
-  }
-
-  .btn-logout {
-    padding: 0.5rem;
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0;
-    position: relative;
-  }
-
-  .btn-logout::before {
-    content: "";
-    width: 20px;
-    height: 20px;
-    display: block;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='%23212529' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z'/%3E%3Cpath fill-rule='evenodd' d='M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z'/%3E%3C/svg%3E");
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
+    min-width: 50px;
   }
 
   /* Masquer les infos utilisateur et boutons sur mobile pour économiser l'espace */
   .user-info {
-    display: none;
+    display: none !important;
   }
 
   .header-right .btn-login-link,
   .header-right .btn-logout {
-    display: none;
+    display: none !important;
   }
 
   /* Afficher le bouton avec initiale sur mobile */
