@@ -1,63 +1,85 @@
 <?php
+declare(strict_types=1);
 
-class Disponibilite {
-    private $pdo;
-    
-    public function __construct($pdo) {
+class Disponibilite
+{
+    private PDO $pdo;
+
+    // Statuts possibles
+    public const STATUT_DISPONIBLE = 'DISPONIBLE';
+    public const STATUT_RESERVE    = 'RESERVE';
+    public const STATUT_BLOQUE     = 'BLOQUE';
+
+    // Durée minimum en minutes
+    private const DUREE_MINIMUM_MINUTES = 30;
+
+    // Paramètre : instance PDO
+    public function __construct(PDO $pdo)
+    {
         $this->pdo = $pdo;
     }
-    
-    // Récupère une disponibilité par son ID
-    public function getDisponibiliteById($id) {
+
+    // Paramètre : id de la disponibilité
+    // Retourne : tableau associatif ou null
+    public function getDisponibiliteById(string $id): ?array
+    {
         try {
             $stmt = $this->pdo->prepare("
-                SELECT d.id, d.tuteur_id, d.service_id, d.date_debut, d.date_fin, 
-                       d.statut, d.etudiant_id, d.prix, d.notes, d.date_creation, d.date_modification,
-                       s.nom as service_nom, s.categorie as service_categorie,
-                       t.nom as tuteur_nom, t.prenom as tuteur_prenom,
-                       e.nom as etudiant_nom, e.prenom as etudiant_prenom
+                SELECT 
+                    d.id, d.tuteur_id, d.service_id, d.date_debut, d.date_fin, 
+                    d.statut, d.etudiant_id, d.prix, d.notes, d.date_creation, d.date_modification,
+                    s.nom AS service_nom, s.categorie AS service_categorie,
+                    t.nom AS tuteur_nom, t.prenom AS tuteur_prenom,
+                    e.nom AS etudiant_nom, e.prenom AS etudiant_prenom
                 FROM disponibilites d
-                LEFT JOIN services s ON d.service_id = s.id
-                LEFT JOIN tuteurs t ON d.tuteur_id = t.id
-                LEFT JOIN etudiants e ON d.etudiant_id = e.id
+                LEFT JOIN services   s ON d.service_id = s.id
+                LEFT JOIN tuteurs    t ON d.tuteur_id = t.id
+                LEFT JOIN etudiants  e ON d.etudiant_id = e.id
                 WHERE d.id = :id
             ");
             $stmt->bindParam(':id', $id, PDO::PARAM_STR);
             $stmt->execute();
-            return $stmt->fetch();
+
+            $row = $stmt->fetch();
+            return $row !== false ? $row : null;
         } catch (PDOException $e) {
-            error_log("Erreur lors de la récupération de la disponibilité : " . $e->getMessage());
+            $this->logError("Récupération par id : " . $e->getMessage());
             return null;
         }
     }
-    
-    // Récupère toutes les disponibilités disponibles pour un service
-    public function getDisponibilitesByServiceId($serviceId) {
+
+    // Paramètre : id de service
+    // Retourne : tableau de disponibilités (tableaux associatifs)
+    public function getDisponibilitesByServiceId(string $serviceId): array
+    {
         try {
-            // D'abord, récupérer le tuteur_id du service
-            $serviceStmt = $this->pdo->prepare("SELECT tuteur_id FROM services WHERE id = :service_id");
+            // Récupérer le tuteur du service
+            $serviceStmt = $this->pdo->prepare("
+                SELECT tuteur_id 
+                FROM services 
+                WHERE id = :service_id
+            ");
             $serviceStmt->bindParam(':service_id', $serviceId, PDO::PARAM_STR);
             $serviceStmt->execute();
             $service = $serviceStmt->fetch();
-            
+
             if (!$service) {
                 return [];
             }
-            
+
             $tuteurId = $service['tuteur_id'];
-            
-            // Récupérer les disponibilités :
-            // 1. Disponibilités spécifiques au service (d.service_id = :service_id)
-            // 2. OU disponibilités générales du tuteur du service (d.service_id IS NULL ET d.tuteur_id = tuteur_id_du_service)
+
+            // Disponibilités spécifiques au service OU générales du tuteur
             $stmt = $this->pdo->prepare("
-                SELECT d.id, d.tuteur_id, d.service_id, d.date_debut, d.date_fin, 
-                       d.statut, d.prix, d.notes, d.date_creation, d.date_modification,
-                       s.nom as service_nom, s.categorie as service_categorie,
-                       t.nom as tuteur_nom, t.prenom as tuteur_prenom
+                SELECT 
+                    d.id, d.tuteur_id, d.service_id, d.date_debut, d.date_fin, 
+                    d.statut, d.prix, d.notes, d.date_creation, d.date_modification,
+                    s.nom AS service_nom, s.categorie AS service_categorie,
+                    t.nom AS tuteur_nom, t.prenom AS tuteur_prenom
                 FROM disponibilites d
                 LEFT JOIN services s ON d.service_id = s.id
-                LEFT JOIN tuteurs t ON d.tuteur_id = t.id
-                WHERE d.statut = 'DISPONIBLE'
+                LEFT JOIN tuteurs  t ON d.tuteur_id = t.id
+                WHERE d.statut = :statut_disponible
                   AND d.date_fin >= NOW()
                   AND (
                       d.service_id = :service_id
@@ -65,23 +87,29 @@ class Disponibilite {
                   )
                 ORDER BY d.date_debut ASC
             ");
+            $statutDisponible = self::STATUT_DISPONIBLE;
+            $stmt->bindParam(':statut_disponible', $statutDisponible, PDO::PARAM_STR);
             $stmt->bindParam(':service_id', $serviceId, PDO::PARAM_STR);
             $stmt->bindParam(':tuteur_id', $tuteurId, PDO::PARAM_STR);
             $stmt->execute();
-            return $stmt->fetchAll();
+
+            return $stmt->fetchAll() ?: [];
         } catch (PDOException $e) {
-            error_log("Erreur lors de la récupération des disponibilités par service : " . $e->getMessage());
+            $this->logError("Récupération par service : " . $e->getMessage());
             return [];
         }
     }
-    
-    // Récupère toutes les disponibilités disponibles pour un tuteur
-    public function getDisponibilitesByTuteurId($tuteurId) {
+
+    // Paramètre : id du tuteur
+    // Retourne : tableau de disponibilités
+    public function getDisponibilitesByTuteurId(string $tuteurId): array
+    {
         try {
             $stmt = $this->pdo->prepare("
-                SELECT d.id, d.tuteur_id, d.service_id, d.date_debut, d.date_fin, 
-                       d.statut, d.prix, d.notes, d.date_creation, d.date_modification,
-                       s.nom as service_nom, s.categorie as service_categorie
+                SELECT 
+                    d.id, d.tuteur_id, d.service_id, d.date_debut, d.date_fin, 
+                    d.statut, d.prix, d.notes, d.date_creation, d.date_modification,
+                    s.nom AS service_nom, s.categorie AS service_categorie
                 FROM disponibilites d
                 LEFT JOIN services s ON d.service_id = s.id
                 WHERE d.tuteur_id = :tuteur_id
@@ -89,230 +117,272 @@ class Disponibilite {
             ");
             $stmt->bindParam(':tuteur_id', $tuteurId, PDO::PARAM_STR);
             $stmt->execute();
-            return $stmt->fetchAll();
+
+            return $stmt->fetchAll() ?: [];
         } catch (PDOException $e) {
-            error_log("Erreur lors de la récupération des disponibilités par tuteur : " . $e->getMessage());
+            $this->logError("Récupération par tuteur : " . $e->getMessage());
             return [];
         }
     }
-    
-    // Récupère toutes les disponibilités disponibles (futures uniquement)
-    public function getAllAvailableDisponibilites() {
+
+    // Paramètres : aucun
+    // Retourne : toutes les dispos DISPONIBLE futures
+    public function getAllAvailableDisponibilites(): array
+    {
         try {
             $stmt = $this->pdo->prepare("
-                SELECT d.id, d.tuteur_id, d.service_id, d.date_debut, d.date_fin, 
-                       d.statut, d.prix, d.notes, d.date_creation, d.date_modification,
-                       s.nom as service_nom, s.categorie as service_categorie,
-                       t.nom as tuteur_nom, t.prenom as tuteur_prenom
+                SELECT 
+                    d.id, d.tuteur_id, d.service_id, d.date_debut, d.date_fin, 
+                    d.statut, d.prix, d.notes, d.date_creation, d.date_modification,
+                    s.nom AS service_nom, s.categorie AS service_categorie,
+                    t.nom AS tuteur_nom, t.prenom AS tuteur_prenom
                 FROM disponibilites d
                 LEFT JOIN services s ON d.service_id = s.id
-                LEFT JOIN tuteurs t ON d.tuteur_id = t.id
-                WHERE d.statut = 'DISPONIBLE'
+                LEFT JOIN tuteurs  t ON d.tuteur_id = t.id
+                WHERE d.statut = :statut_disponible
                   AND d.date_debut >= NOW()
                 ORDER BY d.date_debut ASC
             ");
+            $statutDisponible = self::STATUT_DISPONIBLE;
+            $stmt->bindParam(':statut_disponible', $statutDisponible, PDO::PARAM_STR);
             $stmt->execute();
-            return $stmt->fetchAll();
+
+            return $stmt->fetchAll() ?: [];
         } catch (PDOException $e) {
-            error_log("Erreur lors de la récupération des disponibilités : " . $e->getMessage());
+            $this->logError("Récupération des dispos disponibles : " . $e->getMessage());
             return [];
         }
     }
-    
-    // Vérifie si une disponibilité est disponible
-    public function estDisponible($id) {
+
+    // Paramètre : id de la disponibilité
+    // Retourne : true si disponible, false sinon
+    public function estDisponible(string $id): bool
+    {
         try {
             $stmt = $this->pdo->prepare("
                 SELECT statut, date_debut
                 FROM disponibilites
                 WHERE id = :id 
-                  AND statut = 'DISPONIBLE'
+                  AND statut = :statut_disponible
                   AND date_debut >= NOW()
             ");
+            $statutDisponible = self::STATUT_DISPONIBLE;
             $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmt->bindParam(':statut_disponible', $statutDisponible, PDO::PARAM_STR);
             $stmt->execute();
+
             return $stmt->fetch() !== false;
         } catch (PDOException $e) {
-            error_log("Erreur lors de la vérification de disponibilité : " . $e->getMessage());
+            $this->logError("Vérification estDisponible : " . $e->getMessage());
             return false;
         }
     }
-    
-    // Crée une nouvelle disponibilité
-    public function creerDisponibilite($tuteurId, $dateDebut, $dateFin, $statut = 'DISPONIBLE', $serviceId = null, $prix = null, $notes = null) {
+
+    // Paramètres : tuteur, début, fin, statut, service (opt), prix (opt), notes (opt)
+    // Retourne : id de la disponibilité créée ou false
+    public function creerDisponibilite(
+        string $tuteurId,
+        string $dateDebut,
+        string $dateFin,
+        string $statut = self::STATUT_DISPONIBLE,
+        ?string $serviceId = null,
+        ?float $prix = null,
+        ?string $notes = null
+    ) {
         try {
-            // Validation : durée minimum 30 minutes
-            $dateDebutObj = new DateTime($dateDebut);
-            $dateFinObj = new DateTime($dateFin);
-            $diff = $dateDebutObj->diff($dateFinObj);
-            $minutes = ($diff->days * 24 * 60) + ($diff->h * 60) + $diff->i;
-            
-            if ($minutes < 30) {
-                error_log("Erreur : La durée minimum doit être de 30 minutes");
+            if (!$this->validerPeriode($dateDebut, $dateFin)) {
                 return false;
             }
-            
-            // Validation : date_fin > date_debut
-            if ($dateFinObj <= $dateDebutObj) {
-                error_log("Erreur : La date de fin doit être supérieure à la date de début");
-                return false;
-            }
-            
-            // Validation : vérifier que les dates sont dans la même journée
-            $startDay = $dateDebutObj->format('Y-m-d');
-            $endDay = $dateFinObj->format('Y-m-d');
-            
-            if ($startDay !== $endDay) {
-                error_log("Erreur : La disponibilité doit être dans la même journée (début: $startDay, fin: $endDay)");
-                return false;
-            }
-            
-            // Générer un UUID pour l'ID
+
             $id = $this->generateUUID();
-            
+
             $stmt = $this->pdo->prepare("
-                INSERT INTO disponibilites (id, tuteur_id, service_id, date_debut, date_fin, statut, prix, notes)
-                VALUES (:id, :tuteur_id, :service_id, :date_debut, :date_fin, :statut, :prix, :notes)
+                INSERT INTO disponibilites (
+                    id, tuteur_id, service_id, date_debut, date_fin, 
+                    statut, prix, notes
+                )
+                VALUES (
+                    :id, :tuteur_id, :service_id, :date_debut, :date_fin, 
+                    :statut, :prix, :notes
+                )
             ");
-            
-            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
-            $stmt->bindParam(':tuteur_id', $tuteurId, PDO::PARAM_STR);
+
+            $stmt->bindParam(':id',         $id,        PDO::PARAM_STR);
+            $stmt->bindParam(':tuteur_id',  $tuteurId,  PDO::PARAM_STR);
             $stmt->bindParam(':service_id', $serviceId, PDO::PARAM_STR);
             $stmt->bindParam(':date_debut', $dateDebut, PDO::PARAM_STR);
-            $stmt->bindParam(':date_fin', $dateFin, PDO::PARAM_STR);
-            $stmt->bindParam(':statut', $statut, PDO::PARAM_STR);
-            $stmt->bindParam(':prix', $prix, PDO::PARAM_STR);
-            $stmt->bindParam(':notes', $notes, PDO::PARAM_STR);
-            
+            $stmt->bindParam(':date_fin',   $dateFin,   PDO::PARAM_STR);
+            $stmt->bindParam(':statut',     $statut,    PDO::PARAM_STR);
+            $stmt->bindParam(':prix',       $prix);
+            $stmt->bindParam(':notes',      $notes,     PDO::PARAM_STR);
+
             $stmt->execute();
-            
             return $id;
         } catch (PDOException $e) {
-            error_log("Erreur lors de la création de la disponibilité : " . $e->getMessage());
+            $this->logError("Création disponibilité : " . $e->getMessage());
             return false;
         }
     }
-    
-    // Modifie une disponibilité existante
-    public function modifierDisponibilite($id, $dateDebut, $dateFin, $statut = null, $serviceId = null, $prix = null, $notes = null, $etudiantId = null) {
+
+    // Paramètres : id, début, fin, statut (opt), service (opt), prix (opt), notes (opt), étudiant (opt)
+    // Retourne : true si modifiée, false sinon
+    public function modifierDisponibilite(
+        string $id,
+        string $dateDebut,
+        string $dateFin,
+        ?string $statut = null,
+        ?string $serviceId = null,
+        ?float $prix = null,
+        ?string $notes = null,
+        ?string $etudiantId = null
+    ): bool {
         try {
-            // Validation : durée minimum 30 minutes
-            $dateDebutObj = new DateTime($dateDebut);
-            $dateFinObj = new DateTime($dateFin);
-            $diff = $dateDebutObj->diff($dateFinObj);
-            $minutes = ($diff->days * 24 * 60) + ($diff->h * 60) + $diff->i;
-            
-            if ($minutes < 30) {
-                error_log("Erreur : La durée minimum doit être de 30 minutes");
+            if (!$this->validerPeriode($dateDebut, $dateFin)) {
                 return false;
             }
-            
-            // Validation : date_fin > date_debut
-            if ($dateFinObj <= $dateDebutObj) {
-                error_log("Erreur : La date de fin doit être supérieure à la date de début");
-                return false;
-            }
-            
-            // Validation : vérifier que les dates sont dans la même journée
-            $startDay = $dateDebutObj->format('Y-m-d');
-            $endDay = $dateFinObj->format('Y-m-d');
-            
-            if ($startDay !== $endDay) {
-                error_log("Erreur : La disponibilité doit être dans la même journée (début: $startDay, fin: $endDay)");
-                return false;
-            }
-            
-            // Construire la requête UPDATE dynamiquement
+
             $updates = [];
-            $params = [':id' => $id, ':date_debut' => $dateDebut, ':date_fin' => $dateFin];
-            
-            $updates[] = "date_debut = :date_debut";
-            $updates[] = "date_fin = :date_fin";
-            
+            $params  = [
+                ':id'         => $id,
+                ':date_debut' => $dateDebut,
+                ':date_fin'   => $dateFin,
+            ];
+
+            $updates[] = 'date_debut = :date_debut';
+            $updates[] = 'date_fin   = :date_fin';
+
             if ($statut !== null) {
-                $updates[] = "statut = :statut";
-                $params[':statut'] = $statut;
+                $updates[]           = 'statut = :statut';
+                $params[':statut']   = $statut;
             }
-            
+
             if ($serviceId !== null) {
-                $updates[] = "service_id = :service_id";
+                $updates[]           = 'service_id = :service_id';
                 $params[':service_id'] = $serviceId;
             }
-            
+
             if ($prix !== null) {
-                $updates[] = "prix = :prix";
-                $params[':prix'] = $prix;
+                $updates[]         = 'prix = :prix';
+                $params[':prix']   = $prix;
             }
-            
+
             if ($notes !== null) {
-                $updates[] = "notes = :notes";
-                $params[':notes'] = $notes;
+                $updates[]         = 'notes = :notes';
+                $params[':notes']  = $notes;
             }
-            
-            // Gérer etudiant_id : si fourni, on le met à jour, sinon on peut le mettre à NULL si statut change
+
+            // Gestion de l'étudiant lié à la réservation
             if ($etudiantId !== null) {
-                // Validation : vérifier que l'étudiant existe
-                $etudiantStmt = $this->pdo->prepare("SELECT id FROM etudiants WHERE id = :etudiant_id");
+                // Vérifier que l'étudiant existe
+                $etudiantStmt = $this->pdo->prepare("
+                    SELECT id 
+                    FROM etudiants 
+                    WHERE id = :etudiant_id
+                ");
                 $etudiantStmt->bindParam(':etudiant_id', $etudiantId, PDO::PARAM_STR);
                 $etudiantStmt->execute();
+
                 if (!$etudiantStmt->fetch()) {
-                    error_log("Erreur : L'étudiant spécifié n'existe pas");
+                    $this->logError("Étudiant inexistant pour la disponibilité (etudiant_id: $etudiantId)");
                     return false;
                 }
-                $updates[] = "etudiant_id = :etudiant_id";
-                $params[':etudiant_id'] = $etudiantId;
-            } elseif ($statut !== null && $statut !== 'RESERVE') {
-                // Si le statut change de RESERVE à autre chose, on réinitialise etudiant_id à NULL
-                $updates[] = "etudiant_id = NULL";
-            }
-            
-            $sql = "UPDATE disponibilites SET " . implode(", ", $updates) . " WHERE id = :id";
-            
-            $stmt = $this->pdo->prepare($sql);
-            
-            foreach ($params as $key => $value) {
-                $stmt->bindValue($key, $value, PDO::PARAM_STR);
-            }
-            
-            $stmt->execute();
-            
-        return $stmt->rowCount() > 0;
-    } catch (PDOException $e) {
-        error_log("Erreur lors de la modification de la disponibilité : " . $e->getMessage());
-        return false;
-    }
-}
 
-// Supprime une disponibilité (ne peut pas supprimer si réservée)
-public function supprimerDisponibilite($id) {
-        try {
-            // Vérifier que la disponibilité existe et n'est pas réservée
-            $disponibilite = $this->getDisponibiliteById($id);
-            
-            if (!$disponibilite) {
-                error_log("Erreur : La disponibilité n'existe pas");
-                return false;
+                $updates[]             = 'etudiant_id = :etudiant_id';
+                $params[':etudiant_id'] = $etudiantId;
+            } elseif ($statut !== null && $statut !== self::STATUT_RESERVE) {
+                // Si on sort du statut RESERVE, on remet l'étudiant à NULL
+                $updates[] = 'etudiant_id = NULL';
             }
-            
-            if ($disponibilite['statut'] === 'RESERVE') {
-                error_log("Erreur : Impossible de supprimer un créneau réservé");
-                return false;
+
+            $sql  = 'UPDATE disponibilites SET ' . implode(', ', $updates) . ' WHERE id = :id';
+            $stmt = $this->pdo->prepare($sql);
+
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
             }
-            
-            // Supprimer la disponibilité
-            $stmt = $this->pdo->prepare("DELETE FROM disponibilites WHERE id = :id");
-            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+
             $stmt->execute();
-            
             return $stmt->rowCount() > 0;
         } catch (PDOException $e) {
-            error_log("Erreur lors de la suppression de la disponibilité : " . $e->getMessage());
+            $this->logError("Modification disponibilité : " . $e->getMessage());
             return false;
         }
     }
-    
-    // Génère un UUID v4
-    private function generateUUID() {
+
+    // Paramètre : id de la disponibilité
+    // Retourne : true si supprimée, false sinon
+    public function supprimerDisponibilite(string $id): bool
+    {
+        try {
+            $disponibilite = $this->getDisponibiliteById($id);
+
+            if (!$disponibilite) {
+                $this->logError("Suppression : la disponibilité n'existe pas (id: $id)");
+                return false;
+            }
+
+            if ($disponibilite['statut'] === self::STATUT_RESERVE) {
+                $this->logError("Suppression impossible : créneau réservé (id: $id)");
+                return false;
+            }
+
+            $stmt = $this->pdo->prepare("
+                DELETE FROM disponibilites 
+                WHERE id = :id
+            ");
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmt->execute();
+
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            $this->logError("Suppression disponibilité : " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Paramètres : date début, date fin (string)
+    // Retourne : true si valide (même jour, >= 30 min, fin > début)
+    private function validerPeriode(string $dateDebut, string $dateFin): bool
+    {
+        try {
+            $dateDebutObj = new DateTime($dateDebut);
+            $dateFinObj   = new DateTime($dateFin);
+
+            $diff    = $dateDebutObj->diff($dateFinObj);
+            $minutes = ($diff->days * 24 * 60) + ($diff->h * 60) + $diff->i;
+
+            if ($minutes < self::DUREE_MINIMUM_MINUTES) {
+                $this->logError("Durée minimum non respectée (min " . self::DUREE_MINIMUM_MINUTES . " minutes)");
+                return false;
+            }
+
+            if ($dateFinObj <= $dateDebutObj) {
+                $this->logError("date_fin doit être > date_debut");
+                return false;
+            }
+
+            if ($dateDebutObj->format('Y-m-d') !== $dateFinObj->format('Y-m-d')) {
+                $this->logError("début et fin doivent être le même jour");
+                return false;
+            }
+
+            return true;
+        } catch (Exception $e) {
+            $this->logError("Validation période : " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Paramètre : message d'erreur
+    private function logError(string $message): void
+    {
+        error_log('Erreur Disponibilite : ' . $message);
+    }
+
+    // Paramètres : aucun
+    // Retourne : UUID v4
+    private function generateUUID(): string
+    {
         return sprintf(
             '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
             mt_rand(0, 0xffff), mt_rand(0, 0xffff),
@@ -323,4 +393,3 @@ public function supprimerDisponibilite($id) {
         );
     }
 }
-
