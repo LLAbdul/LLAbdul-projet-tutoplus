@@ -79,3 +79,79 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
+// Créer une carte de compte
+function createCompteCard(compte) {
+    const isEtudiant = compte.type === 'etudiant';
+    const isActif = compte.actif === true || compte.actif === 1;
+    
+    const card = document.createElement('div');
+    card.className = `compte-card ${isActif ? 'actif' : 'inactif'}`;
+    card.innerHTML = `
+        <div class="compte-card-header">
+            <div class="compte-type-badge ${isEtudiant ? 'etudiant' : 'tuteur'}">
+                ${isEtudiant ? 'Étudiant' : 'Tuteur'}
+            </div>
+            <div class="compte-statut-badge ${isActif ? 'actif' : 'inactif'}">
+                ${isActif ? 'Actif' : 'Inactif'}
+            </div>
+        </div>
+        <div class="compte-card-body">
+            <h3 class="compte-name">${escapeHtml(compte.prenom + ' ' + compte.nom)}</h3>
+            <div class="compte-info">
+                <div class="compte-info-item">
+                    <span class="compte-info-label">Numéro:</span>
+                    <span class="compte-info-value">${escapeHtml(isEtudiant ? compte.numero_etudiant : compte.numero_employe)}</span>
+                </div>
+                <div class="compte-info-item">
+                    <span class="compte-info-label">Email:</span>
+                    <span class="compte-info-value">${escapeHtml(compte.email)}</span>
+                </div>
+                ${compte.telephone ? `
+                <div class="compte-info-item">
+                    <span class="compte-info-label">Téléphone:</span>
+                    <span class="compte-info-value">${escapeHtml(compte.telephone)}</span>
+                </div>
+                ` : ''}
+                ${isEtudiant ? `
+                <div class="compte-info-item">
+                    <span class="compte-info-label">Niveau:</span>
+                    <span class="compte-info-value">${escapeHtml(compte.niveau || 'N/A')}</span>
+                </div>
+                <div class="compte-info-item">
+                    <span class="compte-info-label">Spécialité:</span>
+                    <span class="compte-info-value">${escapeHtml(compte.specialite || 'N/A')}</span>
+                </div>
+                ` : `
+                <div class="compte-info-item">
+                    <span class="compte-info-label">Département:</span>
+                    <span class="compte-info-value">${escapeHtml(compte.departement || 'N/A')}</span>
+                </div>
+                <div class="compte-info-item">
+                    <span class="compte-info-label">Tarif horaire:</span>
+                    <span class="compte-info-value">$${parseFloat(compte.tarif_horaire || 0).toFixed(2)}</span>
+                </div>
+                `}
+                ${compte.date_creation ? `
+                <div class="compte-info-item">
+                    <span class="compte-info-label">Date de création:</span>
+                    <span class="compte-info-value">${formatDate(compte.date_creation)}</span>
+                </div>
+                ` : ''}
+            </div>
+        </div>
+        <div class="compte-card-actions">
+            <button 
+                class="btn-compte-toggle ${isActif ? 'btn-deactivate' : 'btn-activate'}"
+                data-compte-id="${escapeHtml(compte.id)}"
+                data-compte-type="${escapeHtml(compte.type)}"
+                data-compte-actif="${isActif ? 'true' : 'false'}"
+                type="button"
+            >
+                ${isActif ? 'Désactiver' : 'Activer'}
+            </button>
+        </div>
+    `;
+    
+    return card;
+}
+
