@@ -5,20 +5,33 @@
  * - Activation/désactivation des comptes
  */
 
-// Variables globales
+// === Constantes ===
+
+const ADMIN_API_URL = 'api/admin.php';
+
+// === Variables globales ===
+
 let allComptes = [];
 let currentFilter = 'all';
 
-// Fonctions utilitaires
+// === Fonctions utilitaires ===
+
 function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
-function formatDate(dateString) {
-    if (!dateString) return 'N/A';
+function toValidDate(dateString) {
+    if (!dateString) return null;
     const date = new Date(dateString);
+    return isNaN(date.getTime()) ? null : date;
+}
+
+function formatDate(dateString) {
+    const date = toValidDate(dateString);
+    if (!date) return 'N/A';
     return date.toLocaleDateString('fr-CA', {
         year: 'numeric',
         month: 'long',
@@ -26,9 +39,10 @@ function formatDate(dateString) {
     });
 }
 
+// Gardé si tu veux l'utiliser plus tard
 function formatDateTime(dateString) {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
+    const date = toValidDate(dateString);
+    if (!date) return 'N/A';
     return date.toLocaleString('fr-CA', {
         year: 'numeric',
         month: 'long',
@@ -38,7 +52,8 @@ function formatDateTime(dateString) {
     });
 }
 
-// Fonctions d'affichage et de notification
+// === Fonctions d'affichage et de notification ===
+
 function showError(message) {
     const errorDiv = document.getElementById('errorMessage');
     const errorText = document.getElementById('errorText');
@@ -56,34 +71,30 @@ function hideError() {
 }
 
 function showToast(message, type = 'success') {
+    // Optionnel : nettoyer les anciens toasts pour éviter l’empilement
+    const existingToasts = document.querySelectorAll('.toast');
+    existingToasts.forEach(t => t.remove());
+
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.textContent = message;
-    toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'success' ? '#28a745' : '#dc3545'};
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        z-index: 10000;
-        animation: slideInRight 0.3s ease;
-    `;
     document.body.appendChild(toast);
     
     setTimeout(() => {
-        toast.style.animation = 'slideOutRight 0.3s ease';
+        toast.classList.add('toast-out');
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
 
-// Créer une carte de compte
+// === Création des cartes de compte ===
+
 function createCompteCard(compte) {
     const isEtudiant = compte.type === 'etudiant';
     const isActif = compte.actif === true || compte.actif === 1;
-    
+
+    const numero = isEtudiant ? compte.numero_etudiant : compte.numero_employe;
+    const numeroAffiche = numero ? String(numero) : 'N/A';
+
     const card = document.createElement('div');
     card.className = `compte-card ${isActif ? 'actif' : 'inactif'}`;
     card.innerHTML = `
@@ -96,15 +107,17 @@ function createCompteCard(compte) {
             </div>
         </div>
         <div class="compte-card-body">
-            <h3 class="compte-name">${escapeHtml(compte.prenom + ' ' + compte.nom)}</h3>
+            <h3 class="compte-name">
+                ${escapeHtml((compte.prenom || '') + ' ' + (compte.nom || ''))}
+            </h3>
             <div class="compte-info">
                 <div class="compte-info-item">
                     <span class="compte-info-label">Numéro:</span>
-                    <span class="compte-info-value">${escapeHtml(isEtudiant ? compte.numero_etudiant : compte.numero_employe)}</span>
+                    <span class="compte-info-value">${escapeHtml(numeroAffiche)}</span>
                 </div>
                 <div class="compte-info-item">
                     <span class="compte-info-label">Email:</span>
-                    <span class="compte-info-value">${escapeHtml(compte.email)}</span>
+                    <span class="compte-info-value">${escapeHtml(compte.email || '')}</span>
                 </div>
                 ${compte.telephone ? `
                 <div class="compte-info-item">
@@ -128,7 +141,9 @@ function createCompteCard(compte) {
                 </div>
                 <div class="compte-info-item">
                     <span class="compte-info-label">Tarif horaire:</span>
-                    <span class="compte-info-value">$${parseFloat(compte.tarif_horaire || 0).toFixed(2)}</span>
+                    <span class="compte-info-value">
+                        $${parseFloat(compte.tarif_horaire || 0).toFixed(2)}
+                    </span>
                 </div>
                 `}
                 ${compte.date_creation ? `
@@ -142,8 +157,8 @@ function createCompteCard(compte) {
         <div class="compte-card-actions">
             <button 
                 class="btn-compte-toggle ${isActif ? 'btn-deactivate' : 'btn-activate'}"
-                data-compte-id="${escapeHtml(compte.id)}"
-                data-compte-type="${escapeHtml(compte.type)}"
+                data-compte-id="${escapeHtml(String(compte.id))}"
+                data-compte-type="${escapeHtml(compte.type || '')}"
                 data-compte-actif="${isActif ? 'true' : 'false'}"
                 type="button"
             >
@@ -155,21 +170,22 @@ function createCompteCard(compte) {
     return card;
 }
 
-// Charger les comptes depuis l'API
+// === Chargement des comptes depuis l'API ===
+
 async function loadComptes() {
     const loadingIndicator = document.getElementById('loadingIndicator');
-    const errorMessage = document.getElementById('errorMessage');
-    const noComptes = document.getElementById('noComptes');
-    const comptesList = document.getElementById('comptesList');
+    const errorMessage     = document.getElementById('errorMessage');
+    const noComptes        = document.getElementById('noComptes');
+    const comptesList      = document.getElementById('comptesList');
     
     // Afficher le chargement
     if (loadingIndicator) loadingIndicator.style.display = 'block';
-    if (errorMessage) errorMessage.style.display = 'none';
-    if (noComptes) noComptes.style.display = 'none';
-    if (comptesList) comptesList.style.display = 'none';
+    if (errorMessage)     errorMessage.style.display     = 'none';
+    if (noComptes)        noComptes.style.display        = 'none';
+    if (comptesList)      comptesList.style.display      = 'none';
     
     try {
-        const response = await fetch('api/admin.php');
+        const response = await fetch(ADMIN_API_URL);
         
         if (!response.ok) {
             throw new Error(`Erreur HTTP: ${response.status}`);
@@ -196,7 +212,8 @@ async function loadComptes() {
     }
 }
 
-// Filtrer les comptes
+// === Filtrage des comptes ===
+
 function filterComptes(filter) {
     currentFilter = filter;
     displayComptes();
@@ -205,7 +222,7 @@ function filterComptes(filter) {
 // Afficher les comptes filtrés
 function displayComptes() {
     const comptesList = document.getElementById('comptesList');
-    const noComptes = document.getElementById('noComptes');
+    const noComptes   = document.getElementById('noComptes');
     
     if (!comptesList) return;
     
@@ -235,13 +252,13 @@ function displayComptes() {
     // Afficher le message si aucun compte
     if (filteredComptes.length === 0) {
         if (noComptes) noComptes.style.display = 'block';
-        if (comptesList) comptesList.style.display = 'none';
+        comptesList.style.display = 'none';
         return;
     }
     
     // Masquer le message "aucun compte"
     if (noComptes) noComptes.style.display = 'none';
-    if (comptesList) comptesList.style.display = 'grid';
+    comptesList.style.display = 'grid';
     
     // Créer et ajouter les cartes
     filteredComptes.forEach(compte => {
@@ -253,15 +270,16 @@ function displayComptes() {
     attachToggleListeners();
 }
 
-// Attacher les event listeners pour les boutons d'activation/désactivation
+// === Activation / désactivation ===
+
 function attachToggleListeners() {
     const toggleButtons = document.querySelectorAll('.btn-compte-toggle');
     toggleButtons.forEach(button => {
-        button.addEventListener('click', async (e) => {
-            const compteId = button.getAttribute('data-compte-id');
-            const compteType = button.getAttribute('data-compte-type');
+        button.addEventListener('click', async () => {
+            const compteId    = button.getAttribute('data-compte-id');
+            const compteType  = button.getAttribute('data-compte-type');
             const currentActif = button.getAttribute('data-compte-actif') === 'true';
-            const newActif = !currentActif;
+            const newActif     = !currentActif;
             
             await toggleCompteActif(compteId, compteType, newActif);
         });
@@ -271,7 +289,7 @@ function attachToggleListeners() {
 // Activer/désactiver un compte
 async function toggleCompteActif(compteId, compteType, actif) {
     try {
-        const response = await fetch('api/admin.php', {
+        const response = await fetch(ADMIN_API_URL, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -294,7 +312,9 @@ async function toggleCompteActif(compteId, compteType, actif) {
         }
         
         // Mettre à jour le compte dans allComptes
-        const compteIndex = allComptes.findIndex(c => c.id === compteId && c.type === compteType);
+        const compteIndex = allComptes.findIndex(
+            c => String(c.id) === String(compteId) && c.type === compteType
+        );
         if (compteIndex !== -1 && data.compte) {
             allComptes[compteIndex] = data.compte;
         }
@@ -317,7 +337,8 @@ async function toggleCompteActif(compteId, compteType, actif) {
     }
 }
 
-// Initialiser les filtres
+// === Initialiser les filtres ===
+
 function initFilters() {
     const filterButtons = document.querySelectorAll('.filter-btn');
     filterButtons.forEach(button => {
@@ -333,9 +354,10 @@ function initFilters() {
     });
 }
 
-// Initialiser les onglets
+// === Initialiser les onglets ===
+
 function initTabs() {
-    const tabButtons = document.querySelectorAll('.admin-tab');
+    const tabButtons  = document.querySelectorAll('.admin-tab');
     const tabContents = document.querySelectorAll('.admin-tab-content');
     
     tabButtons.forEach(button => {
@@ -356,10 +378,10 @@ function initTabs() {
     });
 }
 
-// Initialisation au chargement de la page
+// === Initialisation au chargement de la page ===
+
 document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initFilters();
     loadComptes();
 });
-
