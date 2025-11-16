@@ -1,0 +1,123 @@
+/**
+ * Styles pour la page de statistiques
+ */
+
+.statistiques-main {
+    padding: 2rem 0;
+    min-height: calc(100vh - 200px);
+}
+
+.statistiques-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.statistiques-header h2 {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.statistiques-header p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+/* Cartes de statistiques générales */
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card-icon {
+    font-size: 2.5rem;
+    line-height: 1;
+}
+
+.stat-card-content h3 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin: 0 0 0.25rem 0;
+}
+
+.stat-card-content p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Conteneur de graphique */
+.chart-container {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.chart-container h3 {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.chart-container canvas {
+    max-height: 400px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .statistiques-main {
+        padding: 1rem 0;
+    }
+
+    .statistiques-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .stats-cards {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .stat-card {
+        padding: 1rem;
+    }
+
+    .stat-card-icon {
+        font-size: 2rem;
+    }
+
+    .stat-card-content h3 {
+        font-size: 1.5rem;
+    }
+
+    .chart-container {
+        padding: 1rem;
+    }
+
+    .chart-container canvas {
+        max-height: 300px;
+    }
+}
+
