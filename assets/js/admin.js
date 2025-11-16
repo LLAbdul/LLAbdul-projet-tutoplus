@@ -481,6 +481,17 @@ function createRendezVousCard(rv) {
             </div>
             ` : ''}
         </div>
+        ${rv.statut !== 'ANNULE' && rv.statut !== 'TERMINE' ? `
+        <div class="rendez-vous-card-actions">
+            <button 
+                class="btn-rendez-vous-annuler"
+                data-rendez-vous-id="${escapeHtml(String(rv.id))}"
+                type="button"
+            >
+                Annuler
+            </button>
+        </div>
+        ` : ''}
     `;
     
     return card;
@@ -569,6 +580,54 @@ function initRendezVousFilters() {
             const filter = button.getAttribute('data-filter');
             filterRendezVous(filter);
         });
+    });
+}
+
+async function annulerRendezVous(rendezVousId) {
+    if (!confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(ADMIN_API_URL, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                resource: 'rendez-vous',
+                action: 'annuler',
+                id: rendezVousId
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Erreur lors de l\'annulation');
+        }
+        
+        // Recharger les rendez-vous
+        await loadRendezVous();
+        
+        // Afficher un message de succès
+        showToast('Rendez-vous annulé avec succès', 'success');
+        
+    } catch (error) {
+        console.error('Erreur lors de l\'annulation du rendez-vous:', error);
+        showToast(error.message || 'Erreur lors de l\'annulation du rendez-vous', 'error');
+    }
+}
+
+// Initialiser les gestionnaires d'événements pour les boutons d'annulation
+function initRendezVousActions() {
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('btn-rendez-vous-annuler')) {
+            const rendezVousId = e.target.getAttribute('data-rendez-vous-id');
+            if (rendezVousId) {
+                annulerRendezVous(rendezVousId);
+            }
+        }
     });
 }
 
@@ -878,6 +937,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initFilters();
     initRendezVousFilters();
+    initRendezVousActions();
     initCompteModal();
     loadComptes();
 });

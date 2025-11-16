@@ -385,6 +385,45 @@ try {
             ]);
             break;
             
+        case 'DELETE':
+            // Gérer les actions sur les rendez-vous (annulation)
+            $input = file_get_contents('php://input');
+            $data = json_decode($input, true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Format JSON invalide dans la requête']);
+                break;
+            }
+            
+            $resource = $data['resource'] ?? null;
+            $action = $data['action'] ?? null;
+            $id = $data['id'] ?? null;
+            
+            if ($resource === 'rendez-vous' && $action === 'annuler' && $id) {
+                $rendezVousModel = new RendezVous($pdo);
+                $raison = $data['raison'] ?? null;
+                
+                $success = $rendezVousModel->annulerRendezVous($id, $raison);
+                
+                if ($success) {
+                    http_response_code(200);
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'Rendez-vous annulé avec succès'
+                    ]);
+                } else {
+                    http_response_code(400);
+                    echo json_encode([
+                        'error' => 'Impossible d\'annuler le rendez-vous. Il est peut-être déjà annulé ou terminé.'
+                    ]);
+                }
+            } else {
+                http_response_code(400);
+                echo json_encode(['error' => 'Paramètres invalides pour l\'annulation']);
+            }
+            break;
+            
         default:
             http_response_code(405);
             echo json_encode(['error' => 'Méthode non autorisée']);

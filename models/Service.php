@@ -120,4 +120,92 @@ class Service
             return [];
         }
     }
+
+    // Créer un service par défaut pour un tuteur
+    // Paramètres : tuteur_id, département, tarif_horaire
+    // Retourne : id du service créé ou false en cas d'erreur
+    public function creerServiceParDefaut(
+        string $tuteurId,
+        string $departement,
+        float $tarifHoraire
+    ) {
+        try {
+            // Mapper le département vers une catégorie
+            $categorie = $this->mapDepartementToCategorie($departement);
+            
+            // Générer le nom et la description du service
+            $nom = "Tutorat en " . $departement;
+            $description = "Soutien personnalisé en " . strtolower($departement) . ". Aide à la compréhension des concepts et préparation aux examens.";
+            
+            // Déterminer la durée et le prix
+            $dureeMinute = 60; // Par défaut 60 minutes
+            $prix = $tarifHoraire; // Utiliser le tarif horaire du tuteur
+            
+            $id = $this->generateUUID();
+
+            $stmt = $this->pdo->prepare("
+                INSERT INTO services (
+                    id, tuteur_id, nom, description, categorie, duree_minute, prix, actif, date_creation
+                ) VALUES (
+                    :id, :tuteur_id, :nom, :description, :categorie, :duree_minute, :prix, TRUE, NOW()
+                )
+            ");
+
+            $stmt->bindParam(':id', $id, PDO::PARAM_STR);
+            $stmt->bindParam(':tuteur_id', $tuteurId, PDO::PARAM_STR);
+            $stmt->bindParam(':nom', $nom, PDO::PARAM_STR);
+            $stmt->bindParam(':description', $description, PDO::PARAM_STR);
+            $stmt->bindParam(':categorie', $categorie, PDO::PARAM_STR);
+            $stmt->bindParam(':duree_minute', $dureeMinute, PDO::PARAM_INT);
+            $stmt->bindParam(':prix', $prix);
+
+            if ($stmt->execute()) {
+                return $id;
+            }
+
+            return false;
+        } catch (PDOException $e) {
+            error_log("Erreur Service::creerServiceParDefaut : " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Mapper un département vers une catégorie de service
+    // Paramètre : département
+    // Retourne : catégorie (Mathématiques, Sciences, Informatique, Langues, ou Général)
+    private function mapDepartementToCategorie(string $departement): string
+    {
+        $departementLower = strtolower(trim($departement));
+        
+        // Mapping des départements vers les catégories
+        if (strpos($departementLower, 'math') !== false) {
+            return 'Mathématiques';
+        }
+        if (strpos($departementLower, 'science') !== false && strpos($departementLower, 'informatique') === false) {
+            return 'Sciences';
+        }
+        if (strpos($departementLower, 'informatique') !== false || strpos($departementLower, 'programmation') !== false) {
+            return 'Informatique';
+        }
+        if (strpos($departementLower, 'langue') !== false || strpos($departementLower, 'français') !== false || 
+            strpos($departementLower, 'anglais') !== false || strpos($departementLower, 'littérature') !== false) {
+            return 'Langues';
+        }
+        
+        // Par défaut, utiliser "Général"
+        return 'Général';
+    }
+
+    // Générer un UUID v4
+    private function generateUUID(): string
+    {
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
+    }
 }

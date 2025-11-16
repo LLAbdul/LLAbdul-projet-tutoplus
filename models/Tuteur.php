@@ -248,6 +248,16 @@ class Tuteur
             $stmt->bindValue(':actif', $actifValue, PDO::PARAM_INT);
 
             if ($stmt->execute()) {
+                // Créer automatiquement un service par défaut pour ce tuteur
+                require_once __DIR__ . '/Service.php';
+                $serviceModel = new Service($this->pdo);
+                $serviceId = $serviceModel->creerServiceParDefaut($id, $departement, $tarifHoraire);
+                
+                if ($serviceId === false) {
+                    error_log("Avertissement Tuteur::creerTuteur : échec de la création du service par défaut pour le tuteur $id");
+                    // On continue quand même, le tuteur est créé
+                }
+                
                 return $id;
             }
 
