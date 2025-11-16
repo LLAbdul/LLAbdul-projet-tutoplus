@@ -29,6 +29,20 @@ $tuteur = $tuteurModel->getTuteurById($_SESSION['tuteur_id']);
 $serviceModel = new Service($pdo);
 $services = $serviceModel->getServicesByTuteurId($_SESSION['tuteur_id']);
 
+// Si aucun service n'existe, créer un service par défaut
+if (empty($services) && $tuteur) {
+    $serviceId = $serviceModel->creerServiceParDefaut(
+        $_SESSION['tuteur_id'],
+        $tuteur['departement'] ?? 'Général',
+        (float)($tuteur['tarif_horaire'] ?? 0)
+    );
+    
+    if ($serviceId) {
+        // Recharger les services après création
+        $services = $serviceModel->getServicesByTuteurId($_SESSION['tuteur_id']);
+    }
+}
+
 // Déterminer le service par défaut (premier service du tuteur)
 $serviceParDefaut = !empty($services) ? $services[0] : null;
 
