@@ -1,4 +1,5 @@
 <?php
+// Testé par Abdul Rahman Zahid le 16/11/2025 Réussi peut être à réviser plus tard
 /**
  * API reservations.php
  * - POST : réservation d’un créneau (création demande + rendez-vous)
