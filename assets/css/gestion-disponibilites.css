@@ -239,6 +239,14 @@
   width: 100%;
 }
 
+/* Ajuster le centrage du titre pour les grandes résolutions (1125px et plus) */
+@media (min-width: 1125px) {
+  .fc-toolbar-chunk:nth-child(2) {
+    position: relative;
+    left: 1.5rem; /* Décaler légèrement à droite pour un meilleur rendu visuel */
+  }
+}
+
 .fc-button {
   background: var(--bg-white);
   border: 1px solid var(--border-color);
