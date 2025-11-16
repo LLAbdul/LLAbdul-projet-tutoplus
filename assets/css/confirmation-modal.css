@@ -246,19 +246,75 @@
   }
 }
 @media (max-width: 480px) {
+  .confirmation-modal-content {
+    width: 98%;
+    max-height: 98vh;
+    border-radius: 12px;
+  }
+
   .confirmation-header {
-    padding: 1.5rem 1rem 0.75rem;
+    padding: 1.5rem 1.25rem 1rem;
+  }
+
+  .confirmation-icon {
+    width: 48px;
+    height: 48px;
   }
 
   .confirmation-title {
-    font-size: 1.25rem;
+    font-size: 1.375rem;
+  }
+
+  .confirmation-subtitle {
+    font-size: 0.875rem;
   }
 
   .confirmation-body {
-    padding: 1rem;
+    padding: 1.25rem;
   }
 
   .confirmation-info-card {
     padding: 1rem;
+  }
+
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .info-label {
+    font-size: 0.8125rem;
+  }
+
+  .info-value {
+    font-size: 0.875rem;
+  }
+
+  .confirmation-footer {
+    padding: 1rem 1.25rem 1.25rem;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .btn-confirmation-primary,
+  .btn-confirmation-secondary {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9375rem;
+  }
+}
+
+/* Tablette */
+@media (min-width: 481px) and (max-width: 768px) {
+  .confirmation-modal-content {
+    width: 90%;
+  }
+}
+
+/* Laptop */
+@media (min-width: 1025px) and (max-width: 1400px) {
+  .confirmation-modal-content {
+    max-width: 550px;
   }
 }
