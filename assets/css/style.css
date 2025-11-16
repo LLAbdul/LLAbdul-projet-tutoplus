@@ -200,14 +200,14 @@ header {
 
 @media (max-width: 768px) {
   .header-content {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
     gap: 1rem;
   }
 
   .header-right {
-    width: 100%;
-    justify-content: space-between;
+    width: auto;
+    justify-content: flex-end;
   }
 }
 
@@ -237,6 +237,15 @@ header {
   image-rendering: crisp-edges;
   image-rendering: pixelated;
   transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Logo desktop : afficher sur desktop, masquer sur mobile/tablette */
+.college-logo-desktop {
+  display: block;
+}
+
+.college-logo-mobile {
+  display: none;
 }
 
 .college-logo:hover {
@@ -837,6 +846,31 @@ footer p {
   .header-center .subtitle {
     font-size: 0.8125rem;
   }
+
+  .services-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing);
+  }
+
+  .service-card {
+    padding: var(--spacing);
+  }
+}
+
+/* Laptop (1024px - 1400px) */
+@media (min-width: 1025px) and (max-width: 1400px) {
+  .container {
+    padding: 0 2rem;
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--spacing-lg);
+  }
+
+  .header-content {
+    gap: 1.5rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -853,8 +887,11 @@ footer p {
   .header-content {
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
     gap: 1rem;
     min-height: 70px;
+    height: 70px;
+    position: relative;
   }
 
   .college-logo {
@@ -865,28 +902,119 @@ footer p {
     margin-right: 0.25rem;
   }
 
+  /* Afficher le logo court du Collège Ahuntsic sur tablette */
   .header-left {
+    display: flex;
     order: 1;
   }
 
+  .college-logo-desktop {
+    display: none;
+  }
+
+  .college-logo-mobile {
+    display: block;
+    height: 40px;
+    max-width: 140px;
+    min-width: 100px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  /* Centrer TutoPlus sur tablette avec position absolute et aligner avec l'icône */
   .header-center {
-    order: 3;
-    position: static;
-    -webkit-transform: none;
-    -ms-transform: none;
-    transform: none;
-    left: auto;
-    top: auto;
-    width: 100%;
-    max-width: 100%;
-    margin-top: 0.5rem;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: auto;
+    max-width: none;
+    margin: 0;
+    text-align: center;
     pointer-events: auto;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .header-right {
-    order: 2;
-    margin-left: 0;
+    order: 3;
+    margin-left: auto;
     gap: 0.5rem;
+    justify-content: flex-end;
+    z-index: 2;
+  }
+
+  /* Transformer le bouton Connexion en icône sur tablette */
+  .btn-login-link {
+    padding: 0.5rem;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 0;
+    position: relative;
+    text-indent: -9999px;
+    overflow: hidden;
+  }
+
+  .btn-login-link::before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='%23ffffff' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    text-indent: 0;
+  }
+
+  .btn-login-link[href="historique.php"]::before {
+    content: "📅";
+    font-size: 1.25rem;
+    line-height: 1;
+    background-image: none;
+  }
+
+  .btn-login-link[href="gestion_disponibilites.php"]::before {
+    content: "📆";
+    font-size: 1.25rem;
+    line-height: 1;
+    background-image: none;
+  }
+
+  /* Transformer le bouton Déconnexion en icône sur tablette */
+  .btn-logout {
+    padding: 0.5rem;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0;
+    position: relative;
+  }
+
+  .btn-logout::before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    display: block;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='%23212529' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z'/%3E%3Cpath fill-rule='evenodd' d='M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
   }
 
   .user-info {
@@ -970,6 +1098,26 @@ footer p {
   .service-details {
     flex-direction: column;
   }
+
+  .detail-item-with-action {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .btn-contact-tuteur,
+  .btn-plus-creneaux {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
+
+  .btn-contact-icon {
+    font-size: 1rem;
+  }
+
+  .btn-plus-icon {
+    font-size: 1.25rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -985,16 +1133,59 @@ footer p {
 
   .header-content {
     min-height: 60px;
-    gap: 0.75rem;
+    height: 60px;
+    gap: 0.5rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+  }
+
+  /* Afficher le logo court du Collège Ahuntsic sur mobile */
+  .header-left {
+    display: flex;
+    order: 1;
+  }
+
+  .college-logo-desktop {
+    display: none;
+  }
+
+  .college-logo-mobile {
+    display: block;
+    height: 35px;
+    max-width: 120px;
+    min-width: 80px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  /* Centrer TutoPlus sur mobile avec position absolute et aligner avec l'icône */
+  .header-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: auto;
+    max-width: none;
+    margin: 0;
+    text-align: center;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   header h1 {
-    font-size: 1.25rem;
+    font-size: 1.375rem;
+    margin: 0;
+    line-height: 1.2;
   }
 
   .header-center .subtitle {
-    font-size: 0.75rem;
-    display: none; /* Masquer le sous-titre sur très petits écrans */
+    display: block; /* Afficher le sous-titre sur mobile */
+    font-size: 0.7rem;
+    margin-top: 0.125rem;
   }
 
   .college-logo {
@@ -1008,19 +1199,131 @@ footer p {
     max-width: 150px;
   }
 
+  /* Ajuster header-right pour qu'il soit visible à droite */
   .header-right {
+    order: 2;
     gap: 0.5rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    margin-left: auto;
+    justify-content: flex-end;
+    z-index: 2;
   }
 
-  .btn-login-link,
+  /* Transformer le bouton Connexion en icône sur mobile */
+  .header-right .btn-login-link {
+    padding: 0.5rem;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    border-radius: 50%;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 0;
+    position: relative;
+    text-indent: -9999px;
+    overflow: hidden;
+    background: var(--accent-color);
+    color: var(--text-white);
+    border: none;
+  }
+
+  .header-right .btn-login-link::before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='%23ffffff' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    text-indent: 0;
+    z-index: 1;
+  }
+
+  .header-right .btn-login-link[href="historique.php"]::before {
+    content: "📅";
+    font-size: 1.25rem;
+    line-height: 1;
+    background-image: none;
+  }
+
+  .header-right .btn-login-link[href="gestion_disponibilites.php"]::before {
+    content: "📆";
+    font-size: 1.25rem;
+    line-height: 1;
+    background-image: none;
+  }
+
   .btn-logout {
-    padding: 0.4rem 1rem;
-    font-size: 0.875rem;
+    padding: 0.5rem;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0;
+    position: relative;
   }
 
+  .btn-logout::before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    display: block;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='%23212529' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5v-2a.5.5 0 0 1 1 0z'/%3E%3Cpath fill-rule='evenodd' d='M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z'/%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  /* Masquer les infos utilisateur et boutons sur mobile pour économiser l'espace */
   .user-info {
-    font-size: 0.875rem;
+    display: none;
+  }
+
+  .header-right .btn-login-link,
+  .header-right .btn-logout {
+    display: none;
+  }
+
+  /* Afficher le bouton avec initiale sur mobile */
+  .user-menu-dropdown {
+    position: relative;
+  }
+
+  .user-initial-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    color: var(--text-white);
+    border: none;
+    font-size: 1.125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+  }
+
+  .user-initial-btn:hover {
+    background: var(--accent-light);
+    transform: scale(1.05);
+  }
+
+  .user-initial-btn.active {
+    background: var(--accent-light);
+    box-shadow: 0 2px 8px rgba(204, 0, 0, 0.3);
   }
 
   .user-name {
@@ -1074,6 +1377,24 @@ footer p {
     font-size: 1.0625rem;
   }
 
+  .detail-item-with-action {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .detail-content {
+    width: 100%;
+  }
+
+  .btn-contact-tuteur,
+  .btn-plus-creneaux {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    align-self: flex-end;
+  }
+
   footer {
     padding: var(--spacing) 0;
   }
@@ -1105,4 +1426,78 @@ select:active:not(:focus-visible) {
 
 select:hover:not(:focus-visible) {
   outline: none;
+}
+
+/* Styles pour le menu dropdown utilisateur */
+.user-menu-dropdown {
+  display: none;
+  position: relative;
+}
+
+.user-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 200px;
+  background: var(--bg-white);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.user-dropdown-menu.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-menu-link {
+  display: block;
+  padding: 0.875rem 1rem;
+  color: var(--text-dark);
+  text-decoration: none;
+  transition: background 0.2s ease;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 0.9375rem;
+}
+
+.dropdown-menu-link:last-child {
+  border-bottom: none;
+}
+
+.dropdown-menu-link:hover {
+  background: var(--bg-light);
+}
+
+.dropdown-menu-link-logout {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.dropdown-menu-link-logout:hover {
+  background: rgba(204, 0, 0, 0.05);
+}
+
+.dropdown-icon {
+  font-size: 1.125rem;
+  width: 20px;
+  text-align: center;
+}
+
+@media (max-width: 481px) {
+  .user-menu-dropdown {
+    display: block;
+  }
+}
+
+@media (min-width: 482px) {
+  .user-menu-dropdown {
+    display: none !important;
+  }
 }
