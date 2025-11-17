@@ -46,4 +46,36 @@ class Statistiques
             return [];
         }
     }
+
+    // Retourne : nombre de demandes par statut
+    public function getDemandesParStatut(): array
+    {
+        try {
+            $stmt = $this->pdo->query("
+                SELECT 
+                    statut,
+                    COUNT(*) as nombre
+                FROM demandes
+                GROUP BY statut
+            ");
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Format standardisé
+            $stats = [
+                'EN_ATTENTE' => 0,
+                'ACCEPTEE' => 0,
+                'REFUSEE' => 0,
+                'EXPIRED' => 0
+            ];
+            
+            foreach ($results as $row) {
+                $stats[$row['statut']] = (int)$row['nombre'];
+            }
+            
+            return $stats;
+        } catch (PDOException $e) {
+            error_log("Erreur Statistiques::getDemandesParStatut : " . $e->getMessage());
+            return [];
+        }
+    }
 }
