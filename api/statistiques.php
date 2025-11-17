@@ -44,4 +44,19 @@ try {
         echo json_encode(['error' => 'Méthode non autorisée']);
         exit;
     }
+} catch (PDOException $e) {
+    error_log("Erreur api/statistiques.php (PDO) : " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['error' => 'Erreur serveur']);
+    exit;
+} catch (Exception $e) {
+    error_log("Erreur api/statistiques.php (Exception) : " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['error' => 'Erreur serveur']);
+    exit;
+} catch (Error $e) {
+    error_log("Erreur api/statistiques.php (Error) : " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['error' => 'Erreur serveur']);
+    exit;
 }
