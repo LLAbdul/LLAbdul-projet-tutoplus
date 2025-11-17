@@ -184,6 +184,8 @@
 
 /* Carte de compte */
 .compte-card {
+  display: flex;
+  flex-direction: column;
   background: var(--bg-white);
   border: 2px solid var(--border-color);
   border-radius: 12px;
@@ -250,6 +252,7 @@
 }
 
 .compte-card-body {
+  flex: 1;
   margin-bottom: 1.5rem;
 }
 
@@ -290,6 +293,7 @@
   gap: 0.75rem;
   padding-top: 1rem;
   border-top: 1px solid var(--border-light);
+  margin-top: auto;
 }
 
 .btn-compte-toggle {
