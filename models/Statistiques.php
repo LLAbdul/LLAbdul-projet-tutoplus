@@ -122,4 +122,34 @@ class Statistiques
             return [];
         }
     }
+
+    // Retourne : top tuteurs par nombre de séances
+    public function getTopTuteurs(int $limit = 5): array
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT 
+                    t.id,
+                    t.nom,
+                    t.prenom,
+                    t.departement,
+                    t.evaluation,
+                    t.nb_seances,
+                    COUNT(rv.id) as nb_rendez_vous
+                FROM tuteurs t
+                LEFT JOIN rendez_vous rv ON t.id = rv.tuteur_id
+                WHERE t.actif = TRUE
+                GROUP BY t.id, t.nom, t.prenom, t.departement, t.evaluation, t.nb_seances
+                ORDER BY nb_rendez_vous DESC, t.nb_seances DESC
+                LIMIT :limit
+            ");
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur Statistiques::getTopTuteurs : " . $e->getMessage());
+            return [];
+        }
+    }
 }
