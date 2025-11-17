@@ -194,4 +194,46 @@ class Statistiques
             return [];
         }
     }
+
+    // Retourne : statistiques générales (totaux)
+    public function getStatistiquesGenerales(): array
+    {
+        try {
+            $totalRendezVous = $this->pdo->query("
+                SELECT COUNT(*) as total FROM rendez_vous
+            ")->fetch(PDO::FETCH_ASSOC);
+            
+            $totalDemandes = $this->pdo->query("
+                SELECT COUNT(*) as total FROM demandes
+            ")->fetch(PDO::FETCH_ASSOC);
+            
+            $totalTuteurs = $this->pdo->query("
+                SELECT COUNT(*) as total FROM tuteurs WHERE actif = TRUE
+            ")->fetch(PDO::FETCH_ASSOC);
+            
+            $totalEtudiants = $this->pdo->query("
+                SELECT COUNT(*) as total FROM etudiants WHERE actif = TRUE
+            ")->fetch(PDO::FETCH_ASSOC);
+            
+            $totalServices = $this->pdo->query("
+                SELECT COUNT(*) as total FROM services WHERE actif = TRUE
+            ")->fetch(PDO::FETCH_ASSOC);
+            
+            $rendezVousTermines = $this->pdo->query("
+                SELECT COUNT(*) as total FROM rendez_vous WHERE statut = 'TERMINE'
+            ")->fetch(PDO::FETCH_ASSOC);
+            
+            return [
+                'total_rendez_vous' => (int)($totalRendezVous['total'] ?? 0),
+                'total_demandes' => (int)($totalDemandes['total'] ?? 0),
+                'total_tuteurs' => (int)($totalTuteurs['total'] ?? 0),
+                'total_etudiants' => (int)($totalEtudiants['total'] ?? 0),
+                'total_services' => (int)($totalServices['total'] ?? 0),
+                'rendez_vous_termines' => (int)($rendezVousTermines['total'] ?? 0)
+            ];
+        } catch (PDOException $e) {
+            error_log("Erreur Statistiques::getStatistiquesGenerales : " . $e->getMessage());
+            return [];
+        }
+    }
 }
