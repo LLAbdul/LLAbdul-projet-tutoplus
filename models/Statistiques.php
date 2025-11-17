@@ -78,4 +78,48 @@ class Statistiques
             return [];
         }
     }
+
+    // Retourne : nombre de tuteurs et étudiants actifs/inactifs
+    public function getUtilisateursParStatut(): array
+    {
+        try {
+            $tuteursActifs = $this->pdo->query("
+                SELECT COUNT(*) as nombre 
+                FROM tuteurs 
+                WHERE actif = TRUE
+            ")->fetch(PDO::FETCH_ASSOC);
+            
+            $tuteursInactifs = $this->pdo->query("
+                SELECT COUNT(*) as nombre 
+                FROM tuteurs 
+                WHERE actif = FALSE
+            ")->fetch(PDO::FETCH_ASSOC);
+            
+            $etudiantsActifs = $this->pdo->query("
+                SELECT COUNT(*) as nombre 
+                FROM etudiants 
+                WHERE actif = TRUE
+            ")->fetch(PDO::FETCH_ASSOC);
+            
+            $etudiantsInactifs = $this->pdo->query("
+                SELECT COUNT(*) as nombre 
+                FROM etudiants 
+                WHERE actif = FALSE
+            ")->fetch(PDO::FETCH_ASSOC);
+            
+            return [
+                'tuteurs' => [
+                    'actifs' => (int)($tuteursActifs['nombre'] ?? 0),
+                    'inactifs' => (int)($tuteursInactifs['nombre'] ?? 0)
+                ],
+                'etudiants' => [
+                    'actifs' => (int)($etudiantsActifs['nombre'] ?? 0),
+                    'inactifs' => (int)($etudiantsInactifs['nombre'] ?? 0)
+                ]
+            ];
+        } catch (PDOException $e) {
+            error_log("Erreur Statistiques::getUtilisateursParStatut : " . $e->getMessage());
+            return [];
+        }
+    }
 }
