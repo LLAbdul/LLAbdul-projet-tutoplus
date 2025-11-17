@@ -57,3 +57,11 @@ async function loadStatistiques() {
         errorMessage.style.display = 'block';
     }
 }
+
+// Afficher les statistiques générales
+function displayStatistiquesGenerales(stats) {
+    document.getElementById('totalRendezVous').textContent = stats.total_rendez_vous || 0;
+    document.getElementById('totalTuteurs').textContent = stats.total_tuteurs || 0;
+    document.getElementById('totalEtudiants').textContent = stats.total_etudiants || 0;
+    document.getElementById('rendezVousTermines').textContent = stats.rendez_vous_termines || 0;
+}
