@@ -174,3 +174,18 @@ function createRendezVousChart(data, chartType = 'bar') {
     rendezVousChart = new Chart(ctx, chartConfig);
     currentChartType = chartType;
 }
+
+// Initialiser le sélecteur de type de graphique
+function initChartTypeSelector() {
+    const chartTypeSelect = document.getElementById('chartType');
+    if (!chartTypeSelect) return;
+
+    chartTypeSelect.value = currentChartType;
+
+    chartTypeSelect.addEventListener('change', (e) => {
+        const newType = e.target.value;
+        if (currentChartData) {
+            createRendezVousChart(currentChartData, newType);
+        }
+    });
+}
