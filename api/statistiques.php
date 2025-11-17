@@ -60,4 +60,3 @@ try {
     echo json_encode(['error' => 'Erreur serveur']);
     exit;
 }
-
