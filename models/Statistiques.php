@@ -152,4 +152,46 @@ class Statistiques
             return [];
         }
     }
+
+    // Retourne : répartition des rendez-vous par département
+    public function getRendezVousParDepartement(): array
+    {
+        try {
+            $stmt = $this->pdo->query("
+                SELECT 
+                    t.departement,
+                    COUNT(rv.id) as nombre
+                FROM rendez_vous rv
+                INNER JOIN tuteurs t ON rv.tuteur_id = t.id
+                GROUP BY t.departement
+                ORDER BY nombre DESC
+            ");
+            
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur Statistiques::getRendezVousParDepartement : " . $e->getMessage());
+            return [];
+        }
+    }
+
+    // Retourne : nombre de services actifs par catégorie
+    public function getServicesParCategorie(): array
+    {
+        try {
+            $stmt = $this->pdo->query("
+                SELECT 
+                    categorie,
+                    COUNT(*) as nombre
+                FROM services
+                WHERE actif = TRUE
+                GROUP BY categorie
+                ORDER BY nombre DESC
+            ");
+            
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur Statistiques::getServicesParCategorie : " . $e->getMessage());
+            return [];
+        }
+    }
 }
