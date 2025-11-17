@@ -94,11 +94,13 @@ LLAbdul-projet-tutoplus/
 ### 2. Base de données
 
 1. Créer une base de données MySQL via phpMyAdmin ou ligne de commande
-2. Exécuter le script `database/schema.sql` pour créer les tables et insérer les données de test :
-   ```sql
-   mysql -u root -p < database/schema.sql
-   ```
-   Ou via phpMyAdmin : importer le fichier `database/schema.sql`
+2. Importer les données en exécutant toutes les requêtes SQL contenues dans le fichier `database/schema.sql` :
+   - **Via phpMyAdmin** :
+     - Sélectionner la base de données créée
+     - Aller dans l'onglet "Importer"
+     - Choisir le fichier `database/schema.sql`
+     - Cliquer sur "Exécuter"
+   - Le script `schema.sql` contient toutes les requêtes nécessaires pour créer les tables et insérer les données de test
 
 ### 3. Configuration
 
