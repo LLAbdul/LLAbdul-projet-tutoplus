@@ -236,4 +236,18 @@ class Statistiques
             return [];
         }
     }
+
+    // Retourne : toutes les statistiques en un seul appel
+    public function getAllStatistiques(): array
+    {
+        return [
+            'generales' => $this->getStatistiquesGenerales(),
+            'rendez_vous_par_statut' => $this->getRendezVousParStatut(),
+            'demandes_par_statut' => $this->getDemandesParStatut(),
+            'utilisateurs_par_statut' => $this->getUtilisateursParStatut(),
+            'top_tuteurs' => $this->getTopTuteurs(5),
+            'rendez_vous_par_departement' => $this->getRendezVousParDepartement(),
+            'services_par_categorie' => $this->getServicesParCategorie()
+        ];
+    }
 }
