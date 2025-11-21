@@ -1,4 +1,6 @@
 <?php
+/* Testé par Diane Devi le 19/11/2025 Réussi */
+
 /**
  * Page admin.php
  * - Accessible uniquement aux administrateurs connectés
