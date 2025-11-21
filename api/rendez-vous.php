@@ -21,6 +21,7 @@ try {
     $pdo = getDBConnection();
     $rendezVousModel = new RendezVous($pdo);
     
+    /* Testé par Diane Devi le 21/11/2025 Réussi */
     // Gérer les différentes méthodes HTTP
     switch ($method) {
         case 'GET':
