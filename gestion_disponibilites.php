@@ -5,7 +5,7 @@
  * - Affiche le calendrier des disponibilités (FullCalendar)
  * - Permet de créer / modifier / supprimer des créneaux
  */
-
+/* Testé par Diane Devi le 21/11/2025 Réussi */
 session_start();
 
 // Vérifier que le tuteur est connecté

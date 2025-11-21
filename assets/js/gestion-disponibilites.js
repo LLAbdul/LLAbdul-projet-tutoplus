@@ -1,3 +1,4 @@
+/* Testé par Diane Devi le 21/11/2025 Réussi */
 const DISPONIBILITES_API_URL = 'api/disponibilites.php';
 const MIN_DURATION_MINUTES = 30;
 
