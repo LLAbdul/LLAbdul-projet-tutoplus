@@ -50,6 +50,7 @@ $cacheBuster       = time();
     <link rel="stylesheet" href="assets/css/contact-modal.css?v=<?= $cacheBuster ?>">
 </head>
 <body>
+<!-- Testé par Diane Devi le 23/11/2025 Réussi -->
 <header>
     <div class="container">
         <div class="header-content">
@@ -403,6 +404,7 @@ $cacheBuster       = time();
             >
         </div>
     </div>
+<!-- Testé par Diane Devi le 23/11/2025 Réussi -->
 </footer>
 <!-- Testé par Abdul Rahman Zahid le 16/11/2025 Réussi -->
 <!-- Modal pour les créneaux -->

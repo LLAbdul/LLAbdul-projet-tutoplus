@@ -50,6 +50,7 @@ $cacheBuster       = time();
     <link rel="stylesheet" href="assets/css/login.css?v=<?= $cacheBuster ?>">
 </head>
 <body>
+<!-- Testé par Diane Devi le 23/11/2025 Réussi -->
 <header>
     <div class="container">
         <div class="header-content">
@@ -211,6 +212,7 @@ $cacheBuster       = time();
     </section>
 </main>
 
+<!-- Testé par Diane Devi le 23/11/2025 Réussi -->
 <footer>
     <div class="container">
         <div class="footer-content">
