@@ -1371,6 +1371,7 @@ footer p {
   .header-left {
     display: flex;
     order: 1;
+    margin-right: 0.5rem;
   }
 
   .college-logo-desktop {
@@ -1425,6 +1426,62 @@ footer p {
     max-width: 150px;
     min-width: 100px;
   }
+}
+
+/* Très petits écrans (360px et moins) */
+@media (max-width: 360px) {
+  .header-left {
+    margin-right: 0.25rem;
+  }
+
+  .college-logo-mobile {
+    height: 30px;
+    max-width: 90px;
+    min-width: 70px;
+  }
+
+  .header-center {
+    max-width: calc(100% - 160px);
+  }
+
+  header h1 {
+    font-size: 1.25rem;
+  }
+
+  .header-center .subtitle {
+    font-size: 0.65rem;
+  }
+}
+
+/* Écrans très petits (320px et moins) */
+@media (max-width: 320px) {
+  .header-left {
+    margin-right: 0.125rem;
+  }
+
+  .college-logo-mobile {
+    height: 28px;
+    max-width: 75px;
+    min-width: 60px;
+  }
+
+  .header-center {
+    max-width: calc(100% - 140px);
+  }
+
+  header h1 {
+    font-size: 1.125rem;
+  }
+
+  .header-center .subtitle {
+    font-size: 0.6rem;
+    margin-top: 0.0625rem;
+  }
+
+  .header-content {
+    gap: 0.25rem;
+  }
+}
 
   .footer-logo {
     height: 30px;
