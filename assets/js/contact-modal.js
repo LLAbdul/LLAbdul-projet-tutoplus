@@ -111,15 +111,15 @@ async function loadTuteursList(tuteurIdPreselectionne = null) {
 function resetContactForm() {
     const sujetInput = document.getElementById('contact-sujet');
     const contenuInput = document.getElementById('contact-contenu');
-    const prioriteSelect = document.getElementById('contact-priorite');
     const tuteurSelect = document.getElementById('contact-tuteur-select');
+    const emailInput = document.getElementById('contact-email');
     const errorDiv = document.getElementById('contact-error');
     const submitBtn = document.getElementById('btnContactSubmit');
 
     if (sujetInput) sujetInput.value = '';
     if (contenuInput) contenuInput.value = '';
-    if (prioriteSelect) prioriteSelect.value = '';
     if (tuteurSelect) tuteurSelect.value = '';
+    // L'email reste pré-rempli (readonly), pas besoin de le réinitialiser
 
     updateCharCount();
 
@@ -219,15 +219,29 @@ async function submitContactForm() {
     }
 
     const tuteurId = document.getElementById('contact-tuteur-select')?.value;
+    const email = document.getElementById('contact-email')?.value.trim();
     const sujet = document.getElementById('contact-sujet')?.value.trim();
     const contenu = document.getElementById('contact-contenu')?.value.trim();
-    const priorite = document.getElementById('contact-priorite')?.value || null;
     const submitBtn = document.getElementById('btnContactSubmit');
 
     // Validation
     if (!tuteurId) {
         showContactError('Veuillez sélectionner un tuteur');
         document.getElementById('contact-tuteur-select')?.focus();
+        return;
+    }
+
+    if (!email) {
+        showContactError('L\'email est requis');
+        document.getElementById('contact-email')?.focus();
+        return;
+    }
+
+    // Validation du format email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showContactError('Veuillez entrer une adresse email valide');
+        document.getElementById('contact-email')?.focus();
         return;
     }
 
@@ -267,10 +281,6 @@ async function submitContactForm() {
         sujet,
         contenu
     };
-
-    if (priorite) {
-        data.priorite = priorite;
-    }
 
     try {
         const response = await fetch('api/messages.php', {

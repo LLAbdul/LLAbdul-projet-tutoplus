@@ -1,6 +1,6 @@
+<?php
 // Testé par Abdul Rahman Zahid le 16/11/2025 Réussi
 
-<?php
 /**
  * API creneaux.php
  * - GET : retourne les créneaux disponibles pour un service (service_id requis)

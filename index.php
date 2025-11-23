@@ -1,5 +1,5 @@
-// Testé par Abdul Rahman Zahid le 16/11/2025 Réussi
 <?php
+// Testé par Abdul Rahman Zahid le 16/11/2025 Réussi
 /**
  * Page index.php
  * - Page d'accueil : liste les services de tutorat actifs
@@ -437,6 +437,23 @@ $cacheBuster       = time();
                 </div>
 
                 <div class="form-group">
+                    <label for="contact-email" class="form-label">
+                        Votre email <span class="required">*</span>
+                    </label>
+                    <input
+                        type="email"
+                        id="contact-email"
+                        name="email"
+                        class="form-input"
+                        required
+                        readonly
+                        value="<?= isset($_SESSION['etudiant_email']) ? htmlspecialchars($_SESSION['etudiant_email'], ENT_QUOTES, 'UTF-8') : '' ?>"
+                        placeholder="Votre adresse email"
+                    >
+                    <small class="form-help-text">Votre email est automatiquement rempli depuis votre compte</small>
+                </div>
+
+                <div class="form-group">
                     <label for="contact-sujet" class="form-label">
                         Sujet <span class="required">*</span>
                     </label>
@@ -461,21 +478,12 @@ $cacheBuster       = time();
                         class="form-textarea"
                         required
                         maxlength="500"
-                        rows="5"
+                        rows="4"
                         placeholder="Votre message (maximum 500 caractères)"
                     ></textarea>
                     <div class="char-counter">
                         <span id="char-count">0</span>/500 caractères
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="contact-priorite" class="form-label">Priorité</label>
-                    <select id="contact-priorite" name="priorite" class="form-select">
-                        <option value="">Normale</option>
-                        <option value="HAUTE">Haute</option>
-                        <option value="URGENTE">Urgente</option>
-                    </select>
                 </div>
 
                 <div id="contact-error" class="error-message" style="display: none;"></div>
