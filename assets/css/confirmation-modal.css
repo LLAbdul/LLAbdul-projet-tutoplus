@@ -194,6 +194,8 @@
 .btn-confirmation-secondary:active {
   transform: translateY(0);
 }
+
+/* Testé par Diane Devi le 24/11/2025 Réussi */
 /* Responsive */
 @media (max-width: 768px) {
   .confirmation-modal-content {

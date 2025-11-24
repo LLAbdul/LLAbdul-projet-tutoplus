@@ -528,6 +528,7 @@
   transform: none;
 }
 
+/* Testé par Diane Devi le 24/11/2025 Réussi */
 /* Responsive */
 @media (max-width: 1024px) {
   .creneaux-container {
