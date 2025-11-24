@@ -1,5 +1,5 @@
 // Script pour gérer le modal de confirmation de réservation
-
+// Testé par Diane Devi le 23/11/2025 Réussi
 let confirmationAutoCloseTimeout = null;
 
 /**
