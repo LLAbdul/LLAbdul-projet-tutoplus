@@ -344,6 +344,7 @@ class RendezVous
 
     // Paramètre : id rendez-vous
     // Retourne : true si statut mis à jour (EN_COURS/A_VENIR)
+    /* Testé par Diane Devi le 23/11/2025 Réussi */
     public function confirmerRendezVous(string $id): bool
     {
         try {
@@ -412,6 +413,7 @@ class RendezVous
 
     // Paramètres : id rendez-vous, nouvelle date (string)
     // Retourne : true si reporté
+    /* Testé par Diane Devi le 23/11/2025 Réussi */
     public function reporterRendezVous(string $id, string $nouvelleDate): bool
     {
         try {
@@ -448,6 +450,7 @@ class RendezVous
 
     // Paramètre : id rendez-vous
     // Retourne : true si terminé
+    /* Testé par Diane Devi le 23/11/2025 Réussi */
     public function terminerRendezVous(string $id): bool
     {
         try {

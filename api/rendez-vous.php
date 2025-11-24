@@ -147,7 +147,7 @@ try {
                 echo json_encode($rendezVousList);
             }
             break;
-            
+        /* Testé par Diane Devi le 23/11/2025 Réussi */    
         case 'PUT':
             // Mettre à jour un rendez-vous (confirmer, annuler, reporter, terminer)
             $input = file_get_contents('php://input');
