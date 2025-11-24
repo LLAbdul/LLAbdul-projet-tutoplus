@@ -1,4 +1,5 @@
 <?php
+/* Testé par Diane Devi le 24/11/2025 Réussi */
 /**
  * API demandes.php
  * - GET    : liste ou détail des demandes (selon présence de id)

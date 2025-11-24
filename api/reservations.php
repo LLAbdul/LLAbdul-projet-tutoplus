@@ -1,4 +1,5 @@
 <?php
+/* Testé par Diane Devi le 24/11/2025 Réussi */
 // Testé par Abdul Rahman Zahid le 16/11/2025 Réussi
 /**
  * API reservations.php
