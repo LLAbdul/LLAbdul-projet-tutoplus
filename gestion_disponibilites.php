@@ -1,4 +1,5 @@
 <?php
+/* Testé par Diane Devi le 24/11/2025 Réussi */
 /**
  * Page gestion_disponibilites.php
  * - Accessible uniquement aux tuteurs connectés

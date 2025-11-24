@@ -1,3 +1,4 @@
+// Testé par Diane Devi le 24/11/2025 Réussi
 // Script pour gérer le modal de sélection de créneaux
 // Testé par Abdul Rahman Zahid le 16/11/2025 Réussi
 document.addEventListener('DOMContentLoaded', () => {
