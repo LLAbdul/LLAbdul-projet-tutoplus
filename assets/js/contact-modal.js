@@ -1,5 +1,5 @@
 // Script pour gérer le modal de contact tuteur
-
+// Testé par Diane Devi le 24/11/2025 Réussi (js)
 /**
  * Échappe les caractères HTML pour éviter les injections XSS
  * text : Texte à échapper

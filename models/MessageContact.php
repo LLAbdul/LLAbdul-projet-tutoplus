@@ -1,4 +1,5 @@
 <?php
+/* Testé par Diane Devi le 24/11/2025 Réussi */
 declare(strict_types=1);
 
 /**
