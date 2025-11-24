@@ -1605,6 +1605,38 @@ footer p {
   }
 }
 
+/* très petits écrans pliables (344px et moins) */
+@media (max-width: 344px) {
+  .header-left {
+    margin-right: 0.25rem;
+  }
+
+  .college-logo-mobile {
+    height: 28px;
+    max-width: 70px;
+    min-width: 55px;
+  }
+
+  .header-center {
+    max-width: calc(100% - 130px);
+  }
+
+  header h1 {
+    font-size: 1.125rem;
+  }
+
+  .header-center .subtitle {
+    font-size: 0.6rem;
+    margin-top: 0.0625rem;
+  }
+
+  .header-content {
+    gap: 0.25rem;
+    min-height: 55px;
+    height: 55px;
+  }
+}
+
 /* Styles globaux pour tous les select - supprimer les effets visuels indésirables du navigateur */
 select {
   appearance: none;
