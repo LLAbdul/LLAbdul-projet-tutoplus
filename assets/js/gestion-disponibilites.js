@@ -101,8 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 titleFormat: {
                     year: 'numeric',
                     month: 'long'
-                },
-                columnHeaderFormat: { weekday: 'short' }
+                }
             },
             timeGridWeek: {
                 // "11 – 16 novembre 2025"
@@ -110,8 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric'
-                },
-                columnHeaderFormat: { weekday: 'short', day: 'numeric' }
+                }
             },
             timeGridDay: {
                 // "16 novembre 2025"
@@ -119,8 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric'
-                },
-                columnHeaderFormat: { weekday: 'short', day: 'numeric' }
+                }
             },
             listWeek: {
                 // "11 – 16 novembre 2025"

@@ -255,6 +255,10 @@
   width: 100%;
 }
 
+.fc-toolbar-title::first-letter {
+  text-transform: uppercase;
+}
+
 /* Ajuster le centrage du titre pour les grandes résolutions (1125px et plus) */
 @media (min-width: 1125px) {
   .fc-toolbar-chunk:nth-child(2) {
