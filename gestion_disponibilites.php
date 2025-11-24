@@ -5,7 +5,7 @@
  * - Affiche le calendrier des disponibilités (FullCalendar)
  * - Permet de créer / modifier / supprimer des créneaux
  */
-
+/* Testé par Diane Devi le 21/11/2025 Réussi */
 session_start();
 
 // Vérifier que le tuteur est connecté
@@ -65,6 +65,7 @@ $cacheBuster = time();
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
 </head>
 <body>
+/* Testé par Diane Devi le 23/11/2025 Réussi */    
 <header>
     <div class="container">
         <div class="header-content">
@@ -373,6 +374,7 @@ $cacheBuster = time();
     </div>
 </div>
 
+/* Testé par Diane Devi le 23/11/2025 Réussi */
 <footer>
     <div class="container">
         <div class="footer-content">

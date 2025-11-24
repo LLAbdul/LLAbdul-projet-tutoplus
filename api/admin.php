@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+/* Testé par Diane Devi le 19/11/2025 Réussi */
 /**
  * API admin.php
  * - GET
