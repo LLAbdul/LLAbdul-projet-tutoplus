@@ -355,6 +355,33 @@
 
   .rendez-vous-card-body {
     grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .rendez-vous-info {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .rendez-vous-info:last-child {
+    border-bottom: none;
+  }
+
+  .rendez-vous-info-label {
+    flex-shrink: 0;
+    min-width: 70px;
+  }
+
+  .rendez-vous-info-value {
+    text-align: right;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .rendez-vous-date-time {
@@ -367,6 +394,10 @@
     padding: var(--spacing-lg) var(--spacing-sm);
   }
 
+  .historique-content {
+    max-width: 100%;
+  }
+
   .historique-header h1 {
     font-size: 1.5rem;
   }
@@ -375,28 +406,171 @@
     font-size: 0.875rem;
   }
 
+  .rendez-vous-list {
+    gap: 0.75rem;
+  }
+
   .rendez-vous-card {
-    padding: var(--spacing-sm);
+    padding: 0.875rem;
+    border-radius: 8px;
+    max-width: 100%;
   }
 
   .rendez-vous-card-header {
     gap: 0.5rem;
+    margin-bottom: 0.75rem;
   }
 
-  .rendez-vous-card-title {
+  .rendez-vous-date-time {
+    min-width: 100%;
+  }
+
+  .rendez-vous-date {
     font-size: 1.125rem;
+    margin-bottom: 0.125rem;
   }
 
-  .rendez-vous-card-body {
-    gap: 0.75rem;
-  }
-
-  .rendez-vous-info-item {
+  .rendez-vous-time {
     font-size: 0.875rem;
   }
 
-  .rendez-vous-info-label {
+  .rendez-vous-statut {
+    padding: 0.25rem 0.625rem;
     font-size: 0.75rem;
+    align-self: flex-start;
+  }
+
+  .rendez-vous-card-body {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .rendez-vous-info {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.375rem 0;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .rendez-vous-info:last-child {
+    border-bottom: none;
+  }
+
+  .rendez-vous-info-label {
+    font-size: 0.6875rem;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+    min-width: 60px;
+  }
+
+  .rendez-vous-info-value {
+    font-size: 0.875rem;
+    text-align: right;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .rendez-vous-notes {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+  }
+
+  .rendez-vous-notes-label {
+    font-size: 0.75rem;
+    margin-bottom: 0.375rem;
+  }
+
+  .rendez-vous-notes-content {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+}
+
+/* Très petits écrans (344px et moins - Galaxy Z Fold) */
+@media (max-width: 344px) {
+  .historique-section {
+    padding: var(--spacing) 0.5rem;
+  }
+
+  .historique-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .historique-subtitle {
+    font-size: 0.8125rem;
+  }
+
+  .historique-filters {
+    gap: 0.375rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .filter-btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .rendez-vous-list {
+    gap: 0.625rem;
+  }
+
+  .rendez-vous-card {
+    padding: 0.75rem;
+    border-radius: 6px;
+  }
+
+  .rendez-vous-card-header {
+    margin-bottom: 0.625rem;
+  }
+
+  .rendez-vous-date {
+    font-size: 1rem;
+  }
+
+  .rendez-vous-time {
+    font-size: 0.8125rem;
+  }
+
+  .rendez-vous-statut {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  .rendez-vous-card-body {
+    gap: 0.375rem;
+    margin-bottom: 0.625rem;
+  }
+
+  .rendez-vous-info {
+    padding: 0.25rem 0;
+    gap: 0.375rem;
+  }
+
+  .rendez-vous-info-label {
+    font-size: 0.625rem;
+    min-width: 50px;
+  }
+
+  .rendez-vous-info-value {
+    font-size: 0.8125rem;
+  }
+
+  .rendez-vous-notes {
+    margin-top: 0.625rem;
+    padding-top: 0.625rem;
+  }
+
+  .rendez-vous-notes-label {
+    font-size: 0.6875rem;
+  }
+
+  .rendez-vous-notes-content {
+    font-size: 0.8125rem;
   }
 }
 
