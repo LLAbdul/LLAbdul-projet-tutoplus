@@ -21,6 +21,7 @@ class Disponibilite
 
     // Paramètre : id de la disponibilité
     // Retourne : tableau associatif ou null
+    /* Testé par Diane Devi le 26/11/2025 Réussi */
     public function getDisponibiliteById(string $id): ?array
     {
         try {
@@ -226,6 +227,7 @@ class Disponibilite
 
     // Paramètres : id, début, fin, statut (opt), service (opt), prix (opt), notes (opt), étudiant (opt)
     // Retourne : true si modifiée, false sinon
+    /* Testé par Diane Devi le 26/11/2025 Réussi */
     public function modifierDisponibilite(
         string $id,
         string $dateDebut,

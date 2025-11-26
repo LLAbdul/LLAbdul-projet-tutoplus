@@ -108,6 +108,7 @@ try {
             
             // Marquer temporairement la disponibilité comme réservée pour éviter les doubles réservations
             // Si le tuteur refuse, la disponibilité sera libérée
+            /* Testé par Diane Devi le 26/11/2025 Réussi */
             $reserveOk = $disponibiliteModel->modifierDisponibilite(
                 $disponibiliteId,
                 $disponibilite['date_debut'],
