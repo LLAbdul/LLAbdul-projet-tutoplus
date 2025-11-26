@@ -92,6 +92,18 @@ document.addEventListener('DOMContentLoaded', function() {
         slotDuration: '00:30:00',
         allDaySlot: false,
         height: 'auto',
+        
+        // Empêcher le drag & drop et resize pour les créneaux réservés avec rendez-vous
+        eventStartEditable: function(event) {
+            const extendedProps = event.extendedProps || {};
+            const hasRendezVous = extendedProps.hasRendezVous === true;
+            return !hasRendezVous; // Non éditable si un rendez-vous est lié
+        },
+        eventDurationEditable: function(event) {
+            const extendedProps = event.extendedProps || {};
+            const hasRendezVous = extendedProps.hasRendezVous === true;
+            return !hasRendezVous; // Non redimensionnable si un rendez-vous est lié
+        },
 
         // Configuration des vues
         views: {
@@ -184,18 +196,39 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         },
         
-        // Gérer le clic sur un événement existant (modification)
+        // Gérer le clic sur un événement existant (modification ou consultation)
         eventClick: function(info) {
+            // Toujours ouvrir le modal, même pour les créneaux réservés (en lecture seule)
             openModalEdit(info.event);
         },
         
         // Gérer le déplacement d'un événement (modification de date/heure)
         eventDrop: function(info) {
+            const extendedProps = info.event.extendedProps || {};
+            const hasRendezVous = extendedProps.hasRendezVous === true;
+            
+            // Si le créneau a un rendez-vous lié, annuler le déplacement
+            if (hasRendezVous) {
+                info.revert();
+                showNotification('Impossible de modifier un créneau réservé avec un rendez-vous', 'error');
+                return;
+            }
+            
             updateDisponibilite(info.event);
         },
         
         // Gérer le redimensionnement d'un événement (modification de durée)
         eventResize: function(info) {
+            const extendedProps = info.event.extendedProps || {};
+            const hasRendezVous = extendedProps.hasRendezVous === true;
+            
+            // Si le créneau a un rendez-vous lié, annuler le redimensionnement
+            if (hasRendezVous) {
+                info.revert();
+                showNotification('Impossible de modifier un créneau réservé avec un rendez-vous', 'error');
+                return;
+            }
+            
             updateDisponibilite(info.event);
         },
         
@@ -271,6 +304,7 @@ function openModalCreate(start, end) {
 function closeModal() {
     const modal = document.getElementById('modal-disponibilite');
     const form = document.getElementById('form-disponibilite');
+    const submitBtn = document.getElementById('modal-submit');
     
     modal.classList.remove('active');
     document.body.style.overflow = '';
@@ -278,6 +312,18 @@ function closeModal() {
     
     form.reset();
     document.getElementById('disponibilite-id').value = '';
+    
+    // Réactiver tous les champs du formulaire (au cas où ils étaient désactivés)
+    const formInputs = form.querySelectorAll('input, select, textarea');
+    formInputs.forEach(input => {
+        input.disabled = false;
+    });
+    
+    // Réafficher le bouton de soumission
+    if (submitBtn) {
+        submitBtn.style.display = 'block';
+    }
+    
     const serviceGroup = document.getElementById('service-id').closest('.form-group');
     const prixGroup = document.getElementById('prix').closest('.form-group');
     serviceGroup.style.display = 'block';
@@ -370,19 +416,41 @@ function openModalEdit(event) {
     const serviceId = extendedProps.service_id || '';
     const prix = extendedProps.prix ?? '';
     const notes = extendedProps.notes || '';
+    const hasRendezVous = extendedProps.hasRendezVous === true;
     
     form.reset();
     document.getElementById('disponibilite-id').value = id;
-    title.textContent = 'Modifier une disponibilité';
-    submitBtn.textContent = 'Modifier';
     
-    if (statut !== 'RESERVE') {
-        deleteBtn.style.display = 'block';
-        deleteBtn.onclick = function() {
-            deleteDisponibilite(id);
-        };
-    } else {
+    // Si le créneau a un rendez-vous lié, afficher en mode lecture seule
+    if (hasRendezVous) {
+        title.textContent = 'Détails de la disponibilité (Réservé)';
+        submitBtn.style.display = 'none';
         deleteBtn.style.display = 'none';
+        
+        // Désactiver tous les champs du formulaire
+        const formInputs = form.querySelectorAll('input, select, textarea');
+        formInputs.forEach(input => {
+            input.disabled = true;
+        });
+    } else {
+        title.textContent = 'Modifier une disponibilité';
+        submitBtn.textContent = 'Modifier';
+        submitBtn.style.display = 'block';
+        
+        // Réactiver tous les champs du formulaire
+        const formInputs = form.querySelectorAll('input, select, textarea');
+        formInputs.forEach(input => {
+            input.disabled = false;
+        });
+        
+        if (statut !== 'RESERVE') {
+            deleteBtn.style.display = 'block';
+            deleteBtn.onclick = function() {
+                deleteDisponibilite(id);
+            };
+        } else {
+            deleteBtn.style.display = 'none';
+        }
     }
 
     const startStr = formatDateTimeLocal(start);

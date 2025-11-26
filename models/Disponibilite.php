@@ -237,6 +237,40 @@ class Disponibilite
         ?string $etudiantId = null
     ): bool {
         try {
+            // Récupérer la disponibilité actuelle pour appliquer les règles métier
+            $disponibiliteActuelle = $this->getDisponibiliteById($id);
+            if (!$disponibiliteActuelle) {
+                $this->logError("Modification : la disponibilité n'existe pas (id: $id)");
+                return false;
+            }
+
+            // Règle métier : un créneau déjà réservé avec un rendez-vous ne doit pas être modifiable
+            // On considère qu'il est "réservé par un étudiant" si :
+            // - son statut est RESERVE
+            // - et un rendez-vous existe pour cette disponibilité
+            if ($disponibiliteActuelle['statut'] === self::STATUT_RESERVE) {
+                try {
+                    $stmtRv = $this->pdo->prepare("
+                        SELECT id 
+                        FROM rendez_vous 
+                        WHERE disponibilite_id = :disponibilite_id
+                        LIMIT 1
+                    ");
+                    $stmtRv->bindParam(':disponibilite_id', $id, PDO::PARAM_STR);
+                    $stmtRv->execute();
+                    $rendezVousLie = $stmtRv->fetch();
+
+                    if ($rendezVousLie) {
+                        $this->logError("Modification impossible : créneau déjà réservé avec un rendez-vous (disponibilite_id: $id)");
+                        return false;
+                    }
+                } catch (PDOException $e) {
+                    // En cas d'erreur lors du contrôle, on logue et bloque par prudence
+                    $this->logError("Contrôle rendez-vous lié : " . $e->getMessage());
+                    return false;
+                }
+            }
+
             if (!$this->validerPeriode($dateDebut, $dateFin)) {
                 return false;
             }

@@ -34,18 +34,80 @@ try {
         case 'GET':
             // Récupérer les disponibilités du tuteur
             $disponibilites = $disponibiliteModel->getDisponibilitesByTuteurId($tuteurId);
+
+            // Préparer une carte des demandes EN_ATTENTE par disponibilite_id
+            $demandesEnAttenteParDispo = [];
+            // Préparer une carte des rendez-vous liés par disponibilite_id
+            $rendezVousParDispo = [];
+            if (!empty($disponibilites)) {
+                $ids = array_column($disponibilites, 'id');
+                // Construire dynamiquement la clause IN
+                $placeholders = implode(',', array_fill(0, count($ids), '?'));
+                
+                // Récupérer les demandes EN_ATTENTE
+                $sqlDemandes = "
+                    SELECT disponibilite_id, COUNT(*) AS nb
+                    FROM demandes
+                    WHERE disponibilite_id IN ($placeholders)
+                      AND statut = 'EN_ATTENTE'
+                    GROUP BY disponibilite_id
+                ";
+                $stmtDemandes = $pdo->prepare($sqlDemandes);
+                foreach ($ids as $index => $id) {
+                    $stmtDemandes->bindValue($index + 1, $id, PDO::PARAM_STR);
+                }
+                $stmtDemandes->execute();
+                $rowsDemandes = $stmtDemandes->fetchAll();
+                foreach ($rowsDemandes as $row) {
+                    $demandesEnAttenteParDispo[$row['disponibilite_id']] = (int)$row['nb'];
+                }
+                
+                // Récupérer les rendez-vous liés (pour savoir si le créneau est vraiment réservé avec un rendez-vous)
+                $sqlRendezVous = "
+                    SELECT disponibilite_id, COUNT(*) AS nb
+                    FROM rendez_vous
+                    WHERE disponibilite_id IN ($placeholders)
+                    GROUP BY disponibilite_id
+                ";
+                $stmtRendezVous = $pdo->prepare($sqlRendezVous);
+                foreach ($ids as $index => $id) {
+                    $stmtRendezVous->bindValue($index + 1, $id, PDO::PARAM_STR);
+                }
+                $stmtRendezVous->execute();
+                $rowsRendezVous = $stmtRendezVous->fetchAll();
+                foreach ($rowsRendezVous as $row) {
+                    $rendezVousParDispo[$row['disponibilite_id']] = (int)$row['nb'];
+                }
+            }
             
             // Formater les disponibilités pour FullCalendar
             $events = [];
             foreach ($disponibilites as $dispo) {
-                // Déterminer le titre selon le statut
+                // Vérifier s'il existe au moins une demande EN_ATTENTE pour ce créneau
+                $hasPendingRequest = !empty($demandesEnAttenteParDispo[$dispo['id']]);
+                // Vérifier s'il existe un rendez-vous lié à ce créneau
+                $hasRendezVous = !empty($rendezVousParDispo[$dispo['id']]);
+
+                // Déterminer le titre et la couleur selon le statut et la présence d'une demande en attente
                 $title = '';
+                $color = '#28a745'; // vert par défaut
+
                 if ($dispo['statut'] === 'RESERVE') {
-                    $title = 'Réservé';
+                    if ($hasPendingRequest) {
+                        // Créneau réservé car une demande est en attente de décision du tuteur
+                        $title = 'Demande en attente';
+                        $color = '#ffc107'; // orange / jaune (attention)
+                    } else {
+                        // Créneau réservé avec rendez-vous confirmé
+                        $title = 'Réservé';
+                        $color = '#dc3545'; // rouge
+                    }
                 } elseif ($dispo['statut'] === 'BLOQUE') {
                     $title = 'Bloqué';
+                    $color = '#6c757d'; // gris
                 } else {
                     $title = $dispo['service_nom'] ?? 'Disponible';
+                    $color = '#28a745'; // vert
                 }
                 
                 $events[] = [
@@ -53,13 +115,14 @@ try {
                     'title' => $title,
                     'start' => $dispo['date_debut'],
                     'end' => $dispo['date_fin'],
-                    'color' => $dispo['statut'] === 'RESERVE' ? '#dc3545' : ($dispo['statut'] === 'BLOQUE' ? '#6c757d' : '#28a745'),
+                    'color' => $color,
                     'extendedProps' => [
                         'statut' => $dispo['statut'],
                         'service_id' => $dispo['service_id'],
                         'service_nom' => $dispo['service_nom'],
                         'prix' => $dispo['prix'],
-                        'notes' => $dispo['notes']
+                        'notes' => $dispo['notes'],
+                        'hasRendezVous' => $hasRendezVous // Indique si un rendez-vous est lié
                     ]
                 ];
             }
@@ -112,6 +175,23 @@ try {
             if (!$disponibilite || $disponibilite['tuteur_id'] !== $tuteurId) {
                 http_response_code(403);
                 echo json_encode(['error' => 'Disponibilité non trouvée ou non autorisée']);
+                break;
+            }
+            
+            // Vérifier si un rendez-vous est lié à cette disponibilité
+            $stmtRv = $pdo->prepare("
+                SELECT id 
+                FROM rendez_vous 
+                WHERE disponibilite_id = :disponibilite_id
+                LIMIT 1
+            ");
+            $stmtRv->bindParam(':disponibilite_id', $id, PDO::PARAM_STR);
+            $stmtRv->execute();
+            $rendezVousLie = $stmtRv->fetch();
+            
+            if ($rendezVousLie) {
+                http_response_code(403);
+                echo json_encode(['error' => 'Impossible de modifier un créneau réservé avec un rendez-vous']);
                 break;
             }
             
