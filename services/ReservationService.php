@@ -235,6 +235,7 @@ class ReservationService
     // Annule une réservation (rendez-vous)
     // Paramètres : id du rendez-vous, raison (optionnelle)
     // Retourne : true si succès, false sinon
+    /* Testé par Diane Devi le 26/11/2025 Réussi */
     public function annulerReservation($rendezVousId, $raison = null)
     {
         try {

@@ -185,6 +185,7 @@ class RendezVous
 
     // Paramètre : id étudiant
     // Retourne : tableau de rendez-vous
+    /* Testé par Diane Devi le 26/11/2025 Réussi */
     public function getRendezVousByEtudiantId(string $etudiantId): array
     {
         try {
@@ -385,6 +386,7 @@ class RendezVous
 
     // Paramètres : id rendez-vous, raison (opt)
     // Retourne : true si annulé
+    /* Testé par Diane Devi le 26/11/2025 Réussi */
     public function annulerRendezVous(string $id, ?string $raison = null): bool
     {
         try {
