@@ -209,6 +209,7 @@ class Demande
     // Récupère toutes les demandes d'un étudiant
     // Paramètre : id étudiant
     // Retourne : tableau de demandes (tableaux associatifs)
+    /* Testé par Diane Devi le 26/11/2025 Réussi */
     public function getDemandesByEtudiantId($etudiantId): array
     {
         try {
@@ -237,6 +238,7 @@ class Demande
     // Récupère toutes les demandes d'un tuteur
     // Paramètre : id tuteur
     // Retourne : tableau de demandes (tableaux associatifs)
+    /* Testé par Diane Devi le 26/11/2025 Réussi */
     public function getDemandesByTuteurId($tuteurId): array
     {
         try {

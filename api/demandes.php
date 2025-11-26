@@ -22,6 +22,7 @@ try {
     $pdo = getDBConnection();
     $demandeModel = new Demande($pdo);
     
+    /* Testé par Diane Devi le 26/11/2025 Réussi */
     // Gérer les différentes méthodes HTTP
     switch ($method) {
         case 'GET':
