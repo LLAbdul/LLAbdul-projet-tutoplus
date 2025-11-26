@@ -239,6 +239,22 @@ function createRendezVousCard(rv) {
         `
         : '';
 
+    // Bouton d'annulation (seulement pour les rendez-vous qui peuvent être annulés)
+    const canCancel = rv.id && (rv.statut === 'A_VENIR' || rv.statut === 'EN_COURS' || rv.statut === 'EN_ATTENTE');
+    const cancelButton = canCancel
+        ? `
+        <div class="rendez-vous-card-actions">
+            <button 
+                type="button" 
+                class="btn-annuler-rendez-vous" 
+                data-rendez-vous-id="${escapeHtml(rv.id)}"
+            >
+                Annuler le rendez-vous
+            </button>
+        </div>
+        `
+        : '';
+
     card.innerHTML = `
         <div class="rendez-vous-card-header">
             <div class="rendez-vous-date-time">
@@ -263,7 +279,19 @@ function createRendezVousCard(rv) {
         </div>
         
         ${notesSection}
+        ${cancelButton}
     `;
+
+    // Ajouter l'événement de clic sur le bouton d'annulation
+    if (canCancel) {
+        const cancelBtn = card.querySelector('.btn-annuler-rendez-vous');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function() {
+                const rendezVousId = this.getAttribute('data-rendez-vous-id');
+                openAnnulationModal(rv, rendezVousId);
+            });
+        }
+    }
 
     return card;
 }
@@ -361,8 +389,118 @@ async function loadRendezVous() {
     }
 }
 
+// === Gestion du modal d'annulation ===
+
+let pendingAnnulationRendezVousId = null;
+
+function openAnnulationModal(rendezVous, rendezVousId) {
+    const modal = document.getElementById('annulationModal');
+    if (!modal) {
+        console.error('Modal d\'annulation non trouvé');
+        return;
+    }
+
+    // Remplir les informations du rendez-vous
+    const dateHeure = formatDateForHistorique(rendezVous.date_heure) + ' à ' + formatTimeForHistorique(rendezVous.date_heure);
+    const tuteurNom = `${rendezVous.tuteur_prenom || ''} ${rendezVous.tuteur_nom || ''}`.trim() || '-';
+    const serviceNom = rendezVous.service_nom || '-';
+
+    document.getElementById('annulationDateHeure').textContent = dateHeure;
+    document.getElementById('annulationTuteur').textContent = tuteurNom;
+    document.getElementById('annulationService').textContent = serviceNom;
+
+    // Stocker l'ID du rendez-vous à annuler
+    pendingAnnulationRendezVousId = rendezVousId;
+
+    // Ouvrir le modal
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAnnulationModal() {
+    const modal = document.getElementById('annulationModal');
+    if (!modal) return;
+
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    pendingAnnulationRendezVousId = null;
+}
+
+async function confirmAnnulation() {
+    if (!pendingAnnulationRendezVousId) return;
+
+    try {
+        const response = await fetch(RENDEZ_VOUS_API_URL, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: pendingAnnulationRendezVousId,
+                action: 'annuler'
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Erreur lors de l\'annulation du rendez-vous');
+        }
+
+        closeAnnulationModal();
+
+        // Recharger les rendez-vous
+        await loadRendezVous();
+
+        // Afficher un message de succès (si vous avez une fonction showNotification)
+        if (typeof showNotification === 'function') {
+            showNotification('Rendez-vous annulé avec succès', 'success');
+        } else {
+            alert('Rendez-vous annulé avec succès');
+        }
+
+    } catch (error) {
+        console.error('Erreur lors de l\'annulation:', error);
+        if (typeof showNotification === 'function') {
+            showNotification(error.message || 'Erreur lors de l\'annulation du rendez-vous', 'error');
+        } else {
+            alert(error.message || 'Erreur lors de l\'annulation du rendez-vous');
+        }
+    }
+}
+
+// Initialiser les événements du modal d'annulation
+function initAnnulationModal() {
+    const modal = document.getElementById('annulationModal');
+    if (!modal) return;
+
+    const cancelBtn = document.getElementById('annulationCancelBtn');
+    const confirmBtn = document.getElementById('annulationConfirmBtn');
+    const overlay = modal.querySelector('.confirmation-modal-overlay');
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeAnnulationModal);
+    }
+
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', confirmAnnulation);
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', closeAnnulationModal);
+    }
+
+    // Fermer avec la touche Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeAnnulationModal();
+        }
+    });
+}
+
 // Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', function() {
     initFilters();
+    initAnnulationModal();
     loadRendezVous();
 });

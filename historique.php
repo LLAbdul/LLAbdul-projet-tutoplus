@@ -27,6 +27,7 @@ $cacheBuster = time();
 
     <link rel="stylesheet" href="assets/css/style.css?v=<?= $cacheBuster ?>">
     <link rel="stylesheet" href="assets/css/historique.css?v=<?= $cacheBuster ?>">
+    <link rel="stylesheet" href="assets/css/confirmation-modal.css?v=<?= $cacheBuster ?>">
 </head>
 <body>
 <header>
@@ -190,6 +191,68 @@ $cacheBuster = time();
         </div>
     </section>
 </main>
+
+<!-- Modal de confirmation pour annuler un rendez-vous -->
+<div id="annulationModal" class="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="annulationModalTitle">
+    <div class="confirmation-modal-overlay"></div>
+    <div class="confirmation-modal-content">
+        <div class="confirmation-header">
+            <div class="confirmation-icon">
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="32" cy="32" r="32" fill="#fee"/>
+                    <path d="M32 20V36M32 44H32.01" stroke="#dc3545" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="32" cy="32" r="30" stroke="#dc3545" stroke-width="2"/>
+                </svg>
+            </div>
+            <h3 class="confirmation-title" id="annulationModalTitle">Annuler le rendez-vous</h3>
+            <p class="confirmation-subtitle">Cette action est irréversible</p>
+        </div>
+        
+        <div class="confirmation-body">
+            <div class="confirmation-info-card">
+                <div class="info-row">
+                    <span class="info-label">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Date et heure
+                    </span>
+                    <span class="info-value" id="annulationDateHeure">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Tuteur
+                    </span>
+                    <span class="info-value" id="annulationTuteur">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Service
+                    </span>
+                    <span class="info-value" id="annulationService">-</span>
+                </div>
+            </div>
+            <p style="margin-top: 1.5rem; color: var(--text-light); font-size: 0.9375rem; text-align: center;">
+                Êtes-vous sûr de vouloir annuler ce rendez-vous ? Le créneau sera libéré et disponible pour d'autres étudiants.
+            </p>
+        </div>
+        
+        <div class="confirmation-footer">
+            <button type="button" class="btn-confirmation-secondary" id="annulationCancelBtn">
+                Non, garder le rendez-vous
+            </button>
+            <button type="button" class="btn-confirmation-primary" id="annulationConfirmBtn" style="background: #dc3545;">
+                Oui, annuler le rendez-vous
+            </button>
+        </div>
+    </div>
+</div>
 
 <footer>
     <div class="container">

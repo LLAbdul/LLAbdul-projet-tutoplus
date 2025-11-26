@@ -271,6 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialiser les événements du modal
     initModal();
+    initSuppressionModal();
 });
 
 // === Gestion des modals ===
@@ -633,10 +634,83 @@ function updateDisponibilite(event) {
     });
 }
 
+// Variable globale pour stocker l'ID de la disponibilité à supprimer
+let pendingSuppressionDisponibiliteId = null;
+
 function deleteDisponibilite(id) {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette disponibilité ?')) {
+    // Récupérer les informations de la disponibilité depuis le calendrier
+    const event = window.calendar.getEventById(id);
+    if (!event) {
+        showNotification('Impossible de trouver la disponibilité', 'error');
         return;
     }
+
+    const extendedProps = event.extendedProps || {};
+    const start = event.start;
+    const end = event.end || event.start;
+
+    // Formater les dates
+    const dateDebut = formatDateTimeLocal(start);
+    const dateFin = formatDateTimeLocal(end);
+    const serviceNom = extendedProps.service_nom || 'Aucun service spécifique';
+
+    // Ouvrir le modal de confirmation
+    openSuppressionModal(id, dateDebut, dateFin, serviceNom);
+}
+
+// Formater une date pour l'affichage lisible (ex: "15 janvier 2025 à 14:30")
+function formatDateForDisplay(dateString) {
+    if (!dateString) return '-';
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return dateString;
+        
+        const optionsDate = { day: 'numeric', month: 'long', year: 'numeric' };
+        const optionsTime = { hour: '2-digit', minute: '2-digit', hour12: false };
+        
+        const dateStr = date.toLocaleDateString('fr-FR', optionsDate);
+        const timeStr = date.toLocaleTimeString('fr-FR', optionsTime);
+        
+        return `${dateStr} à ${timeStr}`;
+    } catch (error) {
+        console.error('Erreur lors du formatage de la date:', error);
+        return dateString;
+    }
+}
+
+function openSuppressionModal(id, dateDebut, dateFin, serviceNom) {
+    const modal = document.getElementById('suppressionModal');
+    if (!modal) {
+        console.error('Modal de suppression non trouvé');
+        return;
+    }
+
+    // Remplir les informations avec formatage lisible
+    document.getElementById('suppressionDateDebut').textContent = formatDateForDisplay(dateDebut) || '-';
+    document.getElementById('suppressionDateFin').textContent = formatDateForDisplay(dateFin) || '-';
+    document.getElementById('suppressionService').textContent = serviceNom || '-';
+
+    // Stocker l'ID de la disponibilité à supprimer
+    pendingSuppressionDisponibiliteId = id;
+
+    // Ouvrir le modal
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeSuppressionModal() {
+    const modal = document.getElementById('suppressionModal');
+    if (!modal) return;
+
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    pendingSuppressionDisponibiliteId = null;
+}
+
+function confirmSuppression() {
+    if (!pendingSuppressionDisponibiliteId) return;
+
+    const id = pendingSuppressionDisponibiliteId;
     
     fetch(DISPONIBILITES_API_URL, {
         method: 'DELETE',
@@ -651,6 +725,7 @@ function deleteDisponibilite(id) {
             showNotification('Disponibilité supprimée avec succès', 'success');
             window.calendar.refetchEvents();
             closeModal();
+            closeSuppressionModal();
         } else {
             showNotification(result.error || 'Erreur lors de la suppression de la disponibilité', 'error');
         }
@@ -658,6 +733,35 @@ function deleteDisponibilite(id) {
     .catch(error => {
         console.error('Erreur:', error);
         showNotification('Une erreur est survenue. Veuillez réessayer.', 'error');
+    });
+}
+
+// Initialiser les événements du modal de suppression
+function initSuppressionModal() {
+    const modal = document.getElementById('suppressionModal');
+    if (!modal) return;
+
+    const cancelBtn = document.getElementById('suppressionCancelBtn');
+    const confirmBtn = document.getElementById('suppressionConfirmBtn');
+    const overlay = modal.querySelector('.confirmation-modal-overlay');
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeSuppressionModal);
+    }
+
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', confirmSuppression);
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', closeSuppressionModal);
+    }
+
+    // Fermer avec la touche Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeSuppressionModal();
+        }
     });
 }
 

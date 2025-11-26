@@ -61,6 +61,7 @@ $cacheBuster = time();
     <link rel="stylesheet" href="assets/css/style.css?v=<?= $cacheBuster ?>">
     <link rel="stylesheet" href="assets/css/gestion-disponibilites.css?v=<?= $cacheBuster ?>">
     <link rel="stylesheet" href="assets/css/creneaux-modal.css?v=<?= $cacheBuster ?>">
+    <link rel="stylesheet" href="assets/css/confirmation-modal.css?v=<?= $cacheBuster ?>">
     <!-- FullCalendar CSS -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
 </head>
@@ -369,6 +370,68 @@ $cacheBuster = time();
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation pour supprimer une disponibilité -->
+<div id="suppressionModal" class="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="suppressionModalTitle">
+    <div class="confirmation-modal-overlay"></div>
+    <div class="confirmation-modal-content">
+        <div class="confirmation-header">
+            <div class="confirmation-icon">
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="32" cy="32" r="32" fill="#fee"/>
+                    <path d="M20 20L44 44M44 20L20 44" stroke="#dc3545" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="32" cy="32" r="30" stroke="#dc3545" stroke-width="2"/>
+                </svg>
+            </div>
+            <h3 class="confirmation-title" id="suppressionModalTitle">Supprimer la disponibilité</h3>
+            <p class="confirmation-subtitle">Cette action est irréversible</p>
+        </div>
+        
+        <div class="confirmation-body">
+            <div class="confirmation-info-card">
+                <div class="info-row">
+                    <span class="info-label">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Date et heure de début
+                    </span>
+                    <span class="info-value" id="suppressionDateDebut">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Date et heure de fin
+                    </span>
+                    <span class="info-value" id="suppressionDateFin">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Service
+                    </span>
+                    <span class="info-value" id="suppressionService">-</span>
+                </div>
+            </div>
+            <p style="margin-top: 1.5rem; color: var(--text-light); font-size: 0.9375rem; text-align: center;">
+                Êtes-vous sûr de vouloir supprimer cette disponibilité ? Cette action est irréversible.
+            </p>
+        </div>
+        
+        <div class="confirmation-footer">
+            <button type="button" class="btn-confirmation-secondary" id="suppressionCancelBtn">
+                Annuler
+            </button>
+            <button type="button" class="btn-confirmation-primary" id="suppressionConfirmBtn" style="background: #dc3545;">
+                Oui, supprimer
+            </button>
         </div>
     </div>
 </div>

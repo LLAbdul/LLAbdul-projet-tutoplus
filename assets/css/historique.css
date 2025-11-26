@@ -326,6 +326,37 @@
   font-style: italic;
 }
 
+/* Actions de la carte (bouton d'annulation) */
+.rendez-vous-card-actions {
+  margin-top: var(--spacing);
+  padding-top: var(--spacing);
+  border-top: 1px solid var(--border-light);
+}
+
+.btn-annuler-rendez-vous {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.btn-annuler-rendez-vous:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.btn-annuler-rendez-vous:active {
+  transform: translateY(0);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .historique-header h1 {
