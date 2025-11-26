@@ -454,21 +454,87 @@ async function confirmAnnulation() {
         // Recharger les rendez-vous
         await loadRendezVous();
 
-        // Afficher un message de succès (si vous avez une fonction showNotification)
-        if (typeof showNotification === 'function') {
-            showNotification('Rendez-vous annulé avec succès', 'success');
-        } else {
-            alert('Rendez-vous annulé avec succès');
-        }
+        // Afficher un message de succès
+        showNotification('Rendez-vous annulé avec succès', 'success');
 
     } catch (error) {
         console.error('Erreur lors de l\'annulation:', error);
-        if (typeof showNotification === 'function') {
-            showNotification(error.message || 'Erreur lors de l\'annulation du rendez-vous', 'error');
-        } else {
-            alert(error.message || 'Erreur lors de l\'annulation du rendez-vous');
-        }
+        showNotification(error.message || 'Erreur lors de l\'annulation du rendez-vous', 'error');
     }
+}
+
+// === Notifications ===
+
+function showNotification(message, type = 'info') {
+    // Créer un conteneur de notifications s'il n'existe pas
+    let container = document.getElementById('notification-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'notification-container';
+        container.className = 'notification-container';
+        container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; max-width: 400px;';
+        document.body.appendChild(container);
+    }
+    
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.style.cssText = `
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        animation: slideInRight 0.3s ease-out;
+    `;
+    
+    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+    notification.innerHTML = `
+        <span style="font-size: 1.25rem; font-weight: bold;">${icon}</span>
+        <span style="flex: 1;">${escapeHtml(message)}</span>
+        <button type="button" onclick="this.parentElement.remove()" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0; line-height: 1;">&times;</button>
+    `;
+    
+    container.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideOutRight 0.3s ease-out';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 5000);
+}
+
+// Ajouter les animations CSS si elles n'existent pas
+if (!document.getElementById('notification-styles')) {
+    const style = document.createElement('style');
+    style.id = 'notification-styles';
+    style.textContent = `
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 // Initialiser les événements du modal d'annulation

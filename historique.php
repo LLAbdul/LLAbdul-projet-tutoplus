@@ -5,8 +5,7 @@
  * - Affiche l'historique (passé / à venir) des séances de tutorat
  * - Les rendez-vous sont chargés en AJAX via historique.js
  */
-
- /* Testé par Diane Devi le 21/11/2025 Réussi */
+/* Testé par Diane Devi le 21/11/2025 Réussi */
 session_start();
 
 // Rediriger vers login si l'étudiant n'est pas connecté
