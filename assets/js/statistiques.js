@@ -1,3 +1,4 @@
+/* Testé par Diane Devi le 26/11/2025 Réussi */
 /**
  * Script pour la page de statistiques
  */

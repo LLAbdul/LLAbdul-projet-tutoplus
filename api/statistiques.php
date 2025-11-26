@@ -1,4 +1,5 @@
 <?php
+/* Testé par Diane Devi le 26/11/2025 Réussi */
 /**
  * API Statistiques
  * Endpoint pour récupérer les statistiques (admin uniquement)
