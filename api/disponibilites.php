@@ -7,7 +7,7 @@
  * - DELETE : suppression d'une disponibilité (sauf si RESERVE)
  */
 
-
+/* Testé par Diane Devi le 21/11/2025 Réussi */
 session_start();
 
 require_once '../config/database.php';

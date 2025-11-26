@@ -1,5 +1,5 @@
 /* Modal pour sélection de créneaux - Material Design */
-
+/* Testé par Abdul Rahman Zahid le 16/11/2025 Réussi */
 .creneaux-modal {
   position: fixed;
   top: 0;
@@ -528,6 +528,7 @@
   transform: none;
 }
 
+/* Testé par Diane Devi le 24/11/2025 Réussi */
 /* Responsive */
 @media (max-width: 1024px) {
   .creneaux-container {

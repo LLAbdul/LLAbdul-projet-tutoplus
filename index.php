@@ -1,3 +1,4 @@
+<!-- Testé par Diane Devi le 24/11/2025 Réussi -->
 <?php
 // Testé par Abdul Rahman Zahid le 16/11/2025 Réussi
 /**
@@ -50,6 +51,7 @@ $cacheBuster       = time();
     <link rel="stylesheet" href="assets/css/contact-modal.css?v=<?= $cacheBuster ?>">
 </head>
 <body>
+<!-- Testé par Diane Devi le 23/11/2025 Réussi -->
 <header>
     <div class="container">
         <div class="header-content">
@@ -403,8 +405,10 @@ $cacheBuster       = time();
             >
         </div>
     </div>
+<!-- Testé par Diane Devi le 23/11/2025 Réussi -->
 </footer>
-
+<!-- Testé par Diane Devi le 23/11/2025 Réussi -->
+<!-- Testé par Abdul Rahman Zahid le 16/11/2025 Réussi -->
 <!-- Modal pour les créneaux -->
 <div id="creneauxModal" class="creneaux-modal">
     <div class="creneaux-modal-overlay"></div>
@@ -417,6 +421,7 @@ $cacheBuster       = time();
     </div>
 </div>
 
+<!-- Testé par Diane Devi le 23/11/2025 Réussi -->
 <!-- Modal de contact tuteur -->
 <div id="contactModal" class="contact-modal">
     <div class="contact-modal-overlay"></div>
@@ -501,6 +506,7 @@ $cacheBuster       = time();
     </div>
 </div>
 
+<!-- Testé par Diane Devi le 23/11/2025 Réussi -->
 <!-- Modal de confirmation de réservation -->
 <div id="confirmationModal" class="confirmation-modal">
     <div class="confirmation-modal-overlay"></div>

@@ -345,6 +345,7 @@ class Disponibilite
 
     // Paramètre : id de la disponibilité
     // Retourne : true si supprimée, false sinon
+    /* Testé par Diane Devi le 24/11/2025 Réussi */
     public function supprimerDisponibilite(string $id): bool
     {
         try {

@@ -1,4 +1,6 @@
 <?php
+
+/* Testé par Diane Devi le 19/11/2025 Réussi */
 declare(strict_types=1);
 
 require_once __DIR__ . '/UtilisateurTrait.php';

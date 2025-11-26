@@ -1,3 +1,4 @@
+/* Testé par Diane Devi le 21/11/2025 Réussi */
 const DISPONIBILITES_API_URL = 'api/disponibilites.php';
 const MIN_DURATION_MINUTES = 30;
 
@@ -112,8 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 titleFormat: {
                     year: 'numeric',
                     month: 'long'
-                },
-                columnHeaderFormat: { weekday: 'short' }
+                }
             },
             timeGridWeek: {
                 // "11 – 16 novembre 2025"
@@ -121,8 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric'
-                },
-                columnHeaderFormat: { weekday: 'short', day: 'numeric' }
+                }
             },
             timeGridDay: {
                 // "16 novembre 2025"
@@ -130,8 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric'
-                },
-                columnHeaderFormat: { weekday: 'short', day: 'numeric' }
+                }
             },
             listWeek: {
                 // "11 – 16 novembre 2025"

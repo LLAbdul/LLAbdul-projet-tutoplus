@@ -1,4 +1,5 @@
 <?php
+/* Testé par Diane Devi le 24/11/2025 Réussi */
 /**
  * API demandes.php
  * - GET    : liste ou détail des demandes (selon présence de id)
@@ -135,6 +136,7 @@ try {
             }
             break;
             
+        /* Testé par Diane Devi le 21/11/2025 Réussi */    
         case 'PUT':
             // Mettre à jour une demande (accepter/refuser pour les tuteurs, modifier pour les étudiants)
             $input = file_get_contents('php://input');

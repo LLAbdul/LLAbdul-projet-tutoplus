@@ -1,4 +1,6 @@
 <?php
+
+/* Testé par Diane Devi le 24/11/2025 Réussi */
 /**
  * API messages.php
  * - GET    : liste ou détail (selon id) des messages d’un utilisateur
@@ -6,8 +8,6 @@
  * - PUT    : mettre à jour (lu ou statut)
  * - DELETE : suppression (uniquement par l'expéditeur)
  */
-
-
 session_start();
 
 require_once '../config/database.php';

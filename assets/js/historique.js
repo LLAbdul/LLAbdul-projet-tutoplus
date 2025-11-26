@@ -1,3 +1,5 @@
+// Testé par Diane Devi le 21/11/2025 Réussi
+
 // === Constantes ===
 
 const RENDEZ_VOUS_API_URL = 'api/rendez-vous.php';

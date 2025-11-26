@@ -37,6 +37,7 @@ class ReservationService
     // Crée une demande de rendez-vous
     // Paramètres : id étudiant, id service, id tuteur, id disponibilité (optionnel), motif (optionnel), priorité (optionnelle)
     // Retourne : id de la demande créée ou false en cas d'erreur
+    // Testé par Abdul Rahman Zahid le 16/11/2025 Réussi
     public function creerDemande($etudiantId, $serviceId, $tuteurId, $disponibiliteId = null, $motif = null, $priorite = null)
     {
         try {
@@ -71,6 +72,7 @@ class ReservationService
     // Confirme une demande et crée un rendez-vous
     // Paramètre : id de la demande
     // Retourne : id du rendez-vous créé ou false en cas d'erreur
+    // Testé par Abdul Rahman Zahid le 16/11/2025 Réussi
     public function confirmerDemande($demandeId)
     {
         try {

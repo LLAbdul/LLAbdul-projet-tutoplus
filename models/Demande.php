@@ -267,6 +267,7 @@ class Demande
     // Accepte une demande (change le statut en ACCEPTÉE si elle est EN_ATTENTE)
     // Paramètre : id de la demande
     // Retourne : true si une ligne a été modifiée, false sinon
+    /* Testé par Diane Devi le 21/11/2025 Réussi */
     public function accepterDemande($id): bool
     {
         try {
@@ -293,6 +294,7 @@ class Demande
     // Refuse une demande (change le statut en REFUSÉE, avec raison optionnelle)
     // Paramètres : id de la demande, raison (optionnelle)
     // Retourne : true si une ligne a été modifiée, false sinon
+    /* Testé par Diane Devi le 21/11/2025 Réussi */
     public function refuserDemande($id, $raison = null): bool
     {
         try {

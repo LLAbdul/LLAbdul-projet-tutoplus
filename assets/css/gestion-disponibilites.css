@@ -1,5 +1,7 @@
-/* Styles pour la page de gestion des disponibilités */
+/* Testé par Diane Devi le 21/11/2025 Réussi */
+/* Testé par Diane Devi le 24/11/2025 Réussi - Test US-006*/
 
+/* Styles pour la page de gestion des disponibilités */
 .gestion-disponibilites-section {
   padding: 3rem 0;
   min-height: calc(100vh - 200px);
@@ -252,6 +254,10 @@
   white-space: nowrap;
   text-align: center;
   width: 100%;
+}
+
+.fc-toolbar-title::first-letter {
+  text-transform: uppercase;
 }
 
 /* Ajuster le centrage du titre pour les grandes résolutions (1125px et plus) */
