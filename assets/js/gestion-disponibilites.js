@@ -189,10 +189,11 @@ document.addEventListener('DOMContentLoaded', function() {
         dateClick: function(info) {
             if (info.view.type === 'timeGridWeek' || info.view.type === 'timeGridDay') {
                 const start = info.date;
-                const end = new Date(start.getTime() + 60 * 60 * 1000); // +1 heure
+                const end = new Date(start.getTime() + 30 * 60 * 1000); // +30 minutes
                 openModalCreate(start, end);
             }
         },
+        
         
         // Gérer le clic sur un événement existant (modification ou consultation)
         eventClick: function(info) {
@@ -280,47 +281,30 @@ function openModalCreate(start, end) {
     const title = document.getElementById('modal-title');
     const submitBtn = document.getElementById('modal-submit');
     
+    // Reset du formulaire
     form.reset();
     document.getElementById('disponibilite-id').value = '';
     title.textContent = 'Créer une disponibilité';
     submitBtn.textContent = 'Créer';
     document.getElementById('modal-delete').style.display = 'none';
 
+    // On enlève les données originales (utilisées pour détecter les modifications en édition)
     delete form.dataset.originalDisponibilite;
     
-    // Ajuster l'heure de fin : FullCalendar peut donner soit la fin exacte, soit le début du créneau suivant
-    // On détecte si end est aligné sur un créneau de 30 min (minutes = 00 ou 30)
-    // Si oui et que la durée est un multiple de 30 min, c'est probablement le début du créneau suivant
-    const diffMinutes = getDiffMinutes(start, end);
-    let adjustedEnd = end;
-    
-    if (diffMinutes > 0) {
-        const endMinutes = end.getMinutes();
-        const endSeconds = end.getSeconds();
-        const endMilliseconds = end.getMilliseconds();
-        
-        // Si end est exactement aligné sur un créneau (minutes = 00 ou 30, secondes = 0, ms = 0)
-        // ET que la durée est un multiple de 30 minutes, alors c'est le début du créneau suivant
-        const isAlignedOnSlot = (endMinutes === 0 || endMinutes === 30) && endSeconds === 0 && endMilliseconds === 0;
-        const isMultipleOf30 = diffMinutes % 30 === 0;
-        
-        if (isAlignedOnSlot && isMultipleOf30 && diffMinutes >= 30) {
-            // C'est le début du créneau suivant, on soustrait 30 minutes
-            adjustedEnd = new Date(end.getTime() - 30 * 60 * 1000);
-        }
-        // Sinon, end est déjà la fin exacte, on ne fait rien
-    }
-    
+    // FullCalendar nous donne déjà un start / end cohérents avec slotDuration = 30 min
     document.getElementById('date-debut').value = formatDateTimeLocal(start);
-    document.getElementById('date-fin').value = formatDateTimeLocal(adjustedEnd);
-    
+    document.getElementById('date-fin').value = formatDateTimeLocal(end);
+
+    // Par défaut, une nouvelle dispo est "DISPONIBLE"
     document.getElementById('statut').value = 'DISPONIBLE';
     toggleFieldsByStatut();
     updatePrixFromService();
     
+    // Afficher le modal
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
+
 
 
 function closeModal() {
