@@ -289,19 +289,16 @@ function openModalCreate(start, end) {
     delete form.dataset.originalDisponibilite;
     
     // Ajuster l'heure de fin : FullCalendar arrondit toujours à l'intervalle suivant (exclusif)
-    // Si on drag de 10h à 10h30, FullCalendar donne end = 11h00
-    // On doit calculer l'heure de fin réelle en arrondissant à l'intervalle de 30 min le plus proche
+    // Si on drag de 12h à 12h30, FullCalendar donne end = 13h00 (début du créneau suivant)
+    // Si on drag de 12h à 13h, FullCalendar donne end = 13h30 (début du créneau suivant)
+    // On doit soustraire 30 minutes pour obtenir l'heure de fin réelle
     const diffMinutes = getDiffMinutes(start, end);
     let adjustedEnd = end;
     
-    // Si la différence est un multiple de 30 minutes, on soustrait 30 min pour avoir l'heure de fin réelle
-    // Car FullCalendar donne l'heure de début du créneau suivant (exclusif)
-    if (diffMinutes > 0 && diffMinutes % 30 === 0) {
+    if (diffMinutes > 0) {
+        // FullCalendar donne toujours le début du créneau suivant, donc on soustrait 30 minutes
+        // pour obtenir l'heure de fin réelle du créneau sélectionné
         adjustedEnd = new Date(end.getTime() - 30 * 60 * 1000);
-    } else if (diffMinutes > 0) {
-        // Si ce n'est pas un multiple exact, on arrondit à l'intervalle de 30 min inférieur
-        const roundedMinutes = Math.floor(diffMinutes / 30) * 30;
-        adjustedEnd = new Date(start.getTime() + roundedMinutes * 60 * 1000);
     }
     
     document.getElementById('date-debut').value = formatDateTimeLocal(start);
