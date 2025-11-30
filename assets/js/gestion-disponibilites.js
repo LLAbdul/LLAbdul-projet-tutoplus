@@ -288,8 +288,24 @@ function openModalCreate(start, end) {
 
     delete form.dataset.originalDisponibilite;
     
+    // Ajuster l'heure de fin : FullCalendar arrondit toujours à l'intervalle suivant (exclusif)
+    // Si on drag de 10h à 10h30, FullCalendar donne end = 11h00
+    // On doit calculer l'heure de fin réelle en arrondissant à l'intervalle de 30 min le plus proche
+    const diffMinutes = getDiffMinutes(start, end);
+    let adjustedEnd = end;
+    
+    // Si la différence est un multiple de 30 minutes, on soustrait 30 min pour avoir l'heure de fin réelle
+    // Car FullCalendar donne l'heure de début du créneau suivant (exclusif)
+    if (diffMinutes > 0 && diffMinutes % 30 === 0) {
+        adjustedEnd = new Date(end.getTime() - 30 * 60 * 1000);
+    } else if (diffMinutes > 0) {
+        // Si ce n'est pas un multiple exact, on arrondit à l'intervalle de 30 min inférieur
+        const roundedMinutes = Math.floor(diffMinutes / 30) * 30;
+        adjustedEnd = new Date(start.getTime() + roundedMinutes * 60 * 1000);
+    }
+    
     document.getElementById('date-debut').value = formatDateTimeLocal(start);
-    document.getElementById('date-fin').value = formatDateTimeLocal(end);
+    document.getElementById('date-fin').value = formatDateTimeLocal(adjustedEnd);
     
     document.getElementById('statut').value = 'DISPONIBLE';
     toggleFieldsByStatut();
