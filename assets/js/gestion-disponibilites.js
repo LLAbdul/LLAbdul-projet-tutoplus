@@ -288,17 +288,27 @@ function openModalCreate(start, end) {
 
     delete form.dataset.originalDisponibilite;
     
-    // Ajuster l'heure de fin : FullCalendar arrondit toujours à l'intervalle suivant (exclusif)
-    // Si on drag de 12h à 12h30, FullCalendar donne end = 13h00 (début du créneau suivant)
-    // Si on drag de 12h à 13h, FullCalendar donne end = 13h30 (début du créneau suivant)
-    // On doit soustraire 30 minutes pour obtenir l'heure de fin réelle
+    // Ajuster l'heure de fin : FullCalendar peut donner soit la fin exacte, soit le début du créneau suivant
+    // On détecte si end est aligné sur un créneau de 30 min (minutes = 00 ou 30)
+    // Si oui et que la durée est un multiple de 30 min, c'est probablement le début du créneau suivant
     const diffMinutes = getDiffMinutes(start, end);
     let adjustedEnd = end;
     
     if (diffMinutes > 0) {
-        // FullCalendar donne toujours le début du créneau suivant, donc on soustrait 30 minutes
-        // pour obtenir l'heure de fin réelle du créneau sélectionné
-        adjustedEnd = new Date(end.getTime() - 30 * 60 * 1000);
+        const endMinutes = end.getMinutes();
+        const endSeconds = end.getSeconds();
+        const endMilliseconds = end.getMilliseconds();
+        
+        // Si end est exactement aligné sur un créneau (minutes = 00 ou 30, secondes = 0, ms = 0)
+        // ET que la durée est un multiple de 30 minutes, alors c'est le début du créneau suivant
+        const isAlignedOnSlot = (endMinutes === 0 || endMinutes === 30) && endSeconds === 0 && endMilliseconds === 0;
+        const isMultipleOf30 = diffMinutes % 30 === 0;
+        
+        if (isAlignedOnSlot && isMultipleOf30 && diffMinutes >= 30) {
+            // C'est le début du créneau suivant, on soustrait 30 minutes
+            adjustedEnd = new Date(end.getTime() - 30 * 60 * 1000);
+        }
+        // Sinon, end est déjà la fin exacte, on ne fait rien
     }
     
     document.getElementById('date-debut').value = formatDateTimeLocal(start);
